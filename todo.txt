@@ -1,0 +1,2 @@
+- Definir estrutura de point
+- Ver se e c ou c++
