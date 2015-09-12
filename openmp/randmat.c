@@ -1,4 +1,4 @@
-#include "OpenMP.h"
+#include "openmp.h"
 
 void randmat (int nrows, int ncols, int s) { 
 
@@ -6,7 +6,7 @@ void randmat (int nrows, int ncols, int s) {
 	int i = 0, j = 0, seed = 0;
 	int *matrix = (int*)malloc((nrows + ncols) * sizeof(int));
 
-    #pragma omp parallel for default(none) shared(matrix, seed)
+    #pragma omp parallel for default(none) shared(matrix, seed, j, s, ncols, nrows)
   	for (i = 0; i < nrows; i++) {
     	
     	seed = s + i;

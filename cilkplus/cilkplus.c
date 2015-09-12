@@ -1,4 +1,4 @@
-#include "CilkPlus.h"
+#include "cilkplus.h"
 
 int main () {
 
