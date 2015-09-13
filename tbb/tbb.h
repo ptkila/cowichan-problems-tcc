@@ -1,12 +1,20 @@
-#ifndef __tbb_hpp__
-#define __tbb_hpp__
+#ifndef __tbb_h__
+#define __tbb_h__
+#include <iostream>
+#include "tbb/parallel_for.h"
+#include "tbb/blocked_range.h"
 
-namespace tbb {
-}
-
-using namespace tbb;
+using namespace std;
 
 class TBB {
+
+public:
+
+	struct point
+	{
+		int x;
+		int y;
+	};
 
 	void gauss (double *matrix, double *target);
 
@@ -14,7 +22,7 @@ class TBB {
 	
 	void invperc (int *matrix, int nfill);
 
-	void life (_Bool *matrix, int numgen);
+	void life (bool *matrix, int numgen);
 
 	void mandel (int nrows, int ncols, int x0, int y0, int dx, int dy);
 
@@ -32,9 +40,9 @@ class TBB {
 
 	void thresh (int *matrix, double percent);
 
-	void vecdiff (double * left, double *right);
+	void vecdiff (double *left, double *right);
 
-	void winnow (int *matrix, _Bool *mask, int nelts);
+	void winnow (int *matrix, bool *mask, int nelts);
 
 };
 

@@ -2,25 +2,22 @@
 
 void randmat (int nrows, int ncols, int s) { 
 
-	const int VAL_A = 1313, VAL_B = 3131;
-	int i = 0, j = 0, seed = 0;
-	int *matrix = (int *)malloc((nrows + ncols) * sizeof(int));
+    const int VAL_A = 1313, VAL_B = 3131;
+	int i = 0, seed = 0;
+    int matrixTotalSize = ncols * nrows;   
+	int *matrix = (int *)malloc((matrixTotalSize) * sizeof(int));
 
-  	cilk_for (i = 0; i < nrows; i++) {
-    	
+  	cilk_for (i = 0; i < matrixTotalSize; ++i) {
+
     	seed = s + i;
-    	
-    	for (j = 0; j < ncols; j++) {
-    	 	
-    	 	seed = VAL_A * seed + VAL_B;
-    	  	matrix[i * ncols + j] = ((unsigned)seed) % 100;   
-    	
-    	}
-  	}
+    	seed = VAL_A * seed + VAL_B;
+    	matrix[i] = seed % 100;   
+  	
+    }
 
-  	for (j = 0; j < ncols + nrows; j++) {
+  	for (i = 0; i < matrixTotalSize; i++) {
     	 	
-    	printf("%d", matrix[j]);    
+    	printf("%d ", matrix[i]);    
     	
     }
 

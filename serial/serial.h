@@ -1,6 +1,12 @@
-#ifndef __serial_hpp__
-#define __serial_hpp__
+#ifndef __SERIAL_H__
+#define __SERIAL_H__
+#include <stdio.h>
 
+	struct point {
+		int x;
+		int y;
+	};
+	
 	/*
 	gauss: Gaussian Elimination
 	This module solves a matrix equation AX=V for a dense, symmetric, diagonally dominant matrix A and an arbitrary vector 
@@ -112,7 +118,8 @@
 	/*
 	norm: Point Location Normalization
 	This module normalizes point coordinates so that all points lie within the unit square [0..1]×[0..1].
-	If xmin and xmax are the minimum and maximum x coordinate values in the input vector, then the normalization equation is
+	If xmin and xmax are the minimum and maximum x coordinate values in the input vector, then the normalization 
+	equation is
 
 	xi'	=	(xi — xmin)/(xmax — xmin)
 	y coordinates are normalized in the same fashion.

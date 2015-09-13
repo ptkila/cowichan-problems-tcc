@@ -3,8 +3,15 @@
 source /opt/intel/composer_xe_2013_sp1.1.103/bin/compilervars.sh intel64
 DYLD_LIBRARY_PATH="/opt/intel/composer_xe_2013_sp1.1.103/compiler/lib":$DYLD_LIBRARY_PATH
 
+// Setar ambiente linux
+
+sudo gedit ~/.bashrc
+Adicionar:
+export PATH=$PATH:/opt/intel/bin
+source /opt/intel/bin/compilervars.sh intel64
+
 // Compilar tbb
-icc <nome do arquivo> -tbb -std=c++11 
+icc <nome do arquivo> -tbb -std=c++11
 
 // Compilar cilk
 
@@ -16,4 +23,4 @@ icc <nome do arquivo> -openmp
 
 // Compilar c++11
 
-icc <nome do arquivo> -std=c++11
+icc <nome do arquivo> -std=c++11 -pthread

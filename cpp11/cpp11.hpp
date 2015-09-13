@@ -1,12 +1,20 @@
 #ifndef __cpp11_hpp__
 #define __cpp11_hpp__
+#include <iostream>
+#include <thread>
+#include <functional>
 
-namespace cowichan_cpp11 {
-}
-
-using namespace cpp11;
+using namespace std;
 
 class Cpp11 {
+
+public:
+
+	struct point
+	{
+		int x;
+		int y;
+	};
 
 	void gauss (double *matrix, double *target);
 
@@ -14,7 +22,7 @@ class Cpp11 {
 	
 	void invperc (int *matrix, int nfill);
 
-	void life (_Bool *matrix, int numgen);
+	void life (bool *matrix, int numgen);
 
 	void mandel (int nrows, int ncols, int x0, int y0, int dx, int dy);
 
@@ -32,9 +40,9 @@ class Cpp11 {
 
 	void thresh (int *matrix, double percent);
 
-	void vecdiff (double * left, double *right);
+	void vecdiff (double *left, double *right);
 
-	void winnow (int *matrix, _Bool *mask, int nelts);
+	void winnow (int *matrix, bool *mask, int nelts);
 	
 };
 
