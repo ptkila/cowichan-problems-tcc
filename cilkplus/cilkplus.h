@@ -2,7 +2,10 @@
 #define __CILK_PLUS_H__
 
 #include <cilk/cilk.h>
+#include <math.h>
+#include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 
 struct point {
 	int x;
@@ -19,9 +22,9 @@ void life (_Bool *matrix, int numgen);
 
 void mandel (int nrows, int ncols, int x0, int y0, int dx, int dy);
 
-void norm (struct point *points);
+void norm (struct point *points, int number_of_points);
 	
-void outer (struct point *points);
+void outer (struct point *points[]);
 
 void product (double *matrix, double *actual, double *candidate);
 

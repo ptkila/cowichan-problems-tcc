@@ -15,9 +15,9 @@ void randmat (int nrows, int ncols, int s) {
     	
   	}
 
-  	for (j = 0; j < ncols + nrows; j++) {
+  	for (i = 0; i < matrixTotalSize; i++) {
     	 	
-    	printf("%d", matrix[j]);    
+    	printf("%d", matrix[i]);    
     	
     }
 

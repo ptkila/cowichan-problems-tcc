@@ -3,8 +3,8 @@
 #include <stdio.h>
 
 	struct point {
-		int x;
-		int y;
+		double x;
+		double y;
 	};
 	
 	/*
@@ -42,7 +42,7 @@
 	ordered: the vector of output points (a permutation of the input).
 	*/
 
-	void hull (struct point *original);
+	void hull (struct point *original[]);
 
 	/*
 	invperc: Invasion Percolation
@@ -133,7 +133,7 @@
 	points: a vector of normalized point locations.
 	*/
 
-	void norm (struct point *points);
+	void norm (struct point* points, int number_of_points);
 
 	/*
 	outer: Outer Product
@@ -154,7 +154,7 @@
 	vector: a real vector, whose values are filled with origin-to-point distances.
 	*/
 	
-	void outer (struct point *points);
+	void outer (struct point *points[]);
 
 	/*
 	product: Matrix-Vector Product
@@ -267,7 +267,7 @@
 	maxdiff: the largest absolute difference between any two corresponding vector elements.
 	*/
 
-	void vecdiff (double * left, double *right);
+	void vecdiff (double *left, double *right);
 
 	/*
 	winnow: Weighted Point Selection
