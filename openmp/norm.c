@@ -1,4 +1,4 @@
-#include "cilkplus.h"
+#include "openmp.h"
 
 void find_min_max_points (struct point *points, int number_of_points, struct point* min_point,
     struct point* max_point) {
@@ -9,7 +9,8 @@ void find_min_max_points (struct point *points, int number_of_points, struct poi
   	min_point->x = points[0].x;
   	min_point->y = points[0].y;
 
-  	cilk_for (i = 1; i < number_of_points; i++) {
+  	#pragma omp parallel for default(none) shared(number_of_points, points, min_point, max_point)
+  	for (i = 1; i < number_of_points; i++) {
 
     	if (points[i].x < min_point->x) {
       		min_point->x = points[i].x;
@@ -40,8 +41,9 @@ void normalize_points (struct point *points, int number_of_points, struct point 
   	
   	sclY = (double)((max_point.y == min_point.y) ?
       0.0 : 1.0 / (max_point.y - min_point.y));
-
-  	cilk_for (i = 0; i < number_of_points; i++) {
+   
+    #pragma omp parallel for default(none) shared(number_of_points, points, min_point, max_point, sclX, sclY, norm_points)
+  	for (i = 0; i < number_of_points; i++) {
  
     	norm_points[i].x = sclX * (points[i].x - min_point.x);
     	norm_points[i].y = sclY * (points[i].y - min_point.y);

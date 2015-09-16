@@ -8,8 +8,8 @@
 #include <string.h>
 
 struct point {
-	int x;
-	int y;
+	double x;
+	double y;
 };
 
 void gauss (double *matrix, double *target);

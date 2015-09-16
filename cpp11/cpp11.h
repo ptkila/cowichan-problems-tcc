@@ -1,5 +1,6 @@
-#ifndef __cpp11_hpp__
-#define __cpp11_hpp__
+#ifndef __cpp11_h__
+#define __cpp11_h__
+
 #include <iostream>
 #include <thread>
 #include <functional>
@@ -10,15 +11,9 @@ class Cpp11 {
 
 public:
 
-	struct point
-	{
-		int x;
-		int y;
-	};
-
 	void gauss (double *matrix, double *target);
 
-	void hull (struct point *original);
+	void hull (class Point *original);
 	
 	void invperc (int *matrix, int nfill);
 
@@ -26,9 +21,9 @@ public:
 
 	void mandel (int nrows, int ncols, int x0, int y0, int dx, int dy);
 
-	void norm (struct point *points);
+	void norm (class Point *points, int numberOfPoints);
 	
-	void outer (struct point *points);
+	void outer (class Point *points);
 
 	void product (double *matrix, double *actual, double *candidate);
 
@@ -44,6 +39,22 @@ public:
 
 	void winnow (int *matrix, bool *mask, int nelts);
 	
+};
+
+class Point {
+	double x;
+	double y;
+
+public:
+	Point() {
+		this->x = 0.0;
+		this->y = 0.0;
+	}
+
+	Point (double x, double y) {
+		this->x = x;
+		this->y = x;
+	} 
 };
 
 #endif

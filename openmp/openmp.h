@@ -6,8 +6,8 @@
 
 	struct point
 	{
-		int x;
-		int y;
+		double x;
+		double y;
 	};
 
 	void gauss (double *matrix, double *target);
@@ -20,7 +20,7 @@
 
 	void mandel (int nrows, int ncols, int x0, int y0, int dx, int dy);
 
-	void norm (struct point *points);
+	void norm (struct point *points, int number_of_points);
 	
 	void outer (struct point *points);
 
