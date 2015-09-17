@@ -1,70 +1,70 @@
 #include "cpp11.h"
 
-void find_min_max_points (Point *points, int numberOfPoints, Point *min_point,
-    Point *max_point);
-void normalize_points (Point *points, int numberOfPoints, Point min_point, Point max_point, Point *norm_points);
-
-void Cpp11::norm (Point *points, int numberOfPoints){
-
-	Point *norm_points = new Point[numberOfPoints];
-	Point *min_point = new Point();
-	Point *max_point = new Point();
-
-  	find_min_max_points(points, numberOfPoints, &min_point, &max_point);
-  	normalize_points(points, numberOfPoints, min_point, max_point, norm_points);
-
-  	for (int i = 0; i < numberOfPoints; i++) {
- 
-    	printf("%f ", norm_points[i].x);
-    	printf("%f\n", norm_points[i].y);
- 
-  	}
-
-}
-
-void find_min_max_points (Point *points, int numberOfPoints, Point *min_point,
-    Point *max_point) {
-
-  	max_point->x = points[0].x;
-  	max_point->y = points[0].y;
-  	min_point->x = points[0].x;
-  	min_point->y = points[0].y;
+void findMinMaxPoints (Point *points, int numberOfPoints, Point *minPoint, Point *maxPoint) {
 
   	for (int i = 1; i < numberOfPoints; i++) {
 
-    	if (points[i].x < min_point->x) {
-      		min_point->x = points[i].x;
+    	if (points[i].x < minPoint->x) {
+      		minPoint->x = points[i].x;
     	}
     
-    	if (points[i].y < min_point->y) {
-      		min_point->y = points[i].y;
+    	if (points[i].y < minPoint->y) {
+      		minPoint->y = points[i].y;
     	}
     
-    	if (points[i].x > max_point->x) {
-      		max_point->x = points[i].x;
+    	if (points[i].x > maxPoint->x) {
+      		maxPoint->x = points[i].x;
     	}
     
-    	if (points[i].y > max_point->y) {
-      		max_point->y = points[i].y;
+    	if (points[i].y > maxPoint->y) {
+      		maxPoint->y = points[i].y;
     	}
   	}
 }
 
-void normalize_points (Point *points, int numberOfPoints, Point min_point, Point max_point, Point *norm_points) {
+void normalizePoints (Point points[], int startIndex, int lastIndex, Point *minPoint, Point *maxPoint, double sclX, double sclY, Point normPoints[]) {
 
+  	for (int i = startIndex; i < lastIndex; ++i) {
+ 
+    	normPoints[i].x = sclX * (points[i].x - minPoint->x);
+    	normPoints[i].y = sclY * (points[i].y - minPoint->y);
+ 
+  	}
+}
+
+void Cpp11::norm (Point *points, int numberOfPoints){
+
+	Point *normPoints = new Point[numberOfPoints];
+	Point *minPoint = new Point();
+	Point *maxPoint = new Point();
+	int numOfThreads = 4;
+	int operationsByThread = numberOfPoints/ numOfThreads;
+	std::thread threadList[numOfThreads];
 	double sclX = 0, sclY = 0;
 
-	// x = (xi - xmin) * (1 / (xmax - xmin))
-	sclX = (double)((max_point.x == min_point.x) ?
-      0.0 : 1.0 / (max_point.x - min_point.x));
+  	findMinMaxPoints(points, numberOfPoints, minPoint, maxPoint);
+
+  	sclX = (double)((maxPoint->x == minPoint->x) ?
+      0.0 : 1.0 / (maxPoint->x - minPoint->x));
   	
-  	sclY = (double)((max_point.y == min_point.y) ?
-      0.0 : 1.0 / (max_point.y - min_point.y));
+  	sclY = (double)((maxPoint->y == minPoint->y) ?
+      0.0 : 1.0 / (maxPoint->y - minPoint->y));
+
+	for (int i = 0; i < numOfThreads; ++i) {
+
+		threadList[i] = std::thread(normalizePoints, points, operationsByThread * i, operationsByThread * (i + 1), minPoint, maxPoint, sclX, sclY, normPoints);
+
+	}
+
+	for (int i = 0; i < numOfThreads; ++i) {
+
+		threadList[i].join();
+
+	}
 
   	for (int i = 0; i < numberOfPoints; i++) {
  
-    	norm_points[i].x = sclX * (points[i].x - min_point.x);
-    	norm_points[i].y = sclY * (points[i].y - min_point.y);
+    	std::cout << normPoints[i].x << " " << normPoints[i].y << endl;
  
   	}
 }

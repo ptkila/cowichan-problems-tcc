@@ -3,7 +3,7 @@
 
 #include <iostream>
 #include <thread>
-#include <functional>
+#include <cmath>
 
 using namespace std;
 
@@ -42,10 +42,12 @@ public:
 };
 
 class Point {
+
+public:
+
 	double x;
 	double y;
 
-public:
 	Point() {
 		this->x = 0.0;
 		this->y = 0.0;
