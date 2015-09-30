@@ -4,38 +4,38 @@
 #include <stdio.h>
 #include "omp.h"
 
-	struct point
-	{
-		double x;
-		double y;
-	};
+struct point
+{
+	double x;
+	double y;
+};
 
-	void gauss (double *matrix, double *target);
+void gauss (double *matrix, double *target);
 
-	void hull (struct point *original);
-	
-	void invperc (int *matrix, int nfill);
+void hull (struct point *original);
 
-	void life (_Bool *matrix, int numgen);
+void invperc (int *matrix, int nfill);
 
-	void mandel (int nrows, int ncols, int x0, int y0, int dx, int dy);
+void life (_Bool *matrix, int numgen);
 
-	void norm (struct point *points, int number_of_points);
-	
-	void outer (struct point *points);
+void mandel (int nrows, int ncols, int x0, int y0, int dx, int dy);
 
-	void product (double *matrix, double *actual, double *candidate);
+void norm (struct point *points, int number_of_points);
 
-	void randmat (int nrows, int ncols, int s);
+void outer (struct point *points);
 
-	void shuffle (int *matrix);
+void product (double *matrix, double *actual, double *candidate);
 
-	void sor (double *matrix, double *target, double tolerance);
+void randmat (int nrows, int ncols, int s);
 
-	void thresh (int *matrix, double percent);
+void shuffle (int *matrix);
 
-	void vecdiff (double * left, double *right);
+void sor (double *matrix, double *target, double tolerance);
 
-	void winnow (int *matrix, _Bool *mask, int nelts);
+void thresh (int *matrix, double percent);
+
+void vecdiff (double * left, double *right);
+
+void winnow (int *matrix, _Bool *mask, int nelts);
 
 #endif

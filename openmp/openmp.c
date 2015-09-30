@@ -10,7 +10,7 @@ int main () {
 
 		points[i].x = (double)(i);
 		points[i].y = (double)(i);
-	
+
 	}
 	norm(points, number_of_points);
 	return 0;
