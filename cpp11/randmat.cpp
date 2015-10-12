@@ -46,7 +46,7 @@ void Cpp11::randmat(int nrows, int ncols, int s) {
 
 	for (int i = 0; i < totalMatrixSize; ++i) {
 
-		printf("%d ", matrix[i]);
+		std::cout << matrix[i] << " ";
 
 	}
 }

@@ -64,7 +64,7 @@ void Cpp11::norm (Point *points, int numberOfPoints) {
 
   for (int i = 0; i < numberOfPoints; i++) {
 
-    std::cout << normPoints[i].x << " " << normPoints[i].y << endl;
+    std::cout << normPoints[i].x << " " << normPoints[i].y << std::endl;
 
   }
 }

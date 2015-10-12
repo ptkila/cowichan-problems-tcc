@@ -1,6 +1,8 @@
 #ifndef __SERIAL_H__
 #define __SERIAL_H__
+
 #include <stdio.h>
+#include <math.h>
 
 struct point {
 	double x;
@@ -154,7 +156,7 @@ matrix: a real matrix, whose values are filled with inter-point distances.
 vector: a real vector, whose values are filled with origin-to-point distances.
 */
 
-void outer (struct point *points[]);
+void outer (struct point *points, int number_of_points);
 
 /*
 product: Matrix-Vector Product

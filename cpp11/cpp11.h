@@ -5,8 +5,6 @@
 #include <thread>
 #include <cmath>
 
-using namespace std;
-
 class Cpp11 {
 
 public:
