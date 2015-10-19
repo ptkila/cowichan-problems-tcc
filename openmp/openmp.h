@@ -22,7 +22,7 @@ void mandel (int nrows, int ncols, int x0, int y0, int dx, int dy);
 
 void norm (struct point *points, int number_of_points);
 
-void outer (struct point *points);
+void outer (struct point *points, int number_of_points);
 
 void product (double *matrix, double *actual, double *candidate);
 

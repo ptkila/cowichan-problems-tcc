@@ -1,9 +1,13 @@
 #include "cilkplus.h"
+#include <stdlib.h>
+#include <time.h>
+#include <limits.h>
 
 int main () {
 
 	//randmat(2, 2, 10);
 
+	/*
 	int number_of_points = 8;
 	struct point *points = (struct point*) malloc(sizeof(struct point) * number_of_points);
 	int i = 0;
@@ -14,6 +18,23 @@ int main () {
 
 	}
 	norm(points, number_of_points);
+	*/
+	
+	//Teste outer
+	int number_of_points = 4;
+	struct point *points = (struct point*) malloc(sizeof(struct point) * number_of_points);
+	int i = 0;
+	
+	srand (time(NULL));
+	for (i = 0; i < number_of_points; i++) {
+
+		points[i].x = (double)rand() / (double)(RAND_MAX /INT_MAX);
+		points[i].y = (double)rand() / (double)(RAND_MAX /INT_MAX);
+	
+	}
+
+	outer(points, number_of_points);
+	
 	return 0;
 
 }

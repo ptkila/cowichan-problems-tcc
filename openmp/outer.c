@@ -1,4 +1,4 @@
-#include "cilkplus.h"
+#include "openmp.h"
 
 double sqr (double x) {
 
@@ -27,15 +27,19 @@ void outer (struct point *points, int number_of_points) {
     matrix[i] = (double*)malloc(number_of_points * sizeof(double));
   }
 
-  cilk_for (i = 0; i < number_of_points; i++) {
-    for (j = 0; j < number_of_points; j++) {
-      if (i != j) {
-        matrix[i][j] = distance(points[i], points[j]);
-        n_max = fmax(n_max, matrix[i][j]);
+  #pragma omp parallel shared(matrix, i, j)
+  {
+    #pragma omp for
+    for (i = 0; i < number_of_points; i++) {
+      for (j = 0; j < number_of_points; j++) {
+        if (i != j) {
+          matrix[i][j] = distance(points[i], points[j]);
+          n_max = fmax(n_max, matrix[i][j]);
+        }
       }
+      matrix[i][i] = n_max * number_of_points;
+      vector[i] = distance(origin, points[i]);
     }
-    matrix[i][i] = n_max * number_of_points;
-    vector[i] = distance(origin, points[i]);
   }
 
   for (i = 0; i < number_of_points; i++) {
@@ -48,7 +52,6 @@ void outer (struct point *points, int number_of_points) {
   for (i = 0; i < number_of_points; i++) {
     printf("%e ", vector[i]);
   }
-   
+
   printf("\n");
 }
-

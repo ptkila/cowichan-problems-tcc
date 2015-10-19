@@ -4,6 +4,8 @@
 #include <iostream>
 #include <thread>
 #include <cmath>
+#include <mutex>
+#include <vector>
 
 class Cpp11 {
 
@@ -21,7 +23,7 @@ public:
 
 	void norm (class Point *points, int numberOfPoints);
 
-	void outer (class Point *points);
+	void outer (class Point *points, int numberOfPoints);
 
 	void product (double *matrix, double *actual, double *candidate);
 

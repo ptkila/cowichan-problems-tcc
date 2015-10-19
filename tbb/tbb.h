@@ -1,8 +1,10 @@
 #ifndef __tbb_h__
 #define __tbb_h__
 #include <iostream>
+#include <cmath>
 #include "tbb/parallel_for.h"
 #include "tbb/blocked_range.h"
+#include "tbb/blocked_range2d.h"
 
 class TBB {
 
@@ -20,7 +22,7 @@ public:
 
 	void norm (class Point *points, int numberOfPoints);
 	
-	void outer (class Point *points);
+	void outer (class Point *points, int numberOfPoints);
 
 	void product (double *matrix, double *actual, double *candidate);
 
