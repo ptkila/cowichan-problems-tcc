@@ -2,6 +2,8 @@
 #define __CILK_PLUS_H__
 
 #include <cilk/cilk.h>
+#include <cilk/reducer.h>
+#include <cilk/reducer_max.h>
 #include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -32,7 +34,7 @@ void shuffle (int *matrix);
 
 void sor (double *matrix, double *target, double tolerance);
 
-void thresh (int *matrix, double percent);
+void thresh(int** matrix, int size, int percent, int** mask);
 
 void vecdiff (double * left, double *right);
 

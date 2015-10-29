@@ -1,68 +1,67 @@
-#include "serial.h"
+#include "cilkplus.h"
 
 int reduce_max (int** matrix, int size) {
-  CILK_C_DECLARE_REDUCER(int) max_reducer = CILK_C_INIT_REDUCER(int,
-      add_int_reduce,
-      add_int_identity,
-      __cilkrts_hyperobject_noop_destroy,
-      0);
+
   int i, j;
-  int tmp_max = 0;
+  int max = 0;
+  CILK_C_REDUCER_MAX(r, int, 0);
+  CILK_C_REGISTER_REDUCER(r);
 
   cilk_for (i = 0; i < size; i++) {
     for (j = 0; j < size; j++) {
-      if (tmp_max < matrix[i][j]) {
-        tmp_max = matrix[i][j];
-      }
+      CILK_C_REDUCER_MAX_CALC(r, matrix[i][j]);
     }
-    max_reducer.calc_max (tmp_max);
   }
-  return max_reducer.get_value ();
+  max = r.value;
+  CILK_C_UNREGISTER_REDUCER(r);
+
+  return max;
+
 }
 
 void fill_histogram(int** matrix, int size, int* histogram) {
-  cilk_for (i = 0; i < size; ++i) {
-    for (int j = 0; j < ncols; j++) {
+  int i, j;
+  cilk_for (i = 0; i < size; i++) {
+    for (j = 0; j < size; j++) {
       histogram[matrix[i][j]]++;
     }
-  i
-}
-
-void merge_histogram () {
-  int P = __cilkrts_get_nworkers();
-  cilk_for (int v = 0; v < 100; ++v) {
-    int merge_val = __sec_reduce_add (histogram [1:(P - 1)][v]);
-    histogram [0][v] += merge_val;
   }
 }
 
-void fill_mask (int nrows, int ncols, int threshold) {
-  cilk_for (int i = 0; i < nrows; ++i) {
-    for (int j = 0; j < ncols; ++j) {
-      mask[i * ncols + j] = matrix [i * ncols + j] >= threshold;
+void fill_mask(int** matrix, int size, int threshold, int** mask) {
+  int i, j;
+  cilk_for (i = 0; i < size; i++) {
+    for (j = 0; j < size; j++) {
+      mask[i][j] = (int)(matrix[i][j] >= threshold);
     }
   }
 }
 
-void thresh(int nrows, int ncols, int percent) {
-  int i;
-  int nmax = 0;
-  int count, prefixsum, threshold;
+void thresh(int** matrix, int size, int percent, int** mask) {
+  int i, j;
+  int n_max = 0;
 
-  nmax = reduce_max(nrows, ncols);
+  n_max = reduce_max(matrix, size);
 
-  fill_histogram(nrows, ncols);
-  merge_histogram();
+  int* histogram = (int*)calloc((n_max + 1), sizeof(int));
 
-  count = (nrows * ncols * percent) / 100;
+  fill_histogram(matrix, size, histogram);
+  
+  int count = (size * size * percent) / 100;
+  int prefixSum = 0;
+  int threshold = n_max;
 
-  prefixsum = 0;
-  threshold = nmax;
-
-  for (i = nmax; i >= 0 && prefixsum <= count; i--) {
-    prefixsum += histogram[0][i];
+  for (i = n_max; i >= 0 && prefixSum <= count; i--) {
+    prefixSum += histogram[i];
     threshold = i;
   }
 
-  fill_mask(nrows, ncols, threshold);
+  fill_mask(matrix, size, threshold, mask);
+
+  for (i = 0; i < size; i++) {
+    for (j = 0; j < size; j++) {
+      printf("%d ", mask[i][j]);
+    }
+    printf("\n");
+  }
 }

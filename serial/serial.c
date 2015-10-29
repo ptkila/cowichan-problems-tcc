@@ -73,7 +73,7 @@ int main() {
 	//teste thresh
 	int matrix_size = 12;
 	int i = 0, j = 0;
-	int percent = 10;
+	int percent = 100;
 	int **matrix = (int **) malloc (sizeof(int *)*matrix_size);
 	for (i = 0; i < matrix_size; i++) {
 		matrix[i] = (int *)malloc(matrix_size * sizeof(int));
