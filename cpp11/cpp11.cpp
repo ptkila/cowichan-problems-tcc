@@ -24,6 +24,7 @@ int main () {
 	*/
 
 	//Teste outer
+	/*
 	int numberOfPoints = 4;
 	Point *points = new Point[numberOfPoints];
 	srand (time(NULL));
@@ -36,6 +37,24 @@ int main () {
 	}
 	
 	cpp->outer(points, numberOfPoints);
+	*/
+	// teste PRODUCT
+	int matrixSize = 4;
+	double **matrix = new double*[matrixSize];
+	double *vector = new double[matrixSize];
+
+	for (int i = 0; i < matrixSize; i++) {
+		matrix[i] = new double[matrixSize];
+	}
+
+	for (int i = 0 ; i < matrixSize; i++) {
+		vector[i] = i;
+		for (int j = 0 ; j < matrixSize; j++) {
+			matrix[i][j] = i + j;
+		}
+	}
+
+	cpp->product(matrix, vector, matrixSize);	
 
 	return 0;
 }

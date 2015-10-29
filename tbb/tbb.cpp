@@ -23,6 +23,7 @@ int main () {
 	*/
 
 	//teste outer
+	/*
 	int numberOfPoints = 4;
 	Point *points = new Point[numberOfPoints];
 	srand (time(NULL));
@@ -33,6 +34,25 @@ int main () {
 	
 	}
 	tbb->outer(points, numberOfPoints);
+	*/
+
+	//Teste product
+	int matrixSize = 4;
+	double **matrix = new double*[matrixSize];
+	double *vector = new double[matrixSize];
+
+	for (int i = 0; i < matrixSize; i++) {
+		matrix[i] = new double[matrixSize];
+	}
+
+	for (int i = 0 ; i < matrixSize; i++) {
+		vector[i] = i;
+		for (int j = 0 ; j < matrixSize; j++) {
+			matrix[i][j] = i + j;
+		}
+	}
+
+	tbb->product(matrix, vector, matrixSize);
 	
 	return 0;
 }

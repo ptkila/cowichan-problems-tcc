@@ -2,6 +2,7 @@
 #define __SERIAL_H__
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <math.h>
 
 struct point {
@@ -174,7 +175,7 @@ Outputs
 e: the largest absolute value in the element-wise difference of V and V'.
 */
 
-void product (double *matrix, double *actual, double *candidate);
+void product (double **matrix, double *vector, int size);
 
 /*
 randmat: Random Number Generation
@@ -253,8 +254,7 @@ mask: a Boolean matrix whose values are True where the value of a cell in the in
 and False otherwise.
 */
 
-void thresh (int *matrix, double percent);
-
+void thresh (int** matrix, int size, int percent, int** mask);
 /*
 vecdiff: Vector Difference
 This module finds the maximum absolute elementwise difference between two vectors of real numbers.

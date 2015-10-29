@@ -24,7 +24,7 @@ void norm (struct point *points, int number_of_points);
 
 void outer (struct point *points, int number_of_points);
 
-void product (double *matrix, double *actual, double *candidate);
+void product (double **matrix, double *vector, int size);
 
 void randmat (int nrows, int ncols, int s);
 

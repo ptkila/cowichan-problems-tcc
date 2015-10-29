@@ -25,7 +25,7 @@ public:
 
 	void outer (class Point *points, int numberOfPoints);
 
-	void product (double *matrix, double *actual, double *candidate);
+	void product (double **matrix, double *vector, int size);
 
 	void randmat (int nrows, int ncols, int s);
 

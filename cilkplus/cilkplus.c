@@ -21,6 +21,7 @@ int main () {
 	*/
 	
 	//Teste outer
+	/*
 	int number_of_points = 4;
 	struct point *points = (struct point*) malloc(sizeof(struct point) * number_of_points);
 	int i = 0;
@@ -34,7 +35,27 @@ int main () {
 	}
 
 	outer(points, number_of_points);
-	
+	*/
+
+	//Teste product
+
+	int matrix_size = 4;
+	int i = 0, j = 0;
+	double **matrix = (double **) malloc (sizeof(double *)*matrix_size);
+	for (i = 0; i < matrix_size; i++) {
+		matrix[i] = (double *)malloc(matrix_size * sizeof(double));
+	}
+	double *vector = (double *)malloc (sizeof(double) * matrix_size);
+
+	for (i = 0 ; i < matrix_size; i++) {
+		vector[i] = i;
+		for (j = 0 ; j < matrix_size; j++) {
+			matrix[i][j] = i + j;
+		}
+	}
+
+	product(matrix, vector, matrix_size);
+
 	return 0;
 
 }

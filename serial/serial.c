@@ -33,16 +33,10 @@ int main() {
 			matrix[i][j] = i;
 		}
 	}
-
-	for (i = 0 ; i < matrix_size; i++) {
-		for (j = 0 ; j < matrix_size; j++) {
-			printf("%d ", matrix[i][j]);
-		}
-		printf("\n");
-	}
 	*/
 
 	//Teste outer
+	/*
 	int number_of_points = 3;
 	struct point *points = (struct point*) malloc(sizeof(struct point) * number_of_points);
 	int i = 0;
@@ -54,5 +48,51 @@ int main() {
 	}
 
 	outer(points, number_of_points);
+	*/
+
+	//Teste product
+	/*
+	int matrix_size = 4;
+	int i = 0, j = 0;
+	double **matrix = (double **) malloc (sizeof(double *)*matrix_size);
+	for (i = 0; i < matrix_size; i++) {
+		matrix[i] = (double *)malloc(matrix_size * sizeof(double));
+	}
+	double *vector = (double *)malloc (sizeof(double) * matrix_size);
+
+	for (i = 0 ; i < matrix_size; i++) {
+		vector[i] = i;
+		for (j = 0 ; j < matrix_size; j++) {
+			matrix[i][j] = i + j;
+		}
+	}
+
+	product(matrix, vector, matrix_size);
+	*/
+
+	//teste thresh
+	int matrix_size = 12;
+	int i = 0, j = 0;
+	int percent = 10;
+	int **matrix = (int **) malloc (sizeof(int *)*matrix_size);
+	for (i = 0; i < matrix_size; i++) {
+		matrix[i] = (int *)malloc(matrix_size * sizeof(int));
+	}
+
+	int **mask = (int **)malloc (sizeof(int *) * matrix_size);
+	for (i = 0; i < matrix_size; i++) {
+		mask[i] = (int *)malloc(matrix_size * sizeof(int));
+	}
+
+	srand (time(NULL));
+
+	for (i = 0 ; i < matrix_size; i++) {
+		for (j = 0 ; j < matrix_size; j++) {
+			matrix[i][j] = rand() % 255;
+		}
+	}
+
+	thresh(matrix, matrix_size, percent, mask);
+
 	return 0;
 }

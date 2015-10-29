@@ -13,7 +13,7 @@ public:
 	void gauss (double *matrix, double *target);
 
 	void hull (class Point *original);
-	
+
 	void invperc (int *matrix, int nfill);
 
 	void life (bool *matrix, int numgen);
@@ -21,10 +21,10 @@ public:
 	void mandel (int nrows, int ncols, int x0, int y0, int dx, int dy);
 
 	void norm (class Point *points, int numberOfPoints);
-	
+
 	void outer (class Point *points, int numberOfPoints);
 
-	void product (double *matrix, double *actual, double *candidate);
+	void product (double **matrix, double *vector, int size);
 
 	void randmat (int nrows, int ncols, int s);
 
@@ -55,7 +55,7 @@ public:
 	Point (double x, double y) {
 		this->x = x;
 		this->y = x;
-	} 
+	}
 };
 
 #endif
