@@ -1,4 +1,4 @@
-#include "cpp11.hpp"
+#include "cpp11.h"
 
 //static const int num_threads = 4;
 const int VAL_A = 1313, VAL_B = 3131;
@@ -20,33 +20,28 @@ void Cpp11::randmat(int nrows, int ncols, int s) {
 
 	int totalMatrixSize = nrows * ncols;
 	int *matrix = new int[totalMatrixSize];
+	int numThreads = 4;
+	int operationsByThread = nrows * ncols / numThreads;
+	std::thread threadsList[numThreads];
 
-	int num_threads = 0;
-	int operationsByThread = 0;
-	if (nrows >= ncols) {
-		num_threads = ncols;
-		operationsByThread = nrows;
-	} else {
-		num_threads =  nrows;
-		operationsByThread = ncols;
-	}
-	std::thread threads_list[num_threads];
+	for (int i = 0; i < numThreads; ++i) {
 
-	for (int i = 0; i < num_threads; ++i) {
-
-		threads_list[i] = std::thread(doTheMath, operationsByThread * i, operationsByThread * (i + 1), matrix, s);
+		threadsList[i] = std::thread(doTheMath, operationsByThread * i, operationsByThread * (i + 1), matrix, s);
 
 	}
 
-	for (int i = 0; i < num_threads; ++i) {
+	for (int i = 0; i < numThreads; ++i) {
 
-		threads_list[i].join();
+		threadsList[i].join();
 
 	}
 
 	for (int i = 0; i < totalMatrixSize; ++i) {
 
 		std::cout << matrix[i] << " ";
-
+		if (i % ncols == 0 && i != 0) {
+			std::cout << "\n";
+		}
 	}
+	std::cout << "\n";
 }

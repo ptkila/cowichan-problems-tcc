@@ -6,9 +6,10 @@
 int main () {
 
 	Cpp11 *cpp = new Cpp11();
+	srand (time(NULL));
 
 	//Teste randmat
-	//cpp->randmat(2, 2, 10);
+	//cpp->randmat(12, 12, rand());
 
 	//Teste norm
 	/*
@@ -27,7 +28,6 @@ int main () {
 	/*
 	int numberOfPoints = 4;
 	Point *points = new Point[numberOfPoints];
-	srand (time(NULL));
 
 	for (int i = 0; i < numberOfPoints; i++) {
 
@@ -39,6 +39,7 @@ int main () {
 	cpp->outer(points, numberOfPoints);
 	*/
 	// teste PRODUCT
+	/*
 	int matrixSize = 4;
 	double **matrix = new double*[matrixSize];
 	double *vector = new double[matrixSize];
@@ -55,6 +56,28 @@ int main () {
 	}
 
 	cpp->product(matrix, vector, matrixSize);	
+	*/
 
+	// teste thresh
+	int matrixSize = 12;
+	int i, j;
+	int percent = 100;
+	int **matrix = new int*[matrixSize];
+	for (int i = 0; i < matrixSize; i++) {
+		matrix[i] = new int[matrixSize];
+	}
+
+	int **mask = new int*[matrixSize];
+	for (int i = 0; i < matrixSize; i++) {
+		mask[i] = new int[matrixSize];
+	}
+
+	for (int i = 0 ; i < matrixSize; i++) {
+		for (int j = 0 ; j < matrixSize; j++) {
+			matrix[i][j] = rand() % 255;
+		}
+	}
+
+	cpp->thresh(matrix, matrixSize, percent, mask);
 	return 0;
 }

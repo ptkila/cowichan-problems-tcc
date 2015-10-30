@@ -6,6 +6,7 @@
 #include <cmath>
 #include <mutex>
 #include <vector>
+#include <future>
 
 class Cpp11 {
 
@@ -33,7 +34,7 @@ public:
 
 	void sor (double *matrix, double *target, double tolerance);
 
-	void thresh (int *matrix, double percent);
+	void thresh(int** matrix, int size, int percent, int** mask);
 
 	void vecdiff (double *left, double *right);
 

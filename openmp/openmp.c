@@ -39,6 +39,7 @@ int main () {
 	*/
 
 	//Teste product
+	/*
 	int matrix_size = 4;
 	int i = 0, j = 0;
 	double **matrix = (double **) malloc (sizeof(double *)*matrix_size);
@@ -55,6 +56,31 @@ int main () {
 	}
 
 	product(matrix, vector, matrix_size);
+	*/
+	
+	//Teste thresh
+	int matrix_size = 12;
+	int i, j;
+	int percent = 50;
+	int **matrix = (int **)malloc(matrix_size * sizeof(int *));
+	for (i = 0; i < matrix_size; i++) {
+		matrix[i] = (int *)malloc(matrix_size * sizeof(int));
+	}
+
+	int **mask = (int **)calloc(matrix_size, sizeof(int *));
+	for (i = 0; i < matrix_size; i++) {
+		mask[i] = (int *)calloc(matrix_size, sizeof(int));
+	}
+
+	srand (time(NULL));
+
+	for (i = 0 ; i < matrix_size; i++) {
+		for (j = 0 ; j < matrix_size; j++) {
+			matrix[i][j] = rand() % 255;
+		}
+	}
+
+	thresh(matrix, matrix_size, percent, mask);
 	return 0;
 
 }
