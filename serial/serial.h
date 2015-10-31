@@ -10,6 +10,11 @@ struct point {
 	double y;
 };
 
+struct weighted_point {
+	int weight;
+	struct point position;
+};
+
 /*
 gauss: Gaussian Elimination
 This module solves a matrix equation AX=V for a dense, symmetric, diagonally dominant matrix A and an arbitrary vector
@@ -289,6 +294,6 @@ Outputs
 points: an N-vector of (x,y) points.
 */
 
-void winnow (int *matrix, _Bool *mask, int nelts);
+void winnow (int **matrix, int **mask, int size, int vector_size, int nelts);
 
 #endif

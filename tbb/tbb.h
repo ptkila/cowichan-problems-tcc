@@ -5,6 +5,7 @@
 #include "tbb/parallel_for.h"
 #include "tbb/blocked_range.h"
 #include "tbb/blocked_range2d.h"
+#include "tbb/parallel_reduce.h"
 
 class TBB {
 
@@ -32,7 +33,7 @@ public:
 
 	void sor (double *matrix, double *target, double tolerance);
 
-	void thresh (int *matrix, double percent);
+	void thresh(int** matrix, int size, int percent, int** mask);
 
 	void vecdiff (double *left, double *right);
 

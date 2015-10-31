@@ -31,7 +31,7 @@ void thresh (int** matrix, int size, int percent, int** mask) {
 
   for (i = 0; i < size; i++) {
     for (j = 0; j < size; j++) {
-      mask[i][j] = (int)(matrix[i][j] >= threshold);
+      mask[i][j] = (int)(matrix[i][j] > threshold);
     }
   }
 

@@ -6,6 +6,8 @@
 int main () {
 
 	TBB *tbb = new TBB();
+	srand (time(NULL));
+
 	//teste randmat
 	//tbb->randmat(2,2,10);
 	
@@ -37,6 +39,7 @@ int main () {
 	*/
 
 	//Teste product
+	/*
 	int matrixSize = 4;
 	double **matrix = new double*[matrixSize];
 	double *vector = new double[matrixSize];
@@ -53,6 +56,26 @@ int main () {
 	}
 
 	tbb->product(matrix, vector, matrixSize);
-	
+	*/
+	// teste thresh
+	int matrixSize = 12;
+	int percent = 50;
+	int **matrix = new int*[matrixSize];
+	for (int i = 0; i < matrixSize; i++) {
+		matrix[i] = new int[matrixSize];
+	}
+
+	int **mask = new int*[matrixSize];
+	for (int i = 0; i < matrixSize; i++) {
+		mask[i] = new int[matrixSize];
+	}
+
+	for (int i = 0 ; i < matrixSize; i++) {
+		for (int j = 0 ; j < matrixSize; j++) {
+			matrix[i][j] = rand() % 255;
+		}
+	}
+
+	tbb->thresh(matrix, matrixSize, percent, mask);
 	return 0;
 }

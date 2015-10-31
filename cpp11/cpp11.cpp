@@ -61,7 +61,7 @@ int main () {
 	// teste thresh
 	int matrixSize = 12;
 	int i, j;
-	int percent = 100;
+	int percent = 50;
 	int **matrix = new int*[matrixSize];
 	for (int i = 0; i < matrixSize; i++) {
 		matrix[i] = new int[matrixSize];

@@ -39,7 +39,7 @@ void fill_mask(int** matrix, int size, int threshold, int** mask) {
     #pragma omp for
     for (i = 0; i < size; i++) {
       for (j = 0; j < size; j++) {
-        mask[i][j] = (int)(matrix[i][j] >= threshold);
+        mask[i][j] = (int)(matrix[i][j] > threshold);
       }
     }
   }

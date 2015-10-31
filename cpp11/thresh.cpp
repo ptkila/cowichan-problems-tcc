@@ -26,7 +26,7 @@ void fillMask(int** matrix, int startIndex, int endIndex, int size, int threshol
   int i, j;
   for (i = 0; i < size; i++) {
     for (j = 0; j < size; j++) {
-      mask[i][j] = (int)(matrix[i][j] >= threshold);
+      mask[i][j] = (int)(matrix[i][j] > threshold);
     }
   }
 }

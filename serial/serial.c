@@ -71,9 +71,10 @@ int main() {
 	*/
 
 	//teste thresh
+	/*
 	int matrix_size = 12;
 	int i = 0, j = 0;
-	int percent = 100;
+	int percent = 50;
 	int **matrix = (int **) malloc (sizeof(int *)*matrix_size);
 	for (i = 0; i < matrix_size; i++) {
 		matrix[i] = (int *)malloc(matrix_size * sizeof(int));
@@ -93,6 +94,41 @@ int main() {
 	}
 
 	thresh(matrix, matrix_size, percent, mask);
+	*/
+	//Teste winnow
+	int matrix_size = 12;
+	int i = 0, j = 0;
+	int vector_size = 0;
+	int **matrix = (int **)malloc(sizeof(int *) * matrix_size);
+	for (i = 0; i < matrix_size; i++) {
+		matrix[i] = (int *)malloc(matrix_size * sizeof(int));
+	}
+
+	int **mask = (int **)malloc(sizeof(int *) * matrix_size);
+	for (i = 0; i < matrix_size; i++) {
+		mask[i] = (int *)malloc(matrix_size * sizeof(int));
+	}
+
+	srand (time(NULL));
+
+	for (i = 0 ; i < matrix_size; i++) {
+		for (j = 0 ; j < matrix_size; j++) {
+			matrix[i][j] = rand() % 1000;
+			mask[i][j] = rand() % 2;
+		}
+	}
+
+	for (i = 0; i < matrix_size; i++) {
+		for (j = 0; j < matrix_size; j++) {
+			if (mask[i][j]) {
+				vector_size++;
+			}
+		}
+	}
+
+	int number_of_points = rand() % vector_size;
+
+	winnow(matrix, mask, matrix_size, vector_size, number_of_points);
 
 	return 0;
 }
