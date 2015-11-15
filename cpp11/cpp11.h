@@ -2,11 +2,11 @@
 #define __cpp11_h__
 
 #include <iostream>
+#include <cstdlib>
+#include <ctime>
 #include <thread>
-#include <cmath>
-#include <mutex>
 #include <vector>
-#include <future>
+#include <functional>
 
 class Cpp11 {
 

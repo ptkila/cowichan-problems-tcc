@@ -1,7 +1,4 @@
 #include "cpp11.h"
-#include <cstdlib>
-#include <ctime>
-#include <climits>
 
 int main () {
 
@@ -9,7 +6,7 @@ int main () {
 	srand (time(NULL));
 
 	//Teste randmat
-	//cpp->randmat(12, 12, rand());
+	cpp->randmat(4, 4, rand());
 
 	//Teste norm
 	/*
@@ -59,6 +56,7 @@ int main () {
 	*/
 
 	// teste thresh
+	/*
 	int matrixSize = 12;
 	int i, j;
 	int percent = 50;
@@ -79,5 +77,7 @@ int main () {
 	}
 
 	cpp->thresh(matrix, matrixSize, percent, mask);
+	*/
+
 	return 0;
 }

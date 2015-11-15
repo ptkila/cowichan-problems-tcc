@@ -1,9 +1,8 @@
 #include "cpp11.h"
 
-//static const int num_threads = 4;
 const int VAL_A = 1313, VAL_B = 3131;
 
-void doTheMath (int startIndex, int endIndex, int matrix[], int givenSeed) {
+void doTheMath (const int startIndex, const int endIndex, std::vector<int>& matrix, const int givenSeed) {
 
 	int seed = 0;
 
@@ -19,20 +18,21 @@ void doTheMath (int startIndex, int endIndex, int matrix[], int givenSeed) {
 void Cpp11::randmat(int nrows, int ncols, int s) {
 
 	int totalMatrixSize = nrows * ncols;
-	int *matrix = new int[totalMatrixSize];
 	int numThreads = 4;
-	int operationsByThread = nrows * ncols / numThreads;
-	std::thread threadsList[numThreads];
+	int operationsByThread = totalMatrixSize / numThreads;
 
+	std::vector<std::vector<int>> matrix(totalMatrixSize);
+	std::vector<std::thread> threadsList;
+	
 	for (int i = 0; i < numThreads; ++i) {
 
-		threadsList[i] = std::thread(doTheMath, operationsByThread * i, operationsByThread * (i + 1), matrix, s);
+		threadsList.push_back(std::thread(doTheMath, operationsByThread * i, operationsByThread * (i + 1), std::ref(matrix), s));
 
 	}
 
-	for (int i = 0; i < numThreads; ++i) {
+	for ( auto &t : threadsList ) {
 
-		threadsList[i].join();
+		t.join();
 
 	}
 
