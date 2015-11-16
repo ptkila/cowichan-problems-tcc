@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include <time.h>
 
 struct point {
 	double x;
@@ -81,10 +82,11 @@ void invperc (int **matrix, int nfill);
 
 /*
 life: Game of Life
-This module simulates the evolution of Conway's Game of Life, a two-dimensional cellular automaton. At each time step,
-this module must count the number of live (True) cells in the 8-neighborhood of each cell using circular boundary
-conditions. If a cell has 3 live neighbors, or has 2 live neighbors and is already alive, it is alive in the next
-generation. In any other situation, the cell becomes, or stays, dead.
+This module simulates the evolution of Conway's Game of Life, a two-dimensional cellular automaton. 
+At each time step, this module must count the number of live (True) cells in the 8-neighborhood of 
+each cell using circular boundaryconditions. If a cell has 3 live neighbors, or has 2 live neighbors 
+and is already alive, it is alive in the next generation. In any other situation, the cell becomes,
+or stays, dead.
 
 Inputs
 
@@ -96,7 +98,7 @@ Outputs
 matrix: a Boolean matrix representing the world after simulation.
 */
 
-void life (_Bool *matrix, int numgen);
+int** life (int** matrix, const int size, const int numgen);
 
 /*
 mandel: Mandelbrot Set Generation

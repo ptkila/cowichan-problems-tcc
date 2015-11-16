@@ -2,6 +2,8 @@
 
 int main() {
 
+	srand (time(NULL));
+
 	// teste randmat
 	//randmat(2,2,10);
 
@@ -85,8 +87,6 @@ int main() {
 		mask[i] = (int *)malloc(matrix_size * sizeof(int));
 	}
 
-	srand (time(NULL));
-
 	for (i = 0 ; i < matrix_size; i++) {
 		for (j = 0 ; j < matrix_size; j++) {
 			matrix[i][j] = rand() % 255;
@@ -96,6 +96,7 @@ int main() {
 	thresh(matrix, matrix_size, percent, mask);
 	*/
 	//Teste winnow
+	/*
 	int matrix_size = 12;
 	int i = 0, j = 0;
 	int vector_size = 0;
@@ -108,8 +109,6 @@ int main() {
 	for (i = 0; i < matrix_size; i++) {
 		mask[i] = (int *)malloc(matrix_size * sizeof(int));
 	}
-
-	srand (time(NULL));
 
 	for (i = 0 ; i < matrix_size; i++) {
 		for (j = 0 ; j < matrix_size; j++) {
@@ -129,6 +128,41 @@ int main() {
 	int number_of_points = rand() % vector_size;
 
 	winnow(matrix, mask, matrix_size, vector_size, number_of_points);
+	*/
 
+	//Game of life
+	int size, numgen;
+	int i, j;
+	int** matrix;;
+	
+	size = 10;
+	numgen = 1000;
+	matrix = (int**)malloc(sizeof(int*)*size);
+	for (i = 0; i < size; ++i) {
+		matrix[i] = (int*)malloc(sizeof(int)*size); 
+	}
+
+	for (i = 0; i < size; ++i) {
+		for (j = 0; j < size; ++j) {
+			matrix[i][j] = (int)(rand()%2);
+		}
+	}
+	printf("Initial: \n");
+	for (i = 0; i < size; ++i) {
+		for (j = 0; j < size; ++j) {
+			printf("%d ", matrix[i][j]);
+		}
+		printf("\n");
+	}
+
+	life(matrix, size, numgen);
+
+	printf("\n After:\n");
+	for (i = 0; i < size; ++i) {
+		for (j = 0; j < size; ++j) {
+			printf("%d ", matrix[i][j]);
+		}
+		printf("\n");
+	}
 	return 0;
 }
