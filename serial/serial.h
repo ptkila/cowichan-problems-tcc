@@ -5,15 +5,26 @@
 #include <stdlib.h>
 #include <math.h>
 #include <time.h>
+#include <limits.h>
 
 struct point {
 	double x;
 	double y;
 };
 
+struct point_int {
+	int x;
+	int y;
+};
+
 struct weighted_point {
 	int weight;
 	struct point position;
+};
+
+struct outer_return {
+	double** matrix;
+	double* vector;
 };
 
 /*
@@ -58,15 +69,16 @@ invperc: Invasion Percolation
 Invasion percolation models the displacement of one fluid (such as oil) by another (such as water) in fractured rock.
 In two dimensions, this can be simulated by generating an N×N grid of random numbers in the range [1..R], and then
 marking the center cell of the grid as filled. In each iteration, one examines the four orthogonal neighbors of all
-filled cells, chooses the one with the lowest value (i.e., the one with the least resistance to filling), and fills it in.
+filled cells, chooses the one with the lowest value (i.e., the one with the least resistance to filling), and fills 
+it in.
 
-Filling begins at the central cell of the matrix (rounding down for even-sized axes). The simulation continues until some
-fixed percentage of cells have been filled, or until some other condition (such as the presence of trapped regions) is achieved.
+Filling begins at the central cell of the matrix (rounding down for even-sized axes). The simulation continues until 
+some fixed percentage of cells have been filled, or until some other condition (such as the presence of trapped regions) is achieved.
 The fractal structure of the filled and unfilled regions is then examined to determine how much oil could be recovered.
 
-The naïve way to implement this is to repeatedly scan the array. A much faster technique is to maintain a priority queue of
-unfilled cells which are neighbors of filled cells. This latter technique is similar to the list-based methods used in
-some cellular automaton programs, and is very difficult to parallelize effectively.
+The naïve way to implement this is to repeatedly scan the array. A much faster technique is to maintain a priority 
+queue of unfilled cells which are neighbors of filled cells. This latter technique is similar to the list-based 
+methods used in some cellular automaton programs, and is very difficult to parallelize effectively.
 
 Inputs
 
@@ -78,7 +90,7 @@ Outputs
 mask: a Boolean matrix filled with True (showing a filled cell) or False (showing an unfilled cell).
 */
 
-void invperc (int **matrix, int nfill);
+int** invperc (int **matrix, int size, int nfill);
 
 /*
 life: Game of Life
@@ -143,7 +155,7 @@ Outputs
 points: a vector of normalized point locations.
 */
 
-void norm (struct point* points, int number_of_points);
+struct point* norm (struct point* points, int number_of_points);
 
 /*
 outer: Outer Product
@@ -164,7 +176,7 @@ matrix: a real matrix, whose values are filled with inter-point distances.
 vector: a real vector, whose values are filled with origin-to-point distances.
 */
 
-void outer (struct point *points, int number_of_points);
+struct outer_return outer (struct point *points, int number_of_points);
 
 /*
 product: Matrix-Vector Product
@@ -182,7 +194,7 @@ Outputs
 e: the largest absolute value in the element-wise difference of V and V'.
 */
 
-void product (double **matrix, double *vector, int size);
+double** product (double **matrix, double *vector, int size);
 
 /*
 randmat: Random Number Generation
@@ -199,7 +211,7 @@ Outputs
 matrix: an integer matrix filled with random values.
 */
 
-void randmat (int nrows, int ncols, int s);
+int** randmat (int nrows, int ncols, int s);
 
 /*
 shuffle: Two-Dimensional Shuffle
@@ -261,7 +273,7 @@ mask: a Boolean matrix whose values are True where the value of a cell in the in
 and False otherwise.
 */
 
-void thresh (int** matrix, int size, int percent, int** mask);
+int** thresh (int** matrix, int size, int percent, int** mask);
 /*
 vecdiff: Vector Difference
 This module finds the maximum absolute elementwise difference between two vectors of real numbers.
@@ -296,6 +308,6 @@ Outputs
 points: an N-vector of (x,y) points.
 */
 
-void winnow (int **matrix, int **mask, int size, int vector_size, int nelts);
+struct point* winnow (int **matrix, int **mask, int size, int vector_size, int nelts);
 
 #endif

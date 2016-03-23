@@ -1,45 +1,70 @@
 #include "serial.h"
 
-void thresh (int** matrix, int size, int percent, int** mask) {
+int set_max_number (int** matrix, int size) {
 
-  int max_number = 0;
   int i, j;
-
+  int tmpNumber = 0;
+  
   for (i = 0; i < size; i++) {
     for (j = 0; j < size; j++) {
-      if (max_number < matrix[i][j])
-        max_number = matrix[i][j];
+      if (tmpNumber < matrix[i][j]) tmpNumber = matrix[i][j];
     }
   }
+  return tmpNumber;
+}
 
-  int* histogram = (int*)malloc(sizeof(int) * (max_number + 1));
-
+void set_histogram (int* histogram, int** matrix, int size) {
+  int i, j;
   for (i = 0; i < size; i++) {
     for (j = 0; j < size; j++) {
       histogram[matrix[i][j]]++;
     }
   }
+}
 
-  int threshold = max_number;
-  int prefix_sum = 0;
-  int count = (size * size * percent) / 100;
+int set_threshold (int* histogram, int max_number, int proportion) {
 
-  for (i = max_number; i >= 0 && prefix_sum <= count; i--) {
+  int i, tmpNumber, prefix_sum = 0;
+
+  for (i = max_number; i >= 0 && prefix_sum <= proportion; i--) {
     prefix_sum += histogram[i];
-    threshold = i;
+    tmpNumber = i;
   }
+
+  return tmpNumber;
+}
+
+void set_mask (int** mask, int** matrix, int size, int threshold) {
+
+  int i, j;
 
   for (i = 0; i < size; i++) {
     for (j = 0; j < size; j++) {
       mask[i][j] = (int)(matrix[i][j] > threshold);
     }
   }
+}
 
+int** thresh (int** matrix, int size, int percent, int** mask) {
+
+  int max_number, threshold, prefix_sum, proportion, i, j;
+  int* histogram;
+
+  max_number = set_max_number(matrix, size);
+  
+  histogram = (int*)malloc(sizeof(int) * (max_number + 1));
+  set_histogram(histogram, matrix, size);
+
+  proportion = (size * size * percent) / 100;
+  threshold = set_threshold(histogram, max_number, proportion);
+  set_mask(mask, matrix, size, threshold);
+  
+  /*
   for (i = 0; i < size; i++) {
     for (j = 0; j < size; j++) {
       printf("%d ", mask[i][j]);
     }
     printf("\n");
   }
-
+  */
 }

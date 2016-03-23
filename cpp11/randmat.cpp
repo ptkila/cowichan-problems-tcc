@@ -21,7 +21,7 @@ void Cpp11::randmat(int nrows, int ncols, int s) {
 	int numThreads = 4;
 	int operationsByThread = totalMatrixSize / numThreads;
 
-	std::vector<std::vector<int>> matrix(totalMatrixSize);
+	std::vector<int> matrix(totalMatrixSize);
 	std::vector<std::thread> threadsList;
 	
 	for (int i = 0; i < numThreads; ++i) {
@@ -36,12 +36,15 @@ void Cpp11::randmat(int nrows, int ncols, int s) {
 
 	}
 
+	int count = 0;
+
 	for (int i = 0; i < totalMatrixSize; ++i) {
 
-		std::cout << matrix[i] << " ";
-		if (i % ncols == 0 && i != 0) {
-			std::cout << "\n";
+		if (count == 4){
+				std::cout << "\n";
+				count = 0;
 		}
+		count++;
+		std::cout << matrix[i] << " ";
 	}
-	std::cout << "\n";
 }

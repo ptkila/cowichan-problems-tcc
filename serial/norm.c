@@ -50,7 +50,7 @@ void normalize_points (struct point *points, int number_of_points, struct point 
   }
 }
 
-void norm (struct point* points, int number_of_points) {
+struct point* norm(struct point* points, int number_of_points){
 
   struct point *norm_points = (struct point*) malloc(sizeof(struct point) * number_of_points);
   struct point min_point;
@@ -60,10 +60,6 @@ void norm (struct point* points, int number_of_points) {
   find_min_max_points(points, number_of_points, &min_point, &max_point);
   normalize_points(points, number_of_points, min_point, max_point, norm_points);
 
-  for (i = 0; i < number_of_points; i++) {
-
-    printf("%f ", norm_points[i].x);
-    printf("%f\n", norm_points[i].y);
-
-  }
+  return norm_points;
+  
 }

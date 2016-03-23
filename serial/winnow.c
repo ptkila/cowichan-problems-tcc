@@ -1,6 +1,7 @@
 #include "serial.h"
 
 void fill_vector (int** matrix, int** mask, int size, struct weighted_point* vector, int vector_size) {
+	
 	int i, j;
 
 	for (i = 0; i < size; i++) {
@@ -16,62 +17,46 @@ void fill_vector (int** matrix, int** mask, int size, struct weighted_point* vec
 	}
 }
 
-void merge_sort(struct weighted_point* vector, int bot, int mid, int top, int vector_size) {
+int partition(struct weighted_point* vector, int l, int r) {
+   int pivot, i, j, t;
+   double x = 0;
+   double y = 0;
 
-	int i, m, k, l;
-	struct weighted_point temp[vector_size];
+   pivot = vector[l].weight;
+   i = l;
+   j = r + 1;
+		
+   for( ; ; ) {
+   
+   	do ++i; while( vector[i].weight <= pivot && i <= r );
+   	do --j; while( vector[j].weight > pivot );
+   	if( i >= j ) break;
+   	
+   	t = vector[i].weight; vector[i].weight = vector[j].weight; vector[j].weight = t;
+   	x = vector[i].position.x; vector[i].position.x = vector[j].position.x; vector[j].position.x = x;
+   	y = vector[i].position.y; vector[i].position.y = vector[j].position.y; vector[j].position.y = y;
+   
+   }
+   
+   t = vector[l].weight; vector[l].weight = vector[j].weight; vector[j].weight = t;
+   x = vector[l].position.x; vector[l].position.x = vector[j].position.x; vector[j].position.x = x;
+   y = vector[l].position.y; vector[l].position.y = vector[j].position.y; vector[j].position.y = y;
 
-	l = bot;
-	i = bot;
-	m = mid + 1;
-
-	while ((l <= mid) && (m <= top)) {
-
-		if (vector[l].weight <= vector[m].weight) {
-			temp[i] = vector[l];
-			l++;
-		}
-		else {
-			temp[i] = vector[m];
-			m++;
-		}
-		i++;
-	}
-
-	if (l > mid) {
-		for (k = m; k <= top; k++) {
-			temp[i] = vector[k];
-			i++;
-		}
-	}
-	else {
-		for (k = l; k <= mid; k++) {
-			temp[i] = vector[k];
-			i++;
-		}
-	}
-
-	for (k = bot; k <= top; k++) {
-		vector[k] = temp[k];
-	}
-
+   return j;
+   
 }
 
-void partition(struct weighted_point* vector, int bot, int top, int vector_size) {
+void quick_sort(struct weighted_point* vector, int l, int r)
+{
+   int i = 0;
 
-	int mid;
-	if (bot < top) {
-		mid = (bot + top) / 2;
-		partition(vector, bot, mid, vector_size);
-		partition(vector, mid + 1, top, vector_size);
-		merge_sort(vector, bot, mid, top, vector_size);
-	}
-}
-
-void sort_vector (struct weighted_point* vector, int vector_size) {
-
-	partition(vector, 0, vector_size - 1, vector_size);
-
+   if( l < r ) 
+   {
+       i = partition( vector, l, r);
+       quick_sort( vector, l, i - 1);
+       quick_sort( vector, i + 1, r);
+   }
+	
 }
 
 void fill_point_vector(struct weighted_point* vector, int vector_size, struct point* point_vector, int nelts) {
@@ -84,18 +69,25 @@ void fill_point_vector(struct weighted_point* vector, int vector_size, struct po
 	}
 }
 
-void winnow (int **matrix, int **mask, int size, int vector_size, int nelts) {
+struct point* winnow (int **matrix, int **mask, int size, int vector_size, int nelts) {
 
 	int i, j;
-	struct weighted_point* vector = (struct weighted_point*)malloc(sizeof(struct weighted_point) * vector_size);
-	struct point* point_vector = (struct point*)malloc(sizeof(struct point) * nelts);
+	struct weighted_point* vector;
+	struct point* point_vector;
+
+	vector = (struct weighted_point*)malloc(sizeof(struct weighted_point) * vector_size);
+	point_vector = (struct point*)malloc(sizeof(struct point) * nelts);
 
 	fill_vector(matrix, mask, size, vector, vector_size);
-	sort_vector(vector, vector_size);
+	quick_sort(vector, 0, vector_size);
 	fill_point_vector(vector, vector_size, point_vector, nelts);
 
-	for (i = 0; i < nelts; i++) {
-		printf("%.0f ", point_vector[i].x);
-		printf("%.0f\n", point_vector[i].y);
+	/*
+	for (int i = 0; i < nelts; ++i)
+	{
+		printf("x = %.1f y = %.1f w = %d\n", point_vector[i].x, point_vector[i].y, vector[i].weight);
 	}
+	*/
+
+	return point_vector;
 }

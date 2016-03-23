@@ -5,7 +5,7 @@ int main() {
 	srand (time(NULL));
 
 	// teste randmat
-	//randmat(2,2,10);
+	//randmat(2, 2, rand()%100);
 
 	// teste norm
 	/*
@@ -68,7 +68,7 @@ int main() {
 			matrix[i][j] = i + j;
 		}
 	}
-
+	
 	product(matrix, vector, matrix_size);
 	*/
 
@@ -129,8 +129,8 @@ int main() {
 
 	winnow(matrix, mask, matrix_size, vector_size, number_of_points);
 	*/
-
 	//Game of life
+	/*
 	int size, numgen;
 	int i, j;
 	int** matrix;;
@@ -164,5 +164,23 @@ int main() {
 		}
 		printf("\n");
 	}
+	*/
+	// invperc test
+	int matrix_size = 10;
+	int i = 0, j = 0;
+	int percent = 50;
+	int **matrix = (int **) malloc (sizeof(int *)*matrix_size);
+	for (i = 0; i < matrix_size; i++) {
+		matrix[i] = (int *)malloc(matrix_size * sizeof(int));
+	}
+
+	for (i = 0 ; i < matrix_size; i++) {
+		for (j = 0 ; j < matrix_size; j++) {
+			matrix[i][j] = rand() % 100;
+		}
+	}
+
+	invperc(matrix, matrix_size, percent);
+
 	return 0;
 }

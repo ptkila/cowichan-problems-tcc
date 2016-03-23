@@ -12,7 +12,7 @@ export PATH=$PATH:/opt/intel/bin
 source /opt/intel/bin/compilervars.sh intel64
 
 Ambiente completo:
-export PATH=$PATH:/opt/intel/parallel_studio_xe_2016.2.062/bin
+export /opt/intel/parallel_studio_xe_2016.<update number>.<package number>\bin
 source psxevars.sh
 
 // Compilar tbb
