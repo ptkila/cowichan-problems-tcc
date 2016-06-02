@@ -16,15 +16,15 @@ export PATH=$PATH:/opt/intel/parallel_studio_xe_2016.2.062/bin
 source psxevars.sh
 
 // Compilar tbb
-icc <nome do arquivo> -tbb -std=c++11
+icpc <nome do arquivo> -tbb -std=c++11
 
 // Compilar cilk
 
-icc <nome do arquivo>
+icpc <nome do arquivo>
 
 // Compilar openmp
 
-icc <nome do arquivo> -openmp
+icpc <nome do arquivo> -qopenmp
 
 // Compilar c++11
 

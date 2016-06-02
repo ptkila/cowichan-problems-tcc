@@ -1,6 +1,7 @@
 #include "cilkplus.h"
 
-void product (double **matrix, double *vector, int size) {
+double** product (double **matrix, double *vector, int size, int num_threads, int should_print) {
+
 	int i = 0;
 	int j = 0;
 	double** result;
@@ -16,12 +17,15 @@ void product (double **matrix, double *vector, int size) {
 		}
 	}
 
-	for (i = 0; i < size; i++) {
-		for (j = 0; j < size; j++) {
-			printf("%f ", result[i][j] );
+	if (should_print == 1)
+	{
+		for (i = 0; i < size; i++) {
+			for (j = 0; j < size; j++) {
+				printf("%f ", result[i][j]);
+			}
+			printf("\n");
 		}
-		printf("\n");
 	}
+
+	return result;
 }
-
-

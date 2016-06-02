@@ -13,19 +13,24 @@ double distance(struct point point_one, struct point point_two) {
 
 }
 
-void outer (struct point *points, int number_of_points) {
+struct outer_struct outer (struct point *points, int number_of_points, int num_threads, int should_print) {
+
   int i = 0, j = 0;
-  double **matrix = (double**)malloc(number_of_points * sizeof(double*));
-  double *vector = (double*)malloc(number_of_points * sizeof(double));
+  double **matrix;
+  double *vector;
   double n_max = -1.0;
   struct point origin;
+  struct outer_struct result;
 
-  origin.x = 0;
-  origin.y = 0;
-
+  matrix = (double**)malloc(number_of_points * sizeof(double*));
   for (i = 0; i < number_of_points; i++) {
     matrix[i] = (double*)malloc(number_of_points * sizeof(double));
   }
+
+  vector = (double*)malloc(number_of_points * sizeof(double));
+
+  origin.x = 0;
+  origin.y = 0;
 
   cilk_for (i = 0; i < number_of_points; i++) {
     for (j = 0; j < number_of_points; j++) {
@@ -38,17 +43,24 @@ void outer (struct point *points, int number_of_points) {
     vector[i] = distance(origin, points[i]);
   }
 
-  for (i = 0; i < number_of_points; i++) {
-    for (j = 0; j < number_of_points; j++) {
-      printf("%e ", matrix[i][j]);
+  if (should_print == 1)
+  {
+    for (i = 0; i < number_of_points; i++) {
+      for (j = 0; j < number_of_points; j++) {
+        printf("%e ", matrix[i][j]);
+      }
+      printf("\n");
     }
+
+    for (i = 0; i < number_of_points; i++) {
+      printf("%e ", vector[i]);
+    }
+
     printf("\n");
   }
 
-  for (i = 0; i < number_of_points; i++) {
-    printf("%e ", vector[i]);
-  }
-   
-  printf("\n");
-}
+  result.matrix = matrix;
+  result.vector = vector;
+  return result;
 
+}

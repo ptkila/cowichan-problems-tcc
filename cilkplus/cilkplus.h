@@ -4,9 +4,11 @@
 #include <cilk/cilk.h>
 #include <cilk/reducer.h>
 #include <cilk/reducer_max.h>
+#include <cilk/cilk_api.h>
 #include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 struct point {
@@ -14,30 +16,19 @@ struct point {
 	double y;
 };
 
-void gauss (double *matrix, double *target);
+struct outer_struct {
+	double** matrix;
+	double* vector;
+};
 
-void hull (struct point *original);
+int** randmat (int nrows, int ncols, int s, int num_threads, int should_print);
 
-void invperc (int *matrix, int nfill);
+double** product (double **matrix, double *vector, int size, int num_threads, int should_print);
 
-void life (_Bool *matrix, int numgen);
+struct point* norm (struct point* points, int number_of_points, int num_threads, int should_print);
 
-void mandel (int nrows, int ncols, int x0, int y0, int dx, int dy);
+struct outer_struct outer (struct point *points, int number_of_points, int num_threads, int should_print);
 
-void norm (struct point *points, int number_of_points);
-
-void outer (struct point *points, int number_of_points);
-
-void product (double **matrix, double *vector, int size);
-
-void shuffle (int *matrix);
-
-void sor (double *matrix, double *target, double tolerance);
-
-void thresh(int** matrix, int size, int percent, int** mask);
-
-void vecdiff (double * left, double *right);
-
-void winnow (int *matrix, _Bool *mask, int nelts);
+int** thresh(int** matrix, int size, int percent, int** mask, int num_threads, int should_print);
 
 #endif

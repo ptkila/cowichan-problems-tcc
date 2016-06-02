@@ -82,12 +82,5 @@ struct point* winnow (int **matrix, int **mask, int size, int vector_size, int n
 	quick_sort(vector, 0, vector_size);
 	fill_point_vector(vector, vector_size, point_vector, nelts);
 
-	/*
-	for (int i = 0; i < nelts; ++i)
-	{
-		printf("x = %.1f y = %.1f w = %d\n", point_vector[i].x, point_vector[i].y, vector[i].weight);
-	}
-	*/
-
 	return point_vector;
 }

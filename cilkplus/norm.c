@@ -1,7 +1,7 @@
 #include "cilkplus.h"
 
 void find_min_max_points (struct point *points, int number_of_points, struct point* min_point,
-                          struct point* max_point) {
+  struct point* max_point) {
 
   int i = 0;
   max_point->x = points[0].x;
@@ -36,10 +36,10 @@ void normalize_points (struct point *points, int number_of_points, struct point 
 
   // x = (xi - xmin) * (1 / (xmax - xmin))
   sclX = (double)((max_point.x == min_point.x) ?
-                  0.0 : 1.0 / (max_point.x - min_point.x));
+    0.0 : 1.0 / (max_point.x - min_point.x));
 
   sclY = (double)((max_point.y == min_point.y) ?
-                  0.0 : 1.0 / (max_point.y - min_point.y));
+    0.0 : 1.0 / (max_point.y - min_point.y));
 
   cilk_for (i = 0; i < number_of_points; i++) {
 
@@ -49,7 +49,7 @@ void normalize_points (struct point *points, int number_of_points, struct point 
   }
 }
 
-void norm (struct point* points, int number_of_points) {
+struct point* norm (struct point* points, int number_of_points, int num_threads, int should_print) {
 
   struct point *norm_points = (struct point*) malloc(sizeof(struct point) * number_of_points);
   struct point min_point;
@@ -59,10 +59,16 @@ void norm (struct point* points, int number_of_points) {
   find_min_max_points(points, number_of_points, &min_point, &max_point);
   normalize_points(points, number_of_points, min_point, max_point, norm_points);
 
-  for (i = 0; i < number_of_points; i++) {
+  if (should_print == 1)
+  {
+    for (i = 0; i < number_of_points; i++) {
 
-    printf("%f ", norm_points[i].x);
-    printf("%f\n", norm_points[i].y);
+      printf("%f ", norm_points[i].x);
+      printf("%f\n", norm_points[i].y);
 
+    }
   }
+
+  return norm_points;
+
 }

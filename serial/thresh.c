@@ -59,12 +59,4 @@ int** thresh (int** matrix, int size, int percent, int** mask) {
   threshold = set_threshold(histogram, max_number, proportion);
   set_mask(mask, matrix, size, threshold);
   
-  /*
-  for (i = 0; i < size; i++) {
-    for (j = 0; j < size; j++) {
-      printf("%d ", mask[i][j]);
-    }
-    printf("\n");
-  }
-  */
 }
