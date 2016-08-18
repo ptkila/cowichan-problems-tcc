@@ -3,44 +3,41 @@
 #include <iostream>
 #include "tbb/tbb.h"
 
-static double *matrix;
-static double *vector;
-static double *result;
-
 typedef tbb::blocked_range<size_t> range;
+static double* matrix;
+static double* vector;
+static double* result;
 
-void product(int nelts) {
-  parallel_for(
-    range(0, nelts),
-    [&, nelts](range r) {
-      auto begin = r.begin();
-      auto end = r.end();
-      for (size_t i = begin; i != end; ++i) {
-        double sum = 0;
-        for (int j = 0; j < nelts; ++j) {
-          sum += matrix [i*nelts + j] * vector [j];
-        }
-        result [i] = sum;
+void product(const int size) {
+  parallel_for(range(0, size),[&, size](range r) {
+    auto begin = r.begin();
+    auto end = r.end();
+    for (size_t i = begin; i != end; ++i) {
+      double sum = 0;
+      for (int j = 0; j < size; ++j) {
+        sum += matrix [i*size + j] * vector [j];
       }
-    });
+      result [i] = sum;
+    }
+  });
 }
 
-void setThreadsNumber(int threadsNumber) {
+void setThreadsNumber(const int threadsNumber) {
 
   tbb::task_scheduler_init init(threadsNumber);
 
 }
 
-void setMatrixValues(int nelts) {
-  for (int i = 0; i < nelts; i++) {
-    for (int j = 0; j < nelts; j++) {
-      matrix[i*nelts + j] = (float) rand();
+void setMatrixValues(const int size) {
+  for (int i = 0; i < size; i++) {
+    for (int j = 0; j < size; j++) {
+      matrix[i*size + j] = (float) rand();
     }
   }
 }
 
-void setVectorValues(int nelts) {
-  for (int i = 0; i < nelts; i++) {
+void setVectorValues(const int size) {
+  for (int i = 0; i < size; i++) {
     vector[i] = (float)rand();
   }
 }
@@ -54,9 +51,9 @@ int main(int argc, char** argv) {
    int num_threads = atoi(argv[2]);
    int print = atoi(argv[3]);
 
-   matrix = (double *) malloc (sizeof(double) * size * size);
-   vector = (double *) malloc (sizeof (double) * size);
-   result = (double *) malloc (sizeof (double) * size);
+   matrix = new int[size * size];
+   result = new int[size * size];
+   vector = new int[size];
 
    setMatrixValues(size);
    setVectorValues(size);
@@ -65,16 +62,15 @@ int main(int argc, char** argv) {
 
    if (print == 1) {
     for (int i = 0; i < size; i++) {
-      printf("%g ", result[i]);
+      for (int j = 0; j < size; j++) {
+        std::cout << result[i * size + j] << " ";
+      }
+      std::cout << "\n";
     }
-    printf("\n");
-  }
-} else {
+  } else {
 
+  } 
 
-
-}
-
-return 0;
+  return 0;
 
 }
