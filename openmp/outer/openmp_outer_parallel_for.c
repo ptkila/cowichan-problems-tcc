@@ -3,6 +3,7 @@
 #include <time.h> 
 #include <stdlib.h>
 #include <limits.h>
+#include <float.h>
 #include "omp.h"
 
 struct point {
@@ -13,27 +14,29 @@ struct point {
 static double* matrix;
 static double* vector;
 static struct point* points;
+static int n_threads;
 
 double sqr (const double x) {
+
   return x * x;
+
 }
 
 double distance(const struct point a, const struct point b) {
+
   return sqrt(sqr(a.x - a.y) + sqr(b.x - b.y));
+
 }
 
-void outer (const int size) {
+void turn_to_matrix_and_vector (const int size) {
 
   int i, j;
-  double n_max = -1.0;
+  double n_max = -DBL_MAX;
   struct point origin;
 
-  origin.x = 0;
-  origin.y = 0;
-
-  #pragma omp parallel shared(matrix, i, j)
+  #pragma omp parallel shared(matrix) private (i, j)
   {
-    #pragma omp for
+    #pragma omp for schedule(static, size/ n_threads)
     for (i = 0; i < size; i++) {
       for (j = 0; j < size; j++) {
         if (i != j) {
@@ -41,10 +44,17 @@ void outer (const int size) {
           n_max = fmax(n_max, matrix[i* size + j]);
         }
       }
-      matrix[i* size + i] = n_max * size;
+      matrix[i*size + i] = n_max*size;
       vector[i] = distance(origin, points[i]);
     }
   }
+
+}
+
+void outer (const int size) {
+
+  turn_to_matrix_and_vector(size);
+  
 }
 
 void set_points_values(const int size) {
@@ -55,9 +65,9 @@ void set_points_values(const int size) {
   }
 }
 
-void set_threads_number(const int threads_number) {
+void set_threads_number() {
 
-  omp_set_num_threads(threads_number);
+  omp_set_num_threads(n_threads);
 
 }
 
@@ -67,7 +77,7 @@ int main(int argc, char** argv) {
 
     srand (time(NULL));
     int size = atoi(argv[1]);
-    int num_threads = atoi(argv[2]);
+    n_threads = atoi(argv[2]);
     int print = atoi(argv[3]);
 
     matrix = (double*) malloc (sizeof (double) * size * size);
@@ -75,7 +85,7 @@ int main(int argc, char** argv) {
     points = (struct point*) malloc(sizeof (struct point) * size);
 
     set_points_values(size);
-    set_threads_number(num_threads);
+    set_threads_number();
     outer(size);
 
     if (print == 1) {

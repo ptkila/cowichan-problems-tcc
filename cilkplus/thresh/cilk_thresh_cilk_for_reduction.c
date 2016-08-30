@@ -12,15 +12,15 @@ static int *matrix;
 static int *mask;
 static int *histogram;
 
-int reduce_max (int nrows, int ncols) {
+int reduce_max (const int size) {
   int i, j;
   int max = 0;
   CILK_C_REDUCER_MAX(r, int, 0);
   CILK_C_REGISTER_REDUCER(r);
 
-  cilk_for (i = 0; i < nrows; i++) {
-    for (j = 0; j < ncols; j++) {
-      CILK_C_REDUCER_MAX_CALC(r, matrix[i*ncols + j]);
+  cilk_for (i = 0; i < size; i++) {
+    for (j = 0; j < size; j++) {
+      CILK_C_REDUCER_MAX_CALC(r, matrix[i*size + j]);
     }
   }
   max = r.value;
@@ -29,32 +29,33 @@ int reduce_max (int nrows, int ncols) {
   return max;
 }
 
-void fill_histogram(int nrows, int ncols) {
+void fill_histogram(const int size) {
   int i, j;
-  cilk_for (i = 0; i < nrows; i++) {
-    for (j = 0; j < ncols; j++) {
-      histogram[matrix[i*ncols + j]]++;
+  cilk_for (i = 0; i < size; i++) {
+    for (j = 0; j < size; j++) {
+      histogram[matrix[i*size + j]]++;
     }
   }
 }
 
-void fill_mask (int nrows, int ncols, int threshold) {
-  cilk_for (int i = 0; i < nrows; ++i) {
-    for (int j = 0; j < ncols; ++j) {
-      mask[i*ncols + j] = matrix [i*ncols + j] >= threshold;
+void fill_mask (const int size, const int threshold) {
+  int i, j;
+  cilk_for (i = 0; i < size; ++i) {
+    for (j = 0; j < size; ++j) {
+      mask[i*size + j] = matrix [i*size + j] >= threshold;
     }
   }
 }
 
-void thresh(int nrows, int ncols, int percent) {
+void thresh(const int size, const int percent) {
   int i;
   int nmax = 0;
   int count, prefixsum, threshold;
 
-  nmax = reduce_max(nrows, ncols);
+  nmax = reduce_max(size);
 
-  fill_histogram(nrows, ncols);
-  count = (nrows * ncols * percent) / 100;
+  fill_histogram(size);
+  count = (size * size * percent) / 100;
 
   prefixsum = 0;
   threshold = nmax;
@@ -64,21 +65,19 @@ void thresh(int nrows, int ncols, int percent) {
     threshold = i;
   }
 
-  fill_mask(nrows, ncols, threshold);
+  fill_mask(size, threshold);
 }
 
-void set_values_matrix(int nrows, int ncols) {
-  
+void set_values_matrix(const int size) {
   int i, j;
-
-  for (i = 0; i < nrows; i++) {
-    for (j = 0; j < ncols; j++) {
-      matrix[i*ncols + j] = rand() % 255;
+  for (i = 0; i < size; i++) {
+    for (j = 0; j < size; j++) {
+      matrix[i*size + j] = rand() % 255;
     }
   }
 }
 
-void set_threads_number (int t_num) {
+void set_threads_number (const int t_num) {
 
   char threads[2];
   sprintf(threads,"%d", t_num);
@@ -102,11 +101,11 @@ int main(int argc, char *argv[]) {
 
     matrix = (int*) malloc (sizeof(int) * size * size);
     mask = (int*) malloc (sizeof(int) * size * size);
-    histogram = (int*) malloc (sizeof(int) * 255);
+    histogram = (int*) malloc (sizeof(int) * 256);
 
-    set_values_matrix(size, size);
     set_threads_number(num_threads);
-    thresh(size, size, percent);
+    set_values_matrix(size);
+    thresh(size, percent);
 
     if (print == 1) {
       for (i = 0; i < size; i++) {

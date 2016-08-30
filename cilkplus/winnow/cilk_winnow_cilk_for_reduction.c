@@ -25,7 +25,7 @@ int compare(const void* vl, const void* vr) {
 
 int reduce_sum (int nrows, int ncols) {
 
-  int i, j, max;
+  int i, j, sum;
   CILK_C_REDUCER_OPADD(r, double, 0.0);
   CILK_C_REGISTER_REDUCER(r);
 
@@ -37,10 +37,10 @@ int reduce_sum (int nrows, int ncols) {
     count_per_line[i + 1] = tmp_sum;
     REDUCER_VIEW(r) += tmp_sum;
   }
-  max = r.value;
   CILK_C_UNREGISTER_REDUCER(r);
-
-  return max;
+  
+  sum = REDUCER_VIEW(r);
+  return sum;
 }
 
 void scan_update_elements(int begin, int end, int* array, int size) {

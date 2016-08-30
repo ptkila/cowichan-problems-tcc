@@ -1,37 +1,38 @@
 #include "cpp11.h"
 
-void reduceMax (int** matrix, int startIndex, int endIndex, int size, std::promise<int>* promise) {
+static int* matrix;
+static int* mask;
+static int* histogram; 
 
-  int i, j;
+void reduceMax (const int startIndex, const int endIndex, const int size, std::promise<int>* promise) {
   int max = 0;
 
-  for (i = startIndex; i < endIndex; i++) {
-    for (j = 0; j < size; j++) {
-      if (matrix[i][j] > max)
-        max = matrix[i][j];
+  for (int i = startIndex; i < endIndex; i++) {
+    for (int j = 0; j < size; j++) {
+      if (matrix[i * size + j] > max)
+        max = matrix[i*size + j];
     }
   }
   promise->set_value(max);
 }
 
-void fillHistogram(int** matrix, int startIndex, int endIndex, int size, int* histogram) {
+void fillHistogram(const int startIndex, const int endIndex, const int size) {
   for (int i = startIndex; i < endIndex; i++) {
     for (int j = 0; j < size; j++) {
-      histogram[matrix[i][j]]++;
+      histogram[matrix[i*size + j]]++;
     }
   }
 }
 
-void fillMask(int** matrix, int startIndex, int endIndex, int size, int threshold, int** mask) {
-  int i, j;
-  for (i = 0; i < size; i++) {
-    for (j = 0; j < size; j++) {
-      mask[i][j] = (int)(matrix[i][j] > threshold);
+void fillMask(const int startIndex, const int endIndex, const int size, const int threshold) {
+  for (int i = 0; i < size; i++) {
+    for (int j = 0; j < size; j++) {
+      mask[i*size + j] = (matrix[i*size + j] >= threshold);
     }
   }
 }
 
-int** Cpp11::thresh(int** matrix, int size, int percent, int** mask, int numberOfThreads, int shouldPrint) {
+void thresh(const int size, const int percent, const int numberOfThreads) {
 
   int nMax = 0;
   int numOpThreadM = (int)floor((float)size / (float)numberOfThreads);
@@ -44,11 +45,10 @@ int** Cpp11::thresh(int** matrix, int size, int percent, int** mask, int numberO
   for (int i = 0; i < numberOfThreads; ++i) {
     futures[i] = promises[i].get_future();
     if (i + 1 == numberOfThreads && numOpThreadR > 0) {
-      threadsList[i] = std::thread(reduceMax, matrix, numOpThreadM * i, 
-        numOpThreadM * (i + 1) + numOpThreadM + numOpThreadR, size, &promises[i]);
+      threadsList[i] = std::thread(reduceMax, numOpThreadM * i, numOpThreadM * (i + 1) + numOpThreadR, size, &promises[i]);
       break;
     } else {
-      threadsList[i] = std::thread(reduceMax, matrix, numOpThreadM * i, numOpThreadM * (i + 1), size, &promises[i]);
+      threadsList[i] = std::thread(reduceMax, numOpThreadM * i, numOpThreadM * (i + 1), size, &promises[i]);
     }
   }
 
@@ -64,16 +64,13 @@ int** Cpp11::thresh(int** matrix, int size, int percent, int** mask, int numberO
   }
 
   // Fill histogram
-  int* histogram = new int[nMax + 1];
 
   for (int i = 0; i < numberOfThreads; ++i) {
     if (i + 1 == numberOfThreads && numOpThreadR > 0) {
-      threadsList[i] = std::thread(fillHistogram, matrix, numOpThreadM * i, numOpThreadM * (i + 1) 
-        + numOpThreadM + numOpThreadR, size, histogram);
+      threadsList[i] = std::thread(fillHistogram, numOpThreadM * i, numOpThreadM * (i + 1) + numOpThreadR, size);
       break;    
     } else {
-      threadsList[i] = std::thread(fillHistogram, matrix, numOpThreadM * i, numOpThreadM * (i + 1), size, 
-        histogram);
+      threadsList[i] = std::thread(fillHistogram, numOpThreadM * i, numOpThreadM * (i + 1), size);
     }
   }
 
@@ -93,29 +90,55 @@ int** Cpp11::thresh(int** matrix, int size, int percent, int** mask, int numberO
   // fill mask
   for (int i = 0; i < numberOfThreads; ++i) {
     if (i + 1 == numberOfThreads && numOpThreadR > 0) {
-      threadsList[i] = std::thread(fillMask, matrix, numOpThreadM * i, 
-        numOpThreadM * (i + 1) + numOpThreadM + numOpThreadR, size, threshold, mask);
+      threadsList[i] = std::thread(fillMask, numOpThreadM * i, numOpThreadM * (i + 1) + numOpThreadR, size);
       break;
-
     } else {
-      threadsList[i] = std::thread(fillMask, matrix, numOpThreadM * i, numOpThreadM * (i + 1), size, 
-        threshold, mask);
+      threadsList[i] = std::thread(fillMask, numOpThreadM * i, numOpThreadM * (i + 1), size);
     }
   }
 
   for ( auto &t : threadsList ) {
     t.join();
   }
+}
 
-  if (shouldPrint == 1){
-    for (int i = 0; i < size; i++) {
-      for (int j = 0; j < size; j++) {
-        std::cout << mask[i][j] << " ";
-      }
-      std::cout << "\n";
+void setValuesMatrix(const int size) {
+  for (int i = 0; i < size; ++i) {
+    for (int j = 0; j < size; ++j) {
+      matrix[i*size + j] = rand() % 255;    
     }
   }
+}
 
-  return mask;
+int main(int argc, char** argv) {
 
+  if (argc == 4) {
+
+    srand (time(NULL));
+    int size = atoi(argv[1]);
+    int num_threads = atoi(argv[2]);
+    int print = atoi(argv[3]);
+    int percent = 50;
+
+    matrix = int[size * size];
+    mask = int[size];
+    histogram = int[256];
+
+    setValuesMatrix(size);
+    thresh(size, percent);
+
+    if (print == 1) {
+      for (int i = 0; i < size; i++) {
+        for (int j = 0; j < size; j++) {
+          printf("%hhu ", mask[i*size + j]);
+        }
+        printf("\n");
+      }
+    }
+  } else {
+
+
+  }
+
+  return 0;
 }

@@ -27,8 +27,10 @@ void find_min_max_points (const int size) {
   
   #pragma omp parallel shared(size, points) private(i)
   {
-    #pragma omp for schedule (static, size/ n_threads) reduction(max:max_x, max_y), reduction(min:min_x, min_y)
-      for (i = 0; i < size; i++) {
+    #pragma omp for schedule (static, size/ n_threads)
+    for (i = 0; i < size; i++) {
+      #pragma omp critical
+      {
         if (points[i].x < min_x) {
           min_x = points[i].x;
         }
@@ -45,6 +47,7 @@ void find_min_max_points (const int size) {
           max_y = points[i].y;
         }
       }
+    }
   }
   max_point.x = max_x;
   max_point.y = max_y;
@@ -64,7 +67,7 @@ void normalize_points (const int size) {
   sclY = (double)((max_point.y == min_point.y) ?
     0.0 : 1.0 / (max_point.y - min_point.y));
 
-  #pragma omp parallel shared(size, points, min_point, max_point, sclX, sclY, norm_points) private (i)
+  #pragma omp parallel shared(size ,points, min_point, max_point, sclX, sclY, norm_points) private (i)
   {
     #pragma omp for schedule(static, size/ n_threads)
     for (i = 0; i < size; i++) {

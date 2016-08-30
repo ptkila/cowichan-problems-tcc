@@ -9,6 +9,7 @@
 typedef struct sPoint {
   int value, i, j;
 } Point;
+
 static int *matrix;
 static int *mask;
 static int *count_per_line;
@@ -20,7 +21,7 @@ int compare(const void* vl, const void* vr) {
   return (l->value - r->value);
 }
 
-int reduce_sum(int begin, int end, int ncols) {
+int reduce_sum(const int begin, const int end, const int ncols) {
   int middle = begin + (end - begin) / 2;
   int left, right, res, i;
   if (begin + 1 == end) {
@@ -90,16 +91,16 @@ void fill_values(int begin, int end, int ncols) {
   cilk_spawn fill_values(middle, end, ncols);
 }
 
-void winnow(int nrows, int ncols, int nelts) {
+void winnow(const int size) {
   int i, n =  0, chunk, index;
 
-  n = cilk_spawn reduce_sum(0, nrows, ncols);
+  n = cilk_spawn reduce_sum(0, size, size);
   cilk_sync;
 
-  cilk_spawn prefix_sum(nrows + 1);
+  cilk_spawn prefix_sum(size + 1);
   cilk_sync;
 
-  cilk_spawn fill_values(0, nrows, ncols);
+  cilk_spawn fill_values(0, size, size);
   cilk_sync;
 
   qsort(values, n, sizeof(*values), compare);
@@ -114,7 +115,7 @@ void winnow(int nrows, int ncols, int nelts) {
 
 void set_values_matrix(int nrows, int ncols) {
   int i, j;
-  for (i =  0; i < nrows; i++) {
+  for (i = 0; i < nrows; i++) {
     for (j = 0; j < ncols; j++) {
       matrix[i*ncols +j] = rand();
     }
@@ -123,7 +124,7 @@ void set_values_matrix(int nrows, int ncols) {
 
 void set_values_mask(int nrows, int ncols) {
   int i, j;
-  for (i =  0; i < nrows; i++) {
+  for (i = 0; i < nrows; i++) {
     for (j = 0; j < ncols; j++) {
       mask[i*ncols +j] = rand() % 2;
     }
