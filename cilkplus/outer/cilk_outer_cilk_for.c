@@ -7,20 +7,25 @@
 #include <time.h>
 
 struct point {
-  double x;
-  double y;
+  double i;
+  double j;
 };
 
-static double *matrix;
-static double *vector;
+static double* matrix;
+static double* vector;
 static struct point* points;
+static int n_threads;
 
 double sqr(const double x) {
+
 	return x * x;
+
 }
 
 double distance(const struct point a, const struct point b) {
+
 	return sqrt(sqr(a.i - b.i) + sqr(a.j - b.j));
+
 }
 
 void outer(const int size) {
@@ -42,22 +47,20 @@ void outer(const int size) {
 
 
 void set_vector_of_points(const int size) {
-	int i, a, b;
-	for (i =  0; i < size; i++) {
+	int i;
+	for (i = 0; i < size; i++) {
 		points[i].i = rand();
 		points[i].j = rand();
 	}
 }
 
-void set_threads_number (const int t_num) {
+void set_threads_number () {
 
 	char threads[2];
-	sprintf(threads,"%d", t_num);
+	sprintf(threads,"%d", n_threads);
 	__cilkrts_end_cilk();  
 	__cilkrts_set_param("nworkers", threads);
 
-  //printf("%s\n",  threads );
-  //printf("%d\n",  __cilkrts_get_nworkers() );
 }
 
 int main(int argc, char** argv) {
@@ -66,19 +69,20 @@ int main(int argc, char** argv) {
 
 		srand (time(NULL));
 		int size = atoi(argv[1]);
-		int num_threads = atoi(argv[2]);
+		n_threads = atoi(argv[2]);
 		int print = atoi(argv[3]);
-		int i, j;
 
 		matrix = (double*) malloc (sizeof(double) * size * size);
 		vector = (double*) malloc (sizeof(double) * size);
-		points = (struct point*) malloc (sizeof(Point) * size);
+		points = (struct point*) malloc (sizeof(struct point) * size);
 
+		set_threads_number();
 		set_vector_of_points(size);
-		set_threads_number(num_threads);
+		
 		outer(size);
 
 		if (print == 1) {
+			int i, j;
 			for (i = 0; i < size; i++) {
 				for (j = 0; j < size; j++) {
 					printf("%g ", matrix[i*size + j]);

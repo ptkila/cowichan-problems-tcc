@@ -17,6 +17,7 @@ static struct point* norm_points;
 static struct point* points;
 static struct point min_point;
 static struct point max_point;
+static int n_threads;
 
 void find_min_max_points (const int size) {
 
@@ -58,15 +59,11 @@ void find_min_max_points (const int size) {
 }
 
 void normalize_points (const int size) {
-
-  double sclX = 0, sclY = 0;
+  
   int i;
-
-  // x = (xi - xmin) * (1 / (xmax - xmin))
-  sclX = (double)((max_point.x == min_point.x) ?
+  double sclX = (double)((max_point.x == min_point.x) ?
     0.0 : 1.0 / (max_point.x - min_point.x));
-
-  sclY = (double)((max_point.y == min_point.y) ?
+  double sclY = (double)((max_point.y == min_point.y) ?
     0.0 : 1.0 / (max_point.y - min_point.y));
 
   cilk_for (i = 0; i < size; i++) {
@@ -88,19 +85,12 @@ void set_points_values(const int size) {
     points[i].x = (double)rand();
     points[i].y = (double)rand();
   }
-  /*
-  for (i = 0; i < size; ++i) {
-    printf("%f\n", points[i].x);
-    printf("%f\n", points[i].y);
-    printf("\n");
-  }
-  */
 }
 
-void set_threads_number(const int t_num) {
+void set_threads_number() {
 
  char threads[2];
- sprintf(threads,"%d", t_num);
+ sprintf(threads,"%d", n_threads);
  __cilkrts_end_cilk();  
  __cilkrts_set_param("nworkers", threads);
 
@@ -112,18 +102,18 @@ int main(int argc, char** argv) {
 
     srand (time(NULL));
     int size = atoi(argv[1]);
-    int num_threads = atoi(argv[2]);
+    n_threads = atoi(argv[2]);
     int print = atoi(argv[3]);
-    int i, j;
 
     points = (struct point*) malloc(sizeof(struct point) * size);
     norm_points = (struct point*) malloc(sizeof(struct point) * size);
 
+    set_threads_number();
     set_points_values(size);
-    set_threads_number(num_threads);
     norm(size);
 
     if (print == 1) {
+      int i;
       for (i = 0; i < size; i++) {
         printf("%f ", norm_points[i].x);
         printf("%f\n", norm_points[i].y);

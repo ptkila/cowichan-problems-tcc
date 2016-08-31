@@ -18,7 +18,7 @@ void product (const int size) {
     #pragma omp for schedule (static, size/ n_threads)
     for (i = 0; i < size; i++) {
       for (j = 0; j < size; j++) {
-        result[i*size + j] += matrix[i * size + j] * vector[j];
+        result[i] += matrix[i * size + j] * vector[j];
       }
     }
   }
@@ -35,7 +35,6 @@ void set_values_matrix(const int size) {
 }
 
 void set_values_vector (const int size) {
-
   int i;
   for (i = 0; i < size; ++i) {
     vector[i] = rand() % 100;
@@ -58,7 +57,7 @@ int main(int argc, char** argv) {
     int print = atoi(argv[3]);
 
     matrix = (int*) malloc (sizeof (int) * size * size);
-    result = (int*) malloc (sizeof (int) * size * size);
+    result = (int*) calloc (sizeof (int), size);
     vector = (int*) malloc (sizeof (int) * size);
 
     set_values_matrix(size);
@@ -67,16 +66,13 @@ int main(int argc, char** argv) {
     product(size);
 
     if (print == 1) {
-      int i, j;
+      int i;
       for (i = 0; i < size; i++) {
-        for (j = 0; j < size; j++) {
-          printf("%d ", result[i * size + j]);
-        }
-        printf("\n");
+        printf("%d ", result[i]);
       }
+      printf("\n");
     }
   } else {
-
 
   }
 

@@ -7,16 +7,15 @@
 
 const int VAL_A = 1313, VAL_B = 3131;
 static int *matrix;
+static int n_threads;
 
-void set_threads_number (int t_num) {
+void set_threads_number () {
 
   char threads[2];
-  sprintf(threads,"%d", t_num);
+  sprintf(threads,"%d", n_threads);
   __cilkrts_end_cilk();  
   __cilkrts_set_param("nworkers", threads);
 
-  //printf("%s\n",  threads );
-  //printf("%d\n",  __cilkrts_get_nworkers() );
 }
 
 void randmat(const int size, const int seed) {
@@ -36,23 +35,22 @@ int main(int argc, char *argv[]) {
 
     srand (time(NULL));
     int size = atoi(argv[1]);
-    int num_threads = atoi(argv[2]);
+    n_threads = atoi(argv[2]);
     int print = atoi(argv[3]);
 
-    int s, i, j;
-    s = rand();
-    matrix = (int*) malloc (sizeof(int)*size*size);
+    matrix = (int*) malloc (sizeof(int) * size * size);
 
-    set_threads_number(num_threads);
-    randmat(size, s);
+    set_threads_number();
+    randmat(size, rand());
 
     if (print == 1) {
-      for (i = 0; i < size; i++) {
-        for (j = 0; j < size; j++) {
-          printf("%d ", matrix[i*size + j]);
-        }
-        printf("\n");
-      }
+    	int i, j;
+     	for (i = 0; i < size; i++) {
+        	for (j = 0; j < size; j++) {
+          		printf("%d ", matrix[i*size + j]);
+        	}
+       	 printf("\n");
+      	}
     } 
 
   } else {

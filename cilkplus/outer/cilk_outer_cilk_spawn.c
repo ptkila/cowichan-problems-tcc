@@ -11,37 +11,43 @@ struct point {
   double j;
 };
 
-static double *matrix;
-static double *vector;
-static struct point *points;
+static double* matrix;
+static double* vector;
+static struct point* points;
+static int n_threads;
 
 double sqr(const double x) {
+
   return x * x;
+
 }
 
 double distance(const struct point a, const struct point b) {
+
   return sqrt(sqr(a.i - b.i) + sqr(a.j - b.j));
+
 }
 
-void fill_matrix(const int begin, const int end, const int ncols) {
+void fill_matrix(const int begin, const int end, const int size) {
   int middle = begin + (end - begin) / 2;
-  double nmax = -1;
-  int j;
+  double nmax = 0;
+  int i;
   struct point origin;
-  
+
+  // diagonal principal
   if (begin + 1 == end) {
-    for (j = 0; j < ncols; j++) {
-      if (begin != j) {
-        matrix[begin*ncols + j] = distance(points[begin], points[j]);
-        nmax = fmax(nmax, matrix[begin*ncols + j]);
+    for (i = 0; i < size; i++) {
+      if (begin != i) {
+        matrix[begin*size + i] = distance(points[begin], points[i]);
+        nmax = fmax(nmax, matrix[begin*size + i]);
       }
-      matrix[begin*ncols + begin] = nmax * ncols;
+      matrix[begin*size + begin] = nmax * size;
       vector[begin] = distance(origin, points[begin]);
     }
     return;
   }
-  cilk_spawn fill_matrix(begin, middle, ncols);
-  cilk_spawn fill_matrix(middle, end, ncols);
+  cilk_spawn fill_matrix(begin, middle, size);
+  cilk_spawn fill_matrix(middle, end, size);
 }
 
 void outer(const int size) {
@@ -56,10 +62,10 @@ void set_vector_of_points(const int size) {
   }
 }
 
-void set_threads_number (const int t_num) {
+void set_threads_number () {
 
   char threads[2];
-  sprintf(threads,"%d", t_num);
+  sprintf(threads,"%d", n_threads);
   __cilkrts_end_cilk();  
   __cilkrts_set_param("nworkers", threads);
 
@@ -73,20 +79,21 @@ int main(int argc, char** argv) {
 
     srand (time(NULL));
     int size = atoi(argv[1]);
-    int num_threads = atoi(argv[2]);
+    n_threads = atoi(argv[2]);
     int print = atoi(argv[3]);
-    int i, j;
 
     matrix = (double*) malloc (sizeof(double) * size * size);
     vector = (double*) malloc (sizeof(double) * size);
-    points = (struct point*) malloc (sizeof(Point) * size);
+    points = (struct point*) malloc (sizeof(struct point) * size);
 
+    set_threads_number();
     set_vector_of_points(size);
-    set_threads_number(num_threads);
+    
     cilk_spawn outer(size);
     cilk_sync;
 
     if (print == 1) {
+      int i, j;
       for (i = 0; i < size; i++) {
         for (j = 0; j < size; j++) {
           printf("%g ", matrix[i*size + j]);

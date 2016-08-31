@@ -7,8 +7,8 @@
 
 struct point_w {
   int weight;
-  int x;
-  int y;
+  int i;
+  int j;
 };
 
 static int nelts;
@@ -29,8 +29,8 @@ void fill_w_vector (const int size) {
       {
         if(mask[i*size + j] == 1) {  
           vector[counter].weight = matrix[i*size + j];
-          vector[counter].x = i;
-          vector[counter].y = j;
+          vector[counter].i = i;
+          vector[counter].j = j;
           counter++;
         }
       }
@@ -40,8 +40,8 @@ void fill_w_vector (const int size) {
 
 int compare (const void * a, const void * b) {
 
-  struct point_w* point0 = (struct point_w*) a;
-  struct point_w* point1 = (struct point_w*) b;
+  const struct point_w* point0 = (struct point_w*) a;
+  const struct point_w* point1 = (struct point_w*) b;
   return (point1->weight - point0->weight);
 
 }
@@ -104,7 +104,7 @@ int main(int argc, char** argv) {
     if (print == 1) {
       int i;
       for (i = 0; i < nelts; i++) {
-        printf("%d %d %d", vector[i].x, vector[i].y, vector[i].weight);
+        printf("%d %d %d", vector[i].i, vector[i].j, vector[i].weight);
         printf("\n");
       }
     }

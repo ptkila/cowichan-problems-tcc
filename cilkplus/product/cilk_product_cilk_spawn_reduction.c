@@ -1,5 +1,6 @@
 #include <cilk/cilk.h>
 #include <cilk/cilk_api.h>
+#include <cilk/reducer_opadd.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -14,11 +15,13 @@ void fill_result(const int begin, const int end, const int size) {
   int middle = begin + (end - begin) / 2;
   if (begin + 1 == end) {
     int i;
-    double sum = 0.0;
-    for (i = 0; i < size; i++) {
-      sum += matrix[begin*size + i] * vector[i];
+    CILK_C_REDUCER_OPADD(sum, double, 0.0);
+    CILK_C_REGISTER_REDUCER(sum);
+    cilk_for (i = 0; i < size; i++) {
+      REDUCER_VIEW(sum) += matrix[begin*size + i] * vector[i];
     }
-    result[begin] = sum;
+    result[begin] = REDUCER_VIEW(sum);
+    CILK_C_UNREGISTER_REDUCER(sum);
     return;
   }
   cilk_spawn fill_result(begin, middle, size);

@@ -1,5 +1,7 @@
 #include <cilk/cilk.h>
 #include <cilk/cilk_api.h>
+#include <cilk/reducer.h>
+#include <cilk/reducer_opadd.h>
 #include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -21,20 +23,24 @@ int compare(const void* vl, const void* vr) {
   return (l->value - r->value);
 }
 
-int reduce_sum(const int begin, const int end, const int ncols) {
-  int middle = begin + (end - begin) / 2;
-  int left, right, res, i;
-  if (begin + 1 == end) {
-    res = mask[begin*ncols +0];
-    for (i = 1; i < ncols; i++) {
-      res += mask[begin*ncols +i];
+int reduce_sum (int nrows, int ncols) {
+
+  int i, j, sum;
+  CILK_C_REDUCER_OPADD(r, double, 0.0);
+  CILK_C_REGISTER_REDUCER(r);
+
+  cilk_for (i = 0; i < nrows; i++) {
+    int tmp_sum = 0;
+    for (j = 0; j < ncols; j++) {
+      tmp_sum += mask[i * ncols + j];
     }
-    return count_per_line[begin + 1] = res;
+    count_per_line[i + 1] = tmp_sum;
+    REDUCER_VIEW(r) += tmp_sum;
   }
-  left = cilk_spawn reduce_sum(begin, middle, ncols);
-  right = cilk_spawn reduce_sum(middle, end, ncols);
-  cilk_sync;
-  return left + right;
+  CILK_C_UNREGISTER_REDUCER(r);
+  
+  sum = REDUCER_VIEW(r);
+  return sum;
 }
 
 void scan_update_elements(int begin, int end, int* array, int size) {
@@ -49,84 +55,73 @@ void scan_update_elements(int begin, int end, int* array, int size) {
     count += count % 2;
     middle = begin + count * size;
     cilk_spawn scan_update_elements(begin, middle, array, size);
-    cilk_spawn scan_update_elements(middle, end, array, size);
+    scan_update_elements(middle, end, array, size);
   }
 }
 
 void scan_impl(int begin, int end, int* array, int size) {
   if (end - begin > size) {
-    cilk_spawn scan_update_elements(begin, end, array, size);
-    cilk_sync;
-    cilk_spawn scan_impl(begin + size, end, array, 2 * size);
-    cilk_sync;
-    cilk_spawn scan_update_elements(begin + size, end, array, size);
-    cilk_sync;
+    scan_update_elements(begin, end, array, size);
+    scan_impl(begin + size, end, array, 2 * size);
+    scan_update_elements(begin + size, end, array, size);
   }
 }
 
 void scan(int n, int* array) {
-  cilk_spawn scan_impl(0, n, array, 1);
+  scan_impl(0, n, array, 1);
 }
 
 void prefix_sum(int n) {
-  cilk_spawn scan(n, count_per_line);
+  scan(n, count_per_line);
 }
 
-void fill_values(int begin, int end, int ncols) {
-  int middle = begin + (end - begin) / 2;
-  int count, j;
-  if (begin + 1 == end) {
-    count = count_per_line[begin];
+void fill_values(int nrows, int ncols) {
+  int count, j, i;
+  cilk_for (i = 0; i < nrows; ++i) {
+    count = count_per_line[i];
     for (j = 0; j < ncols; j++) {
-      if (mask[begin*ncols +j] == 1) {
-        values[count].value = matrix[begin*ncols +j];
-        values[count].i = begin;
+      if (mask[i*ncols +j] == 1) {
+        values[count].value = matrix[i*ncols +j];
+        values[count].i = i;
         values[count].j = j;
         count++;
       }
     }
-    return;
   }
-  cilk_spawn fill_values(begin, middle, ncols);
-  cilk_spawn fill_values(middle, end, ncols);
 }
 
-void winnow(const int size) {
-  int i, n =  0, chunk, index;
+void winnow(int nrows, int ncols, int nelts) {
+  int i, n, chunk, index;
 
-  n = cilk_spawn reduce_sum(0, size, size);
-  cilk_sync;
+  n = reduce_sum(nrows, ncols);
 
-  cilk_spawn prefix_sum(size + 1);
-  cilk_sync;
-
-  cilk_spawn fill_values(0, size, size);
-  cilk_sync;
+  prefix_sum(nrows + 1);
+  fill_values(nrows, ncols);
 
   qsort(values, n, sizeof(*values), compare);
 
   chunk = n / nelts;
-
-  for (i = 0; i < nelts; i++) {
+  points = (Point*) malloc (sizeof(Point) * nelts);
+  cilk_for (int i = 0; i < nelts; i++) {
     index = i * chunk;
     points[i] = values[index];
   }
 }
 
-void set_values_matrix(int nrows, int ncols) {
+void set_values_matrix(int size) {
   int i, j;
-  for (i = 0; i < nrows; i++) {
-    for (j = 0; j < ncols; j++) {
-      matrix[i*ncols +j] = rand();
+  for (i =  0; i < size; i++) {
+    for (j = 0; j < size; j++) {
+      matrix[i*size +j] = rand();
     }
   }
 }
 
-void set_values_mask(int nrows, int ncols) {
+void set_values_mask(int size) {
   int i, j;
-  for (i = 0; i < nrows; i++) {
-    for (j = 0; j < ncols; j++) {
-      mask[i*ncols +j] = rand() % 2;
+  for (i =  0; i < size; i++) {
+    for (j = 0; j < size; j++) {
+      mask[i*size +j] = rand() % 2;
     }
   }
 }
@@ -143,39 +138,37 @@ void set_threads_number (int t_num) {
 }
 
 int main(int argc, char *argv[]) {
+
   if (argc == 4) {
 
     srand (time(NULL));
+    int i;
     int size = atoi(argv[1]);
     int num_threads = atoi(argv[2]);
     int print = atoi(argv[3]);
-    int i, j;
 
     matrix = (int*) malloc (sizeof(int) * size * size);
     mask = (int*) malloc (sizeof(int) * size * size);
     values = (Point*) malloc (sizeof(Point) * size * size);
-
     set_values_matrix(size, size);
     set_values_mask(size, size);
 
-    count_per_line = (int*) malloc (sizeof(int) * (size + 1));
-    points = (Point*) malloc (sizeof(Point) * size);
+    count_per_line = (int*) calloc (size + 1, sizeof(int));
 
     set_threads_number(num_threads);
-    cilk_spawn winnow(size, size, size);
-    cilk_sync;
+    winnow(size, size, size);
 
     if (print == 1) {
       for (i = 0; i < size; i++) {
-        printf("%d %d\n", points[i].i, points[i].j);
+        printf("%d %d %d\n", points[i].i, points[i].j, points[i].value);
       }
       printf("\n");
     }
+
   } else {
 
-    printf("programa <tamanho> <num de num_threads> <printar>\n");
+
 
   }
-
   return 0;
 }

@@ -1,6 +1,4 @@
 #include <cilk/cilk.h>
-#include <cilk/reducer.h>
-#include <cilk/reducer_max.h>
 #include <cilk/cilk_api.h>
 #include <math.h>
 #include <stdlib.h>
@@ -13,50 +11,51 @@
 static int *matrix;
 static int *mask;
 static int *histogram;
+static int n_threads;
 
-int reduce_max(const int begin, const int end, const int ncols) {
+int find_max(const int begin, const int end, const int size) {
   int middle = begin + (end - begin) / 2;
-  int left, right, res, i;
+  int left, right;
   if (begin + 1 == end) {
-    res = matrix[begin*ncols];
-    for (i = 1; i < ncols; i++) {
-      res = MAX(res, matrix[begin*ncols + i]);
+    int i;
+    int res = matrix[begin*size + 0];
+    for (i = 1; i < size; i++) {
+      res = MAX(res, matrix[begin*size + i]);
     }
     return res;
   }
-  left = cilk_spawn reduce_max(begin, middle, ncols);
-  right = cilk_spawn reduce_max(middle, end, ncols);
+  left = cilk_spawn find_max(begin, middle, size);
+  right = cilk_spawn find_max(middle, end, size);
   cilk_sync;
   return MAX(left, right);
 }
 
-void fill_histogram(const int begin, const int end, const int ncols) {
+void fill_histogram(const int begin, const int end, const int size) {
   
   int middle = begin + (end - begin) / 2;
-
   if (begin + 1 == end) {
     int i;
-    for (i = 0; i < ncols; i++) {
-      histogram[matrix[begin*ncols + i]]++;
+    for (i = 0; i < size; i++) {
+      histogram[matrix[begin*size + i]]++;
     }
     return;
   }
-  cilk_spawn fill_histogram(begin, middle, ncols);
-  cilk_spawn fill_histogram(middle, end, ncols);
+  cilk_spawn fill_histogram(begin, middle, size);
+  cilk_spawn fill_histogram(middle, end, size);
   cilk_sync;
 }
 
-void fill_mask(const int begin, const int end, const int ncols, const int threshold) {
+void fill_mask(const int begin, const int end, const int size, const int threshold) {
   int middle = begin + (end - begin) / 2;
-  int i;
   if (begin + 1 == end) {
-    for (i = 0; i < ncols; i++) {
-      mask[begin*ncols + i] = matrix[begin*ncols + i] >= threshold;
+    int i;
+    for (i = 0; i < size; i++) {
+      mask[begin*size + i] = matrix[begin*size + i] >= threshold;
     }
     return;
   }
-  cilk_spawn fill_mask(begin, middle, ncols, threshold);
-  cilk_spawn fill_mask(middle, end, ncols, threshold);
+  cilk_spawn fill_mask(begin, middle, size, threshold);
+  cilk_spawn fill_mask(middle, end, size, threshold);
   cilk_sync;
 }
 
@@ -65,7 +64,7 @@ void thresh(const int size, const int percent) {
   int nmax = 0;
   int count, prefixsum, threshold;
 
-  nmax = cilk_spawn reduce_max(0, size, size);
+  nmax = cilk_spawn find_max(0, size, size);
   cilk_sync;
 
   cilk_spawn fill_histogram(0, size, size);
@@ -85,10 +84,10 @@ void thresh(const int size, const int percent) {
   cilk_sync;
 }
 
-void set_threads_number (int t_num) {
+void set_threads_number () {
 
   char threads[2];
-  sprintf(threads,"%d", t_num);
+  sprintf(threads,"%d", n_threads);
   __cilkrts_end_cilk();  
   __cilkrts_set_param("nworkers", threads);
 
@@ -97,9 +96,7 @@ void set_threads_number (int t_num) {
 }
 
 void set_values_matrix(const int size) {
-  
   int i, j;
-
   for (i = 0; i < size; i++) {
     for (j = 0; j < size; j++) {
       matrix[i*size + j] = rand() % 255;
@@ -112,21 +109,22 @@ int main(int argc, char *argv[]) {
 
     srand (time(NULL));
     int size = atoi(argv[1]);
-    int num_threads = atoi(argv[2]);
+    n_threads = atoi(argv[2]);
     int print = atoi(argv[3]);
     int percent = 50;
-    int i, j;
 
     matrix = (int*) malloc (sizeof(int) * size * size);
     mask = (int*) malloc (sizeof(int) * size * size);
-    histogram =(int*) malloc (sizeof(int) * 256);
+    histogram = (int*) malloc (sizeof(int) * 256);
 
+    set_threads_number();
     set_values_matrix(size);
-    set_threads_number(num_threads);
+
     cilk_spawn thresh(size, percent);
     cilk_sync;
 
     if (print == 1) {
+      int i, j;
       for (i = 0; i < size; i++) {
         for (j = 0; j < size; j++) {
           printf("%hhu ", mask[i*size + j]);

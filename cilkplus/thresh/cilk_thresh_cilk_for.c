@@ -1,6 +1,4 @@
 #include <cilk/cilk.h>
-#include <cilk/reducer.h>
-#include <cilk/reducer_max.h>
 #include <cilk/cilk_api.h>
 #include <math.h>
 #include <stdlib.h>
@@ -16,17 +14,13 @@ static int n_threads;
 int find_max (const int size) {
   int i, j;
   int max = 0;
-  CILK_C_REDUCER_MAX(r, int, 0);
-  CILK_C_REGISTER_REDUCER(r);
-
   cilk_for (i = 0; i < size; i++) {
     for (j = 0; j < size; j++) {
-      CILK_C_REDUCER_MAX_CALC(r, matrix[i*size + j]);
+      if(max < matrix[size*i + j]) {
+        max = matrix[size*i + j];
+      }
     }
   }
-  max = REDUCER_VIEW(r);
-  CILK_C_UNREGISTER_REDUCER(r);
-
   return max;
 }
 
