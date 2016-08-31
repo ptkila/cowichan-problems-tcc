@@ -7,6 +7,7 @@ typedef tbb::blocked_range<size_t> range;
 static double* matrix;
 static double* vector;
 static double* result;
+static int numThreads;
 
 void product(const int size) {
   parallel_for(range(0, size),[&, size](range r) {
@@ -17,14 +18,14 @@ void product(const int size) {
       for (int j = 0; j < size; ++j) {
         sum += matrix [i*size + j] * vector [j];
       }
-      result [i] = sum;
+      result[i] = sum;
     }
   });
 }
 
-void setThreadsNumber(const int threadsNumber) {
+void setThreadsNumber() {
 
-  tbb::task_scheduler_init init(threadsNumber);
+  tbb::task_scheduler_init init(numThreads);
 
 }
 
@@ -48,16 +49,17 @@ int main(int argc, char** argv) {
 
    srand (time(NULL));
    int size = atoi(argv[1]);
-   int num_threads = atoi(argv[2]);
+   numThreads = atoi(argv[2]);
    int print = atoi(argv[3]);
 
    matrix = new int[size * size];
    result = new int[size * size];
    vector = new int[size];
 
+   setThreadsNumber();
    setMatrixValues(size);
    setVectorValues(size);
-   setThreadsNumber(num_threads);
+   
    product(size);
 
    if (print == 1) {
@@ -65,12 +67,18 @@ int main(int argc, char** argv) {
       for (int j = 0; j < size; j++) {
         std::cout << result[i * size + j] << " ";
       }
-      std::cout << "\n";
+      std::cout << std::endl;
     }
-  } else {
+  }
 
-  } 
+  delete[] matrix;
+  delete[] result;
+  delete[] vector;
 
-  return 0;
+} else {
+
+} 
+
+return 0;
 
 }

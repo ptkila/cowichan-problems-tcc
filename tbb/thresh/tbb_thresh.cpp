@@ -13,12 +13,10 @@ typedef tbb::blocked_range<size_t> range;
 static int* matrix;
 static int* mask;
 static int* histogram;
+static int numThreads;
 
-void thresh(int size, int percent) {
-  int nmax = 0;
-  nmax = tbb::parallel_reduce(
-    range(0, size), 0,
-    [=](range r, int result)->int {
+int findMax (const int size) {
+  tbb::parallel_reduce(range(0, size), 0, [=](range r, int result)->int {
       for (size_t i = r.begin(); i != r.end(); i++) {
         for (int j = 0; j < size; j++) {
           result = std::max(result, matrix[i*size + j]);
@@ -29,10 +27,11 @@ void thresh(int size, int percent) {
     [](int x, int y)->int {
       return std::max(x, y);
     });
+}
 
-  tbb::parallel_for(
-    range(0, size),
-    [=](range r) {
+void fillHistogram (const int size) {
+
+  tbb::parallel_for(range(0, size),[=](range r) {
       auto begin = r.begin();
       auto end = r.end();
       for (size_t i = begin; i != end; i++) {
@@ -41,8 +40,24 @@ void thresh(int size, int percent) {
         }
       }
     });
+}
 
+void fillMask (const int size, const int threshold) {
+  tbb::parallel_for(range(0, size),[=](range r) {
+      for (size_t i = r.begin(); i != r.end(); ++i) {
+        for (int j = 0; j < size; j++) {
+          mask[i*size + j] = matrix[i*size + j] >= threshold;
+        }
+      }
+    });
+}
+
+void thresh(int size, int percent) {
+  
+  int nmax = findMax(size);
   int count = (size * size * percent) / 100;
+
+  fillHistogram(size);
 
   int prefixsum = 0;
   int threshold = nmax;
@@ -52,15 +67,7 @@ void thresh(int size, int percent) {
     threshold = i;
   }
 
-  tbb::parallel_for(
-    range(0, size),
-    [=](range r) {
-      for (size_t i = r.begin(); i != r.end(); ++i) {
-        for (int j = 0; j < size; j++) {
-          mask[i*size + j] = matrix[i*size + j] >= threshold;
-        }
-      }
-    });
+  fillMask(size, threshold);
 }
 
 void setValuesMatrix (int size) {
@@ -71,9 +78,9 @@ void setValuesMatrix (int size) {
  }
 }
 
-void setThreadsNumber(int threadsNumber) {
+void setThreadsNumber() {
 
-  tbb::task_scheduler_init init(threadsNumber);
+  tbb::task_scheduler_init init(numThreads);
 
 }
 
@@ -83,16 +90,16 @@ int main(int argc, char** argv) {
 
     srand (time(NULL));
     int size = atoi(argv[1]);
-    int num_threads = atoi(argv[2]);
+    numThreads = atoi(argv[2]);
     int print = atoi(argv[3]);
     int percent = 50;
 
-    matrix = (int*) malloc (sizeof (int) * size * size);
-    mask = (int*) malloc (sizeof (int) * size * size);
-    histogram = (int*) calloc (sizeof (int), 256);
+    matrix = int[size * size];
+    mask = int[size * size];
+    histogram = int[256];
 
+    setThreadsNumber();
     setValuesMatrix(size);
-    setThreadsNumber(num_threads);
     thresh(size, percent);
 
     if (print == 1) {
@@ -103,6 +110,14 @@ int main(int argc, char** argv) {
         printf("\n");
       }
     }
+
+    delete[] matrix;
+    delete[] histogram;
+    delete[] mask;
+
+  } else {
+
+
   }
   return 0;
 }

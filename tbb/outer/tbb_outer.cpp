@@ -32,6 +32,7 @@ typedef tbb::blocked_range<size_t> range;
 static Point* points;
 static double* matrix;
 static double* vector;
+static int numThreads;
 
 double sqr(const double x) {
 
@@ -46,13 +47,11 @@ double distance(const class Point a, const class Point b) {
 }
 
 void outer(const int size) {
-  parallel_for(
-    range(0, size),
-    [&](range r) {
+  parallel_for(range(0, size),[&](range r) {
       auto begin = r.begin();
       auto end = r.end();
       for (size_t i = begin; i != end; ++i) {
-        double nmax = -1;
+        double nmax = 0;
         for (int j = 0; j < size; j++) {
           if (i != j) {
             matrix[i*size + j] = distance(points[i], points[j]);
@@ -72,9 +71,9 @@ void setPointValues(const int size) {
   }
 }
 
-void setThreadsNumber(const int threadsNumber) {
+void setThreadsNumber() {
 
-  tbb::task_scheduler_init init(threadsNumber);
+  tbb::task_scheduler_init init(numThreads);
 
 }
 
@@ -85,31 +84,36 @@ int main(int argc, char** argv) {
 
     srand (time(NULL));
     int size = atoi(argv[1]);
-    int num_threads = atoi(argv[2]);
+    numThreads = atoi(argv[2]);
     int print = atoi(argv[3]);
 
     matrix = new double[size * size];
     vector = new double[size];
     points = new Point[size];
 
+    setThreadsNumber();
     setPointValues(size);
-    setThreadsNumber(num_threads);
     outer(size);
 
     if (print == 1) {
       for (int i = 0; i < size; i++) {
         for (int j = 0; j < size; j++) {
-          printf("%g ", matrix[i*size + j]);
+          std::cout << matrix[i*size + j] << " ";
         }
-        printf("\n");
+        std::cout << std::endl;
       }
-      printf("\n");
+      std::cout << std::endl;
 
       for (int i = 0; i < size; i++) {
-        printf("%g ", vector[i]);
+        std::cout << vector[i] << " ";
       }
-      printf("\n");
+      std::cout << std::endl;
     }
+
+    delete[] matrix;
+    delete[] vector;
+    delete[] points;
+
   } else {
 
 
