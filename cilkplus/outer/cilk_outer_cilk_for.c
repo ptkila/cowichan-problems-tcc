@@ -29,11 +29,11 @@ double distance(const struct point a, const struct point b) {
 }
 
 void outer(const int size) {
-	double nmax = 0;
 	int i, j;
 	struct point origin;
 	
 	cilk_for (i = 0; i < size; ++i) {
+		double nmax = 0;
 		for (j = 0; j < size; ++j) {
 			if (i != j) {
 				matrix [i*size + j] = distance(points[i], points[j]);
@@ -96,6 +96,10 @@ int main(int argc, char** argv) {
 			}
 			printf("\n");
 		}
+
+		free(matrix);
+		free(vector);
+		free(points);
 
 	} else {
 

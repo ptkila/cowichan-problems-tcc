@@ -53,6 +53,8 @@ int main(int argc, char *argv[]) {
       	}
     } 
 
+    free(matrix);
+
   } else {
 
     printf("programa <tamanho> <num de num_threads> <printar>\n");

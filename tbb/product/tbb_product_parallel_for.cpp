@@ -1,7 +1,5 @@
-#include <cstdio>
-#include <cstring>
-#include <iostream>
 #include "tbb/tbb.h"
+#include <iostream>
 
 typedef tbb::blocked_range<size_t> range;
 static double* matrix;
@@ -10,10 +8,8 @@ static double* result;
 static int numThreads;
 
 void product(const int size) {
-  parallel_for(range(0, size),[&, size](range r) {
-    auto begin = r.begin();
-    auto end = r.end();
-    for (size_t i = begin; i != end; ++i) {
+  parallel_for(range(0, size),[&](const range& r) {
+    for (size_t i = r.begin(); i != r.end(); ++i) {
       double sum = 0;
       for (int j = 0; j < size; ++j) {
         sum += matrix [i*size + j] * vector [j];
@@ -52,9 +48,9 @@ int main(int argc, char** argv) {
    numThreads = atoi(argv[2]);
    int print = atoi(argv[3]);
 
-   matrix = new int[size * size];
-   result = new int[size * size];
-   vector = new int[size];
+   matrix = new double[size * size];
+   result = new double[size];
+   vector = new double[size];
 
    setThreadsNumber();
    setMatrixValues(size);
@@ -64,11 +60,9 @@ int main(int argc, char** argv) {
 
    if (print == 1) {
     for (int i = 0; i < size; i++) {
-      for (int j = 0; j < size; j++) {
-        std::cout << result[i * size + j] << " ";
-      }
-      std::cout << std::endl;
+        std::cout << result[i] << " ";
     }
+    std::cout << std::endl;
   }
 
   delete[] matrix;

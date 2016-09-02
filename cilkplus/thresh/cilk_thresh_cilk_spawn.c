@@ -1,7 +1,5 @@
 #include <cilk/cilk.h>
 #include <cilk/cilk_api.h>
-#include <cilk/reducer.h>
-#include <cilk/reducer_max.h>
 #include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -16,25 +14,19 @@ static int *histogram;
 static int n_threads;
 
 int find_max(const int begin, const int end, const int size) {
-  
   int left, right;
-
+  
   if (begin + 1 == end) {
     
-    int i, max;
-    CILK_C_REDUCER_MAX(r, int, 0);
-    CILK_C_REGISTER_REDUCER(r);
-
-    cilk_for (i = 0; i < size; i++) {
-      CILK_C_REDUCER_MAX_CALC(r, matrix[begin*size + i]);
+    int i;
+    int res = matrix[begin*size + 0];
+    for (i = 1; i < size; i++) {
+      res = MAX(res, matrix[begin*size + i]);
     }
-    max = REDUCER_VIEW(r);
-    CILK_C_UNREGISTER_REDUCER(r);
-
-    return max;
+    return res;
 
   } else {
-
+    
     int middle = begin + (end - begin) / 2;
     left = cilk_spawn find_max(begin, middle, size);
     right = cilk_spawn find_max(middle, end, size);
@@ -45,15 +37,17 @@ int find_max(const int begin, const int end, const int size) {
 }
 
 void fill_histogram(const int begin, const int end, const int size) {
-
+  
   if (begin + 1 == end) {
+  
     int i;
     for (i = 0; i < size; i++) {
       histogram[matrix[begin*size + i]]++;
     }
     return;
+  
   } else {
-    
+
     int middle = begin + (end - begin) / 2;
     cilk_spawn fill_histogram(begin, middle, size);
     cilk_spawn fill_histogram(middle, end, size);
@@ -64,15 +58,13 @@ void fill_histogram(const int begin, const int end, const int size) {
 
 void fill_mask(const int begin, const int end, const int size, const int threshold) {
   if (begin + 1 == end) {
-
     int i;
     for (i = 0; i < size; i++) {
       mask[begin*size + i] = matrix[begin*size + i] >= threshold;
     }
     return;
-  
   } else {
-  
+
     int middle = begin + (end - begin) / 2;
     cilk_spawn fill_mask(begin, middle, size, threshold);
     cilk_spawn fill_mask(middle, end, size, threshold);

@@ -1,9 +1,4 @@
-#include "tbb/parallel_for.h"
-#include "tbb/blocked_range.h"
-#include "tbb/task_scheduler_init.h"
-#include <cstdio>
-#include <cstdlib>
-#include <cstring>
+#include "tbb/tbb.h"
 #include <iostream>
 
 typedef tbb::blocked_range<size_t> range;
@@ -11,18 +6,18 @@ const int VAL_A = 1313, VAL_B = 3131;
 static int* matrix;
 static int numThreads;
 
+//[capture clause] (parameters) -> return-type {body}
+
 void randmat(const int size, const int seed) {
-  tbb::parallel_for(range(0, size),[=](range r) {
-      auto begin = r.begin();
-      auto end = r.end ();
-      int s = 0; 
-      for (size_t i = begin; i != end; ++i) {
+  int s = 0;
+  tbb::parallel_for(range(0, size),[&](const range& r) {
+      for (size_t i = r.begin(); i != r.end(); ++i) {
         for (int j = 0; j < size; j++) {
           s = VAL_A * (seed + i + j) + VAL_B;
           matrix[i*size + j] = s % 100;
         }
       }
-    });
+  });
 }
 
 void setThreadsNumber() {

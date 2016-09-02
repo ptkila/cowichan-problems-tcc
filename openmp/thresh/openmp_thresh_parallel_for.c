@@ -16,7 +16,7 @@ int find_max (const int size) {
 
   #pragma omp parallel shared (matrix, size) private (i, j)
   {
-    #pragma omp for schedule(static, size/n_threads)
+    #pragma omp for schedule(static, size*size/n_threads)
     for (i = 0; i < size; i++) {
       for (j = 0; j < size; j++) {
         #pragma omp critical
@@ -125,6 +125,11 @@ int main(int argc, char** argv) {
         printf("\n");
       }
     }
+
+    free(matrix);
+    free(mask);
+    free(histogram);
+
   } else {
 
 

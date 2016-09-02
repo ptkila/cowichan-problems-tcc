@@ -27,7 +27,7 @@ void find_min_max_points (const int size) {
   
   #pragma omp parallel shared(size, points) private(i)
   {
-    #pragma omp for schedule (static, size/ n_threads)
+    #pragma omp for schedule (static, size*size/n_threads)
     for (i = 0; i < size; i++) {
       #pragma omp critical
       {
@@ -121,6 +121,10 @@ int main(int argc, char** argv) {
         printf("%f\n", norm_points[i].y);
       }
     }
+
+    free(points);
+    free(norm_points);
+
   } else {
 
 

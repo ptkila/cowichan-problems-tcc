@@ -76,6 +76,10 @@ int main(int argc, char** argv) {
 			printf("\n");
 		}
 
+		free(matrix);
+		free(vector);
+		free(result);
+
 	} else {
 
 		printf("programa <tamanho> <num de num_threads> <printar>\n");

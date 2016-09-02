@@ -11,8 +11,8 @@ static double* result;
 static int n_threads;
 
 void fill_result(const int begin, const int end, const int size) {
-  int middle = begin + (end - begin) / 2;
   if (begin + 1 == end) {
+    
     int i;
     double sum = 0.0;
     for (i = 0; i < size; i++) {
@@ -20,14 +20,21 @@ void fill_result(const int begin, const int end, const int size) {
     }
     result[begin] = sum;
     return;
+
+  } else {
+
+    int middle = begin + (end - begin) / 2;
+    cilk_spawn fill_result(begin, middle, size);
+    cilk_spawn fill_result(middle, end, size);
+    cilk_sync;
+  
   }
-  cilk_spawn fill_result(begin, middle, size);
-  cilk_spawn fill_result(middle, end, size);
 }
 
 void product(const int size) {
 
   cilk_spawn fill_result(0, size, size);
+  cilk_sync;
 
 }
 
@@ -82,6 +89,11 @@ int main(int argc, char** argv) {
       }
       printf("\n");
     }
+
+    free(matrix);
+    free(vector);
+    free(result);
+
   } else {
 
     printf("programa <tamanho> <num de num_threads> <printar>\n");

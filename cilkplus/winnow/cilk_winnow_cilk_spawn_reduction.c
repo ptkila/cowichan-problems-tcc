@@ -1,46 +1,52 @@
+/*
+ * winnow: weighted point selection
+ *
+ * input:
+ *   matrix: an integer matrix, whose values are used as masses
+ *   mask: a boolean matrix showing which points are eligible for
+ *     consideration
+ *   nrows, ncols: the number of rows and columns
+ *   nelts: the number of points to select
+ *
+ * output:
+ *   points: a vector of (x, y) points
+ */
+
 #include <cilk/cilk.h>
-#include <cilk/cilk_api.h>
-#include <cilk/reducer.h>
 #include <cilk/reducer_opadd.h>
-#include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
+#include <stdlib.h>
+#include <algorithm>
 
-typedef struct sPoint {
-  int value, i, j;
-} Point;
+using namespace std;
+
+static int is_bench = 0;
 
 static int *matrix;
 static int *mask;
 static int *count_per_line;
-static Point *points;
-static Point *values;
 
-int compare(const void* vl, const void* vr) {
-  const Point* l = (Point*) vl, *r = (Point*)vr;
-  return (l->value - r->value);
-}
+static pair <int, int> *points;
+static pair <int, pair <int, int> > *values;
 
 int reduce_sum (int nrows, int ncols) {
-
-  int i, j, sum;
-  CILK_C_REDUCER_OPADD(r, double, 0.0);
-  CILK_C_REGISTER_REDUCER(r);
-
-  cilk_for (i = 0; i < nrows; i++) {
-    int tmp_sum = 0;
-    for (j = 0; j < ncols; j++) {
-      tmp_sum += mask[i * ncols + j];
-    }
-    count_per_line[i + 1] = tmp_sum;
-    REDUCER_VIEW(r) += tmp_sum;
-  }
-  CILK_C_UNREGISTER_REDUCER(r);
+  cilk::reducer_opadd<int> total_sum(0);
   
-  sum = REDUCER_VIEW(r);
-  return sum;
+  cilk_for (int q  = 0; q < nrows; ++q) {
+    int tmp_sum = 0;
+    for (int i = 0; i < ncols; ++i) {
+      if (is_bench) {
+        mask[q*ncols + i] = ((nrows * i) % (ncols + 1)) == 1;
+      }
+      tmp_sum += mask[q * ncols + i];
+    } 
+    count_per_line[q+1] = tmp_sum;
+    total_sum += tmp_sum;
+  }
+  return total_sum.get_value(); 
 }
 
 void scan_update_elements(int begin, int end, int* array, int size) {
@@ -52,13 +58,15 @@ void scan_update_elements(int begin, int end, int* array, int size) {
   } else {
     count = (end - begin) / size;
     count /= 2;
-    count += count % 2;
+    count += count % 2;  // to ensure it is even
     middle = begin + count * size;
     cilk_spawn scan_update_elements(begin, middle, array, size);
     scan_update_elements(middle, end, array, size);
   }
 }
 
+// Ladner-Fischer
+// parallel scan on [begin, end)
 void scan_impl(int begin, int end, int* array, int size) {
   if (end - begin > size) {
     scan_update_elements(begin, end, array, size);
@@ -75,19 +83,23 @@ void prefix_sum(int n) {
   scan(n, count_per_line);
 }
 
-void fill_values(int nrows, int ncols) {
-  int count, j, i;
-  cilk_for (i = 0; i < nrows; ++i) {
-    count = count_per_line[i];
+void fill_values(int begin, int end, int ncols) {
+  int middle = begin + (end - begin) / 2;
+  int count, j;
+  if (begin + 1 == end) {
+    count = count_per_line[begin];
     for (j = 0; j < ncols; j++) {
-      if (mask[i*ncols +j] == 1) {
-        values[count].value = matrix[i*ncols +j];
-        values[count].i = i;
-        values[count].j = j;
+      if (mask[begin*ncols +j] == 1) {
+        values[count].first = matrix[begin*ncols +j];
+        values[count].second.first = begin;
+        values[count].second.second = j;
         count++;
       }
     }
+    return;
   }
+  cilk_spawn fill_values(begin, middle, ncols);
+  fill_values(middle, end, ncols);
 }
 
 void winnow(int nrows, int ncols, int nelts) {
@@ -96,79 +108,83 @@ void winnow(int nrows, int ncols, int nelts) {
   n = reduce_sum(nrows, ncols);
 
   prefix_sum(nrows + 1);
-  fill_values(nrows, ncols);
+  fill_values(0, nrows, ncols);
 
-  qsort(values, n, sizeof(*values), compare);
+  sort(values, values + n);
 
   chunk = n / nelts;
-  points = (Point*) malloc (sizeof(Point) * nelts);
+  free (count_per_line);
+  points = (pair<int, int>*) malloc (sizeof(pair<int, int>) * nelts);
   cilk_for (int i = 0; i < nelts; i++) {
     index = i * chunk;
-    points[i] = values[index];
+    points[i] = values[index].second;
+    printf("%d\n", values[index].first);
   }
 }
 
-void set_values_matrix(int size) {
+void read_matrix(int nrows, int ncols) {
   int i, j;
-  for (i =  0; i < size; i++) {
-    for (j = 0; j < size; j++) {
-      matrix[i*size +j] = rand();
+  for (i =  0; i < nrows; i++) {
+    for (j = 0; j < ncols; j++) {
+      //scanf("%hhu", &matrix[i*ncols +j]);
+    	matrix[i*ncols+j] = rand() % 1000;
     }
   }
 }
 
-void set_values_mask(int size) {
+void read_mask(int nrows, int ncols) {
   int i, j;
-  for (i =  0; i < size; i++) {
-    for (j = 0; j < size; j++) {
-      mask[i*size +j] = rand() % 2;
+  for (i =  0; i < nrows; i++) {
+    for (j = 0; j < ncols; j++) {
+      //scanf("%hhu", &mask[i*ncols +j]);
+    	mask[i*ncols+j] = rand() % 2;
     }
   }
-}
-
-void set_threads_number (int t_num) {
-
-  char threads[2];
-  sprintf(threads,"%d", t_num);
-  __cilkrts_end_cilk();  
-  __cilkrts_set_param("nworkers", threads);
-
-  //printf("%s\n",  threads );
-  //printf("%d\n",  __cilkrts_get_nworkers() );
 }
 
 int main(int argc, char *argv[]) {
+  int nrows, ncols, nelts, i;
 
-  if (argc == 4) {
-
-    srand (time(NULL));
-    int i;
-    int size = atoi(argv[1]);
-    int num_threads = atoi(argv[2]);
-    int print = atoi(argv[3]);
-
-    matrix = (int*) malloc (sizeof(int) * size * size);
-    mask = (int*) malloc (sizeof(int) * size * size);
-    values = (Point*) malloc (sizeof(Point) * size * size);
-    set_values_matrix(size, size);
-    set_values_mask(size, size);
-
-    count_per_line = (int*) calloc (size + 1, sizeof(int));
-
-    set_threads_number(num_threads);
-    winnow(size, size, size);
-
-    if (print == 1) {
-      for (i = 0; i < size; i++) {
-        printf("%d %d %d\n", points[i].i, points[i].j, points[i].value);
+  if (argc >= 2) {
+    for (int a = 0; a < argc; a++) {
+      if (!strcmp(argv[a], "--is_bench")) {
+        is_bench = 1;
       }
-      printf("\n");
     }
-
-  } else {
-
-
-
   }
+
+  srand(time(NULL));
+
+  scanf("%d%d", &nrows, &ncols);
+  matrix = (int*) malloc (sizeof(int) * nrows * ncols);
+  mask = (int*) malloc (sizeof(int) * nrows * ncols);
+  values= (pair<int, pair<int, int> >*) 
+    malloc (sizeof(pair<int, pair<int, int> >) * nrows * ncols);
+
+  if (!is_bench) {
+    read_matrix(nrows, ncols);
+    read_mask(nrows, ncols);
+  }
+
+  scanf("%d", &nelts);
+
+  count_per_line = (int*) calloc (nrows+1, sizeof(int));
+
+  cilk_spawn winnow(nrows, ncols, nelts);
+  cilk_sync;
+
+  /*
+  if (!is_bench) {
+    printf("%d\n", nelts);
+    for (i = 0; i < nelts; i++) {
+      printf("%d %d\n", points[i].first, points[i].second);
+    }
+    printf("\n");
+  }
+  */
+  free (matrix);
+  free (mask);
+  free (values);
+  free (points);
   return 0;
 }

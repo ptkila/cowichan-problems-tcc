@@ -27,10 +27,10 @@ public:
   }
 };
 
-std::mutex m;
-double* matrix;
-double* vector;
-Point* points;
+static double* matrix;
+static double* vector;
+static Point* points;
+static int numThreads;
 
 double sqr(const double x) {
 
@@ -40,38 +40,37 @@ double sqr(const double x) {
 
 double distance(const class Point a, const class Point b) {
 
-    // distncia euclidiana
   return sqrt(sqr(a.x - a.y) + sqr(b.x - b.y));
 
 }
 
 void calc (const int startLine, const int endLine, const int size) {
-  double nMax = -1.0;
+  
   Point origin = new Point();
 
   for (int i = startLine; i < endLine; i++) {
+    double nMax = 0;
     for (int j = 0; j < size; j++) {
-      m.lock();
       if (i != j) {
         matrix[i * size + j] = distance(points[i], points[j]);
         nMax = fmax(nMax, matrix[i][j]);
       }
-      m.unlock();
     }
     matrix[i*size + i] = nMax * size;
     vector[i] = distance(origin, points[i]);
   }
 }
 
-void outer(const int size, const int numberOfThreads) {
+void outer(const int size) {
 
-  int numOpThreadM = (int)floor((float)size / (float)numberOfThreads);
-  int numOpThreadR = size % numberOfThreads;
-  std::thread threadsList[numberOfThreads];
+  int numOpThreadM = (int)floor((float)size / (float)numThreads);
+  int numOpThreadR = size % numThreads;
+  std::thread threadsList[numThreads];
 
-  for (int i = 0; i < numberOfThreads; ++i) {
-    if (i + 1 == numberOfThreads && numOpThreadR > 0) {
-      threadsList[i] = (std::thread(calc, numOpThreadM * i, numOpThreadM * (i + 1) + numOpThreadR, size));
+  for (int i = 0; i < numThreads; ++i) {
+    if (i + 1 == numThreads && numOpThreadR > 0) {
+      threadsList[i] = (std::thread(calc, numOpThreadM * i, numOpThreadM * (i + 1) + numOpThreadR, 
+        size));
       break;
     } else {
       threadsList[i] = (std::thread(calc, numOpThreadM * i, numOpThreadM * (i + 1), size));
@@ -81,6 +80,7 @@ void outer(const int size, const int numberOfThreads) {
   for ( auto &t : threadsList ) {
     t.join();
   }
+
 }
 
 void setPointValues(const int size) {
@@ -96,7 +96,7 @@ int main(int argc, char** argv) {
 
     srand (time(NULL));
     int size = atoi(argv[1]);
-    int numThreads = atoi(argv[2]);
+    numThreads = atoi(argv[2]);
     int print = atoi(argv[3]);
 
     matrix = new double[size * size];
@@ -104,7 +104,7 @@ int main(int argc, char** argv) {
     points = new Point[size];
 
     setPointValues(size);
-    outer(size, numThreads);
+    outer(size);
 
     if (print == 1)
     {
@@ -123,6 +123,11 @@ int main(int argc, char** argv) {
 
       std::cout << "\n";
     }
+
+    delete[] matrix;
+    delete[] vector;
+    delete[] points;
+
   } else {
 
 

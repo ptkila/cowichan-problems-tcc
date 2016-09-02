@@ -1,24 +1,14 @@
-#include <cassert>
-#include <cstdio>
-#include <cstdlib>
-#include <cstring>
-#include <algorithm>
+#include "tbb/tbb.h"
 #include <iostream>
-#include <vector>
-#include "tbb/blocked_range.h"
-#include "tbb/parallel_for.h"
-#include "tbb/parallel_scan.h"
-#include "tbb/task_scheduler_init.h"
-#include "tbb/parallel_reduce.h"
 
+typedef tbb::blocked_range<size_t> range;
 static std::pair<int, int> *points;
 static std::pair<int, std::pair<int, int> > *values;
 static int* matrix;
 static int* mask;
 static int* count_per_line;
 static int* total_count;
-
-typedef tbb::blocked_range<size_t> range;
+static int numThreads;
 
 class ScanSum {
   int sum;
@@ -97,7 +87,7 @@ void winnow(int nrows, int ncols, int nelts) {
   }
 }
 
-void setValuesMatrix(int size) {
+void setValuesMatrix(const int size) {
   for (int i = 0; i < size; i++) {
     for (int j = 0; j < size; j++) {
       matrix[i*size + j] = std::rand();
@@ -105,7 +95,7 @@ void setValuesMatrix(int size) {
   }
 }
 
-void setValuesMask(int size) {
+void setValuesMask(const int size) {
   for (int i = 0; i < size; i++) {
     for (int j = 0; j < size; j++) {
       mask[i*size + j] = std::rand()%2;
@@ -113,9 +103,9 @@ void setValuesMask(int size) {
   }
 }
 
-void setThreadsNumber(int threadsNumber) {
+void setThreadsNumber() {
 
-  tbb::task_scheduler_init init(threadsNumber);
+  tbb::task_scheduler_init init(numThreads);
 
 }
 
@@ -125,11 +115,11 @@ int main(int argc, char** argv) {
 
     srand (time(NULL));
     int size = atoi(argv[1]);
-    int num_threads = atoi(argv[2]);
+    numThreads = atoi(argv[2]);
     int print = atoi(argv[3]);
 
-    matrix = (int *) malloc (sizeof (int) * size * size);
-    mask = (int *) malloc (sizeof (int) * size * size);
+    matrix = int[size * size];
+    mask = int[size * size];
     setValuesMatrix(size);
     setValuesMask(size);
 
@@ -138,7 +128,7 @@ int main(int argc, char** argv) {
     points = (std::pair <int, int> *) malloc (sizeof (std::pair <int, int>) * size);
     values = (std::pair <int, std::pair <int, int> > *) malloc (sizeof (std::pair <int, std::pair <int, int> >) * size);
 
-    setThreadsNumber(num_threads);
+    setThreadsNumber();
     winnow(size, size, size);
 
     if (print == 1) {

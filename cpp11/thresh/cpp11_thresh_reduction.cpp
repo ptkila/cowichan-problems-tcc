@@ -5,14 +5,16 @@
 #include <cmath>
 #include <thread>
 #include <mutex>
+#include <vector>
+#include <functional>
+#include <future>
 
 static int* matrix;
 static int* mask;
 static int* histogram;
-static int numThreads;
-static int nMax; 
+static int numThreads; 
 
-void reduceMax (const int startIndex, const int endIndex, const int size) {
+void reduceMax (const int startIndex, const int endIndex, const int size, std::promise<int>* promise) {
   int max = 0;
 
   for (int i = startIndex; i < endIndex; i++) {
@@ -21,9 +23,7 @@ void reduceMax (const int startIndex, const int endIndex, const int size) {
         max = matrix[i*size + j];
     }
   }
-  if(nMax < max) {
-    nMax = max;
-  }
+  promise->set_value(max);
 }
 
 void fillHistogram(const int startIndex, const int endIndex, const int size) {
@@ -48,15 +48,25 @@ void thresh(const int size, const int percent) {
   int numOpThreadM = (int)floor((float)size / (float)numThreads);
   int numOpThreadR = size % numThreads;  
   std::thread threadsList[numThreads];
+  std::promise<int> promises[numThreads];
+  std::future<int> futures[numThreads];
 
   for (int i = 0; i < numThreads; ++i) {
     futures[i] = promises[i].get_future();
     if (i + 1 == numThreads && numOpThreadR > 0) {
       threadsList[i] = std::thread(reduceMax, numOpThreadM * i, 
-        numOpThreadM * (i + 1) + numOpThreadR, size);
+        numOpThreadM * (i + 1) + numOpThreadR, size, &promises[i]);
       break;
     } else {
-      threadsList[i] = std::thread(reduceMax, numOpThreadM * i, numOpThreadM * (i + 1), size);
+      threadsList[i] = std::thread(reduceMax, numOpThreadM * i, numOpThreadM * (i + 1), 
+        size, &promises[i]);
+    }
+  }
+
+  for (int i = 0; i < numThreads; ++i) {
+    int maxTmp = futures[i].get();
+    if (nMax < maxTmp) {
+      nMax = maxTmp;
     }
   }
 
@@ -66,8 +76,7 @@ void thresh(const int size, const int percent) {
 
   for (int i = 0; i < numThreads; ++i) {
     if (i + 1 == numThreads && numOpThreadR > 0) {
-      threadsList[i] = std::thread(fillHistogram, numOpThreadM * i, 
-        numOpThreadM * (i + 1) + numOpThreadR, size);
+      threadsList[i] = std::thread(fillHistogram, numOpThreadM * i, numOpThreadM * (i + 1) + numOpThreadR, size);
       break;    
     } else {
       threadsList[i] = std::thread(fillHistogram, numOpThreadM * i, numOpThreadM * (i + 1), size);
@@ -89,8 +98,7 @@ void thresh(const int size, const int percent) {
 
   for (int i = 0; i < numThreads; ++i) {
     if (i + 1 == numThreads && numOpThreadR > 0) {
-      threadsList[i] = std::thread(fillMask, numOpThreadM * i, 
-        numOpThreadM * (i + 1) + numOpThreadR, size);
+      threadsList[i] = std::thread(fillMask, numOpThreadM * i, numOpThreadM * (i + 1) + numOpThreadR, size);
       break;
     } else {
       threadsList[i] = std::thread(fillMask, numOpThreadM * i, numOpThreadM * (i + 1), size);
@@ -100,6 +108,9 @@ void thresh(const int size, const int percent) {
   for ( auto &t : threadsList ) {
     t.join();
   }
+
+  delete[] futures;
+  delete[] promises;
 
 }
 
@@ -124,7 +135,6 @@ int main(int argc, char** argv) {
     matrix = int[size * size];
     mask = int[size];
     histogram = int[256];
-    nMax = std::numeric_limits<int>::lowest();
 
     setValuesMatrix(size);
     thresh(size, percent);

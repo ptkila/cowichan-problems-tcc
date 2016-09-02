@@ -18,9 +18,8 @@ static struct point min_point;
 static struct point max_point;
 static int n_threads;
 
-void find_max_min_points (const int begin, const int end) {
+void find_max_min_points (const int begin, const int end, const int size) {
 
-  int middle = begin + (end - begin)/2;
   if(begin + 1 == end) {
 
     if (points[begin].x < min_point.x) {
@@ -38,30 +37,42 @@ void find_max_min_points (const int begin, const int end) {
     if (points[begin].y > max_point.y) {
       max_point.y = points[begin].y;
     }
-    return;
-  }
 
-  cilk_spawn find_max_min_points(begin, middle);
-  cilk_spawn find_max_min_points(middle, end);
-  cilk_sync;
+    return;
+
+  } else {
+
+    int middle = begin + (end - begin)/ 2;
+    cilk_spawn find_max_min_points(begin, middle, size);
+    cilk_spawn find_max_min_points(middle, end, size);
+    cilk_sync;
+
+  }
 }
 
-void normalize_points (const int begin, const int end, const double sclX, const double sclY) {
+void normalize_points (const int begin, const int end, const double sclX, const double sclY, 
+  const int size) {
 
-  int middle = begin + (end - begin)/2;
   if(begin + 1 == end){
-    norm_points[begin].x = sclX * (points[begin].x - min_point.x);
-    norm_points[begin].y = sclY * (points[begin].y - min_point.y);
+
+      norm_points[begin].x = sclX * (points[begin].x - min_point.x);
+      norm_points[begin].y = sclY * (points[begin].y - min_point.y);
+
     return;
+
+  } else {
+
+    int middle = begin + (end - begin)/ 2;
+    cilk_spawn normalize_points(begin, middle, sclX, sclY, size);
+    cilk_spawn normalize_points(middle, end, sclX, sclY, size);
+    cilk_sync;
+
   }
-  cilk_spawn normalize_points(begin, middle, sclX, sclY);
-  cilk_spawn normalize_points(middle, end, sclX, sclY);
-  cilk_sync;
 }
 
 void norm (const int size) {
 
-  cilk_spawn find_max_min_points(0, size);
+  cilk_spawn find_max_min_points(0, size, size);
   cilk_sync;
 
   double sclX = (double)((max_point.x == min_point.x) ?
@@ -69,12 +80,13 @@ void norm (const int size) {
   double sclY = (double)((max_point.y == min_point.y) ?
     0.0 : 1.0 / (max_point.y - min_point.y));
 
-  cilk_spawn normalize_points(0, size, sclX, sclY);
+  cilk_spawn normalize_points(0, size, sclX, sclY, size);
   cilk_sync;
 } 
 
 void set_points_values(const int size) {
   int i;
+  
   for (i = 0; i < size; ++i) {
     points[i].x = (double)rand();
     points[i].y = (double)rand();
@@ -115,10 +127,14 @@ int main(int argc, char** argv) {
     if (print == 1) {
       int i;
       for (i = 0; i < size; i++) {
-        printf("%f ", norm_points[i].x);
-        printf("%f\n", norm_points[i].y);
+        printf("%g ", norm_points[i].x);
+        printf("%g\n", norm_points[i].y);
       }
     }
+
+    free(points);
+    free(norm_points);
+
   } else {
 
 

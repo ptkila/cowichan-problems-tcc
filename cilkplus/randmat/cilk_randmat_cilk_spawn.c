@@ -9,28 +9,31 @@ const int VAL_A = 1313, VAL_B = 3131;
 static int *matrix;
 static int n_threads;
 
-void fill_row(const int begin, const int size, const int seed) {
-  int i, s;
-  for (i = 0; i < size; i++) {
-    s = VAL_A * (seed + i) + VAL_B;
-    matrix[begin*size + i] = s % 100;
-  }
-}
-
 void fill_matrix(const int begin, const int end, const int size, const int seed) {
   if (begin + 1 == end) {
-    cilk_spawn fill_row(begin, size, seed);
+    
+    int i, s;
+    for (i = 0; i < size; i++) {
+      s = VAL_A * (seed + i) + VAL_B;
+      matrix[begin*size + i] = s % 100;
+    }
+
     return;
+    
   } else {
+  
     int middle = begin + (end - begin) / 2;
     cilk_spawn fill_matrix(begin, middle, size, seed);
     cilk_spawn fill_matrix(middle, end, size, seed);
+    cilk_sync;
+
   }
 }
 
 void randmat(const int size, const int seed) {
 
   cilk_spawn fill_matrix(0, size, size, seed);
+  cilk_sync;
 
 }
 
@@ -67,6 +70,9 @@ int main(int argc, char *argv[]) {
         printf("\n");
       }
     }
+
+    free(matrix);
+
   } else {
 
     printf("programa <tamanho> <num de num_threads> <printar>\n");

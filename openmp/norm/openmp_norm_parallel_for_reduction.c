@@ -27,24 +27,24 @@ void find_min_max_points (const int size) {
   
   #pragma omp parallel shared(size, points) private(i)
   {
-    #pragma omp for schedule (static, size/ n_threads) reduction(max:max_x, max_y), reduction(min:min_x, min_y)
-      for (i = 0; i < size; i++) {
-        if (points[i].x < min_x) {
-          min_x = points[i].x;
-        }
-
-        if (points[i].y < min_y) {
-          min_y = points[i].y;
-        }
-
-        if (points[i].x > max_x) {
-          max_x = points[i].x;
-        }
-
-        if (points[i].y > max_y) {
-          max_y = points[i].y;
-        }
+    #pragma omp for schedule (static, size*size/ n_threads) reduction(max:max_x, max_y), reduction(min:min_x, min_y)
+    for (i = 0; i < size; i++) {
+      if (points[i].x < min_x) {
+        min_x = points[i].x;
       }
+
+      if (points[i].y < min_y) {
+        min_y = points[i].y;
+      }
+
+      if (points[i].x > max_x) {
+        max_x = points[i].x;
+      }
+
+      if (points[i].y > max_y) {
+        max_y = points[i].y;
+      }
+    }
   }
   max_point.x = max_x;
   max_point.y = max_y;
@@ -118,6 +118,10 @@ int main(int argc, char** argv) {
         printf("%f\n", norm_points[i].y);
       }
     }
+
+    free(points);
+    free(norm_points);
+
   } else {
 
 

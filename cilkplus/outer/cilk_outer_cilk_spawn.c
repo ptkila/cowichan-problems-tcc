@@ -14,6 +14,7 @@ struct point {
 static double* matrix;
 static double* vector;
 static struct point* points;
+static struct point origin;
 static int n_threads;
 
 double sqr(const double x) {
@@ -29,13 +30,9 @@ double distance(const struct point a, const struct point b) {
 }
 
 void fill_matrix(const int begin, const int end, const int size) {
-  int middle = begin + (end - begin) / 2;
-  double nmax = 0;
-  int i;
-  struct point origin;
-
-  // diagonal principal
   if (begin + 1 == end) {
+    int i;   
+    double nmax = 0;
     for (i = 0; i < size; i++) {
       if (begin != i) {
         matrix[begin*size + i] = distance(points[begin], points[i]);
@@ -45,18 +42,27 @@ void fill_matrix(const int begin, const int end, const int size) {
       vector[begin] = distance(origin, points[begin]);
     }
     return;
+  
+  } else {
+
+    int middle = begin + (end - begin) / 2;
+    cilk_spawn fill_matrix(begin, middle, size);
+    cilk_spawn fill_matrix(middle, end, size);
+    cilk_sync;
+  
   }
-  cilk_spawn fill_matrix(begin, middle, size);
-  cilk_spawn fill_matrix(middle, end, size);
 }
 
 void outer(const int size) {
+
   cilk_spawn fill_matrix(0, size, size);
+  cilk_sync;
+  
 }
 
 void set_vector_of_points(const int size) {
   int i;
-  for (i =  0; i < size; i++) {
+  for (i = 0; i < size; i++) {
     points[i].i = rand();
     points[i].j = rand();
   }
@@ -106,6 +112,11 @@ int main(int argc, char** argv) {
       }
       printf("\n");
     }
+
+    free(matrix);
+    free(vector);
+    free(points);
+
   } else {
 
     printf("programa <tamanho> <num de num_threads> <printar>\n");

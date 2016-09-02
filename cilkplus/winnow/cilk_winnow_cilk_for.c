@@ -7,7 +7,15 @@
 #include <time.h>
 
 struct point_w {
-  int weight, i, j;
+	
+	int weight, i, j;
+
+};
+
+struct point {
+
+	int i, j;
+
 };
 
 static int* matrix;
@@ -15,6 +23,8 @@ static int* mask;
 static struct point_w* points;
 static int nelts;
 static int n_threads;
+static int counter;
+static int total_sum;
 
 int compare (const void * a, const void * b) {
 
@@ -26,7 +36,6 @@ int compare (const void * a, const void * b) {
 
 void fill_vector(const int size) {
   int i, j;
-  int counter = 0;
   cilk_for (i = 0; i < size; i++) {
     for (j = 0; j < size; j++) {
       if (mask[i*size + j] == 1) {
@@ -39,10 +48,20 @@ void fill_vector(const int size) {
   }
 }
 
+void fill_ev_points() {
+
+	//int chunk =  / nelts;
+
+}
+
 void winnow (const int size) {
 
   fill_vector(size);
   qsort (points, nelts, sizeof(struct point_w), compare);
+  
+  // Seta número de pontos
+  //nelts = rand()%counter;
+  //fill_ev_points(size);
 
 }
 
@@ -86,6 +105,7 @@ int main(int argc, char *argv[]) {
 
     matrix = (int*) malloc (sizeof(int) * size * size);
     mask = (int*) malloc (sizeof(int) * size * size);
+    counter = 0;
     nelts = 0;
 
     set_threads_number();

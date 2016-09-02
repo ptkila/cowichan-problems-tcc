@@ -1,13 +1,5 @@
-#include <cassert>
-#include <cstdio>
-#include <cstdlib>
-#include <cstring>
-#include <algorithm>
-#include "tbb/blocked_range.h"
-#include "tbb/parallel_for.h"
-#include "tbb/parallel_reduce.h"
-#include "tbb/parallel_scan.h"
-#include "tbb/task_scheduler_init.h"
+#include "tbb/tbb.h"
+#include <iostream>
 
 typedef tbb::blocked_range<size_t> range;
 static int* matrix;
@@ -16,7 +8,7 @@ static int* histogram;
 static int numThreads;
 
 int findMax (const int size) {
-  tbb::parallel_reduce(range(0, size), 0, [=](range r, int result)->int {
+  return tbb::parallel_reduce(range(0, size), 0, [&](const range& r, int result)->int {
       for (size_t i = r.begin(); i != r.end(); i++) {
         for (int j = 0; j < size; j++) {
           result = std::max(result, matrix[i*size + j]);
@@ -30,11 +22,8 @@ int findMax (const int size) {
 }
 
 void fillHistogram (const int size) {
-
-  tbb::parallel_for(range(0, size),[=](range r) {
-      auto begin = r.begin();
-      auto end = r.end();
-      for (size_t i = begin; i != end; i++) {
+  tbb::parallel_for(range(0, size),[&](const range& r) {
+      for (size_t i = r.begin(); i != r.end(); i++) {
         for (int j = 0; j < size; j++) {
           histogram[matrix[i*size + j]]++;
         }
@@ -43,7 +32,7 @@ void fillHistogram (const int size) {
 }
 
 void fillMask (const int size, const int threshold) {
-  tbb::parallel_for(range(0, size),[=](range r) {
+  tbb::parallel_for(range(0, size),[&](const range& r) {
       for (size_t i = r.begin(); i != r.end(); ++i) {
         for (int j = 0; j < size; j++) {
           mask[i*size + j] = matrix[i*size + j] >= threshold;
@@ -94,9 +83,9 @@ int main(int argc, char** argv) {
     int print = atoi(argv[3]);
     int percent = 50;
 
-    matrix = int[size * size];
-    mask = int[size * size];
-    histogram = int[256];
+    matrix = new int[size * size];
+    mask = new int[size * size];
+    histogram = new int[256];
 
     setThreadsNumber();
     setValuesMatrix(size);
@@ -105,9 +94,9 @@ int main(int argc, char** argv) {
     if (print == 1) {
       for (int i = 0; i < size; i++) {
         for (int j = 0; j < size; j++) {
-          printf("%hhu ", mask[i*size + j]);
+          std::cout << mask[i*size + j] << " ";
         }
-        printf("\n");
+        std::cout << std::endl;
       }
     }
 

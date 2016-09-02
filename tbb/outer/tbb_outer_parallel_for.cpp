@@ -1,14 +1,5 @@
-#include <cassert>
-#include <cmath>
-#include <cstdio>
-#include <cstdlib> 
-#include <cstring>
-#include <algorithm>
+#include "tbb/tbb.h"
 #include <iostream>
-#include <vector>
-#include "tbb/blocked_range.h"
-#include "tbb/parallel_for.h"
-#include "tbb/task_scheduler_init.h"
 
 class Point {
 
@@ -40,17 +31,15 @@ double sqr(const double x) {
 
 }
 
-double distance(const class Point a, const class Point b) {
+double distance(const Point a, const Point b) {
 
   return sqrt(sqr(a.x - a.y) + sqr(b.x - b.y));
 
 }
 
 void outer(const int size) {
-  parallel_for(range(0, size),[&](range r) {
-      auto begin = r.begin();
-      auto end = r.end();
-      for (size_t i = begin; i != end; ++i) {
+  parallel_for(range(0, size),[&](const range& r) {
+      for (size_t i = r.begin(); i != r.end(); ++i) {
         double nmax = 0;
         for (int j = 0; j < size; j++) {
           if (i != j) {
@@ -58,8 +47,8 @@ void outer(const int size) {
             nmax = std::fmax(nmax, matrix[i*size + j]);
           }
         }
-        matrix[i*size + i] = size * nmax;
-        vector[i] = distance(new Point(), points[i]);
+        matrix[i*size+i] = size * nmax;
+        vector[i] = distance(Point(), points[i]);
       }
     });
 }
@@ -115,7 +104,6 @@ int main(int argc, char** argv) {
     delete[] points;
 
   } else {
-
 
 
   }

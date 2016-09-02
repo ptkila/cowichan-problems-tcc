@@ -109,6 +109,10 @@ int main(int argc, char** argv) {
         printf("%f\n", norm_points[i].y);
       }
     }
+
+    free(points);
+    free(norm_points);
+
   } else {
 
 

@@ -14,6 +14,7 @@ struct point {
 static double* matrix;
 static double* vector;
 static struct point* points;
+static struct point origin;
 static int n_threads;
 
 double sqr (const double x) {
@@ -31,13 +32,12 @@ double distance(const struct point a, const struct point b) {
 void turn_to_matrix_and_vector (const int size) {
 
   int i, j;
-  double n_max = -DBL_MAX;
-  struct point origin;
 
-  #pragma omp parallel shared(matrix) private (i, j)
+  #pragma omp parallel shared(matrix, size) private (i, j)
   {
-    #pragma omp for schedule(static, size/ n_threads)
+    #pragma omp for schedule(static, size*size/ n_threads)
     for (i = 0; i < size; i++) {
+      double n_max = 0.0;
       for (j = 0; j < size; j++) {
         if (i != j) {
           matrix[i * size + j] = distance(points[i], points[j]);
@@ -106,6 +106,11 @@ int main(int argc, char** argv) {
       printf("\n");
 
     }
+
+    free(matrix);
+    free(vector);
+    free(points);
+
   } else {
 
 

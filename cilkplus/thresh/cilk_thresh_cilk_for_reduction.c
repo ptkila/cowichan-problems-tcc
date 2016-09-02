@@ -117,6 +117,10 @@ int main(int argc, char *argv[]) {
       }
     }
 
+    free(matrix);
+    free(mask);
+    free(histogram);
+
   } else {
 
 

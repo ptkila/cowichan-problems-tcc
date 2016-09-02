@@ -12,12 +12,13 @@ struct point_w {
 
 static int* matrix;
 static int* mask;
+static int* count_per_line;
 static struct point_w* points;
 static int nelts;
 static int counter;
 static int n_threads;
 
-int compare (const void * a, const void * b) {
+int compare (const void* a, const void* b) {
 
   const struct point_w* point0 = (struct point_w*) a;
   const struct point_w* point1 = (struct point_w*) b;
@@ -66,9 +67,6 @@ void set_values_mask(int size) {
   for (i = 0; i < size; i++) {
     for (j = 0; j < size; j++) {
       mask[i*size +j] = rand() % 2;
-      if (mask[i*size +j] == 1){ 
-        nelts++;
-      }
     }
   }
 }
