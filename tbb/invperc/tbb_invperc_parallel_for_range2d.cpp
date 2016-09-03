@@ -1,4 +1,5 @@
 #include "tbb/tbb.h"
+#include "tbb/blocked_range2d.h"
 #include <iostream>
 
 class foundPoint {
@@ -22,7 +23,7 @@ public:
 	}
 };
 
-typedef tbb::blocked_range<size_t> range;
+typedef tbb::blocked_range2d<size_t, size_t> range2d;
 static int* matrix;
 static int* mask;
 static int nfill;
@@ -57,10 +58,11 @@ bool evaluateNeighbors (const int row, const int col, const int size) {
 }
 
 void percolate (const int size) {
-	tbb::parallel_for(range(1, size-1),[&](const range& r) {
-		size_t r_end = r.end();
-		for (size_t i = r.begin(); i != r_end; ++i) {
-			for (int j = 1; j < size - 1; j++) {
+	tbb::parallel_for(range2d(0, size-1, 0, size-1),[&](const range2d& r) {
+		size_t r_end = r.rows().end();
+		for (size_t i = r.rows().begin(); i != r_end; i++) {
+			size_t c_end = r.cols().end();
+			for (size_t j = r.cols().begin(); j != c_end; j++) {
 				if (mask[i*size + j]) {
 					for (int sides = 0; sides < N_SIDES; sides++) {
 						int row = i + X_STEPS[sides];
@@ -87,8 +89,7 @@ void invperc (const int size, const int nfill) {
 		percolate(size);
 		if(setNewPoint(size))
 			break;
-
-		/*		
+		/*
 		for (k = 0; k < size; k++) {
 			for (j = 0; j < size; j++) {
 				printf("%d ", mask[k*size + j]);
@@ -113,7 +114,7 @@ void setMatrixValues (const int size) {
 			matrix[i*size + j] = rand() % 1000;
 		}
 	}
-	/*
+	
 	for (int i = 0; i < size; i++) {
 		for (int j = 0; j < size; j++) {
 			std::cout << matrix[i*size + j] << " ";
@@ -121,7 +122,6 @@ void setMatrixValues (const int size) {
 		std::cout << std::endl;
 	}
 	std::cout << std::endl;
-	*/
 }
 
 int main (int argc, char** argv) {

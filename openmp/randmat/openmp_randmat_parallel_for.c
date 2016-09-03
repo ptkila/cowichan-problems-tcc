@@ -14,7 +14,7 @@ void randmat (const int size, const int seed) {
 
   #pragma omp parallel shared(matrix, seed, size) private (i, j, s)
   {
-    #pragma omp for schedule (static, size*size/n_threads)
+    #pragma omp for schedule (static, size/n_threads)
     for (i = 0; i < size; ++i) {
       for (j = 0; j < size; ++j) {
         s = VAL_A * (seed + i + j) + VAL_B;

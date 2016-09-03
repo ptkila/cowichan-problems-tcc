@@ -27,7 +27,7 @@ void find_min_max_points (const int size) {
   
   #pragma omp parallel shared(size, points) private(i)
   {
-    #pragma omp for schedule (static, size*size/n_threads)
+    #pragma omp for schedule (static, size/ n_threads)
     for (i = 0; i < size; i++) {
       #pragma omp critical
       {

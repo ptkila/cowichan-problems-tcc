@@ -1,4 +1,5 @@
 #include "tbb/tbb.h"
+#include "tbb/blocked_range2d.h"
 #include <iostream>
 
 class Point {
@@ -19,7 +20,7 @@ public:
   }
 };
 
-typedef tbb::blocked_range<size_t> range;
+typedef tbb::blocked_range2d<size_t, size_t> range2d;
 static Point* points;
 static double* matrix;
 static double* vector;
@@ -38,19 +39,20 @@ double distance(const Point a, const Point b) {
 }
 
 void outer(const int size) {
-  tbb::parallel_for(range(0, size),[&](const range& r) {
-    size_t r_end = r.end();
-    for (size_t i = r.begin(); i != r_end; ++i) {
-        double nmax = 0;
-        for (int j = 0; j < size; j++) {
-          if (i != j) {
-            matrix[i*size + j] = distance(points[i], points[j]);
-            nmax = std::fmax(nmax, matrix[i*size + j]);
-          }
+  tbb::parallel_for(range2d(0, size, 0, size),[&](const range2d& r) {
+    size_t r_end = r.rows().end();
+    for (size_t i = r.rows().begin(); i != r_end; i++) {
+      double nmax = 0.0;
+      size_t c_end = r.cols().end();
+      for (size_t j = r.cols().begin(); j != c_end; j++) {
+        if (i != j) {
+          matrix[i*size + j] = distance(points[i], points[j]);
+          nmax = std::fmax(nmax, matrix[i*size + j]);
         }
-        matrix[i*size+i] = size * nmax;
-        vector[i] = distance(Point(), points[i]);
       }
+      matrix[i*size + i] = size * nmax;
+      vector[i] = distance(Point(), points[i]);
+    }
   });
 }
 
@@ -71,7 +73,6 @@ int main(int argc, char** argv) {
 
   if (argc == 4)
   {
-
     srand (time(NULL));
     int size = atoi(argv[1]);
     numThreads = atoi(argv[2]);

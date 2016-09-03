@@ -1,18 +1,20 @@
 #include "tbb/tbb.h"
+#include "tbb/blocked_range2d.h"
 #include <iostream>
 
-typedef tbb::blocked_range<size_t> range;
+typedef tbb::blocked_range2d<size_t, size_t> range2d;
 static double* matrix;
 static double* vector;
 static double* result;
 static int numThreads;
 
 void product(const int size) {
-  tbb::parallel_for(range(0, size),[&](const range& r) {
-    size_t r_end = r.end();
-    for (size_t i = r.begin(); i != r_end; ++i) {
+  tbb::parallel_for(range2d(0, size, 0, size),[&](const range2d& r) {
+    size_t r_end = r.rows().end();
+    for (size_t i = r.rows().begin(); i != r_end; i++) {
       double sum = 0;
-      for (int j = 0; j < size; ++j) {
+      size_t c_end = r.cols().end();
+      for (size_t j = r.cols().begin(); j != c_end; j++) {
         sum += matrix [i*size + j] * vector [j];
       }
       result[i] = sum;
@@ -29,7 +31,7 @@ void setThreadsNumber() {
 void setMatrixValues(const int size) {
   for (int i = 0; i < size; i++) {
     for (int j = 0; j < size; j++) {
-      matrix[i*size + j] = (double)rand();
+      matrix[i*size + j] = (double) rand();
     }
   }
 }

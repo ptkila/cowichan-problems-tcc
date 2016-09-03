@@ -1,4 +1,5 @@
 #include "tbb/tbb.h"
+#include "tbb/blocked_range2d.h"
 #include <cfloat>
 #include <iostream>
 
@@ -21,6 +22,7 @@ public:
 };
 
 typedef tbb::blocked_range<size_t> range;
+typedef tbb::blocked_range2d<size_t, size_t> range2d;
 static Point* normPoints;
 static Point* points;
 static Point minPoint;
@@ -34,10 +36,11 @@ void findMaxMinPoints (const int size) {
   double minX = DBL_MAX;
   double minY = DBL_MAX;
 
-  tbb::parallel_for(range(0, size), [&](const range& r) {
-    size_t r_end = r.end();
-    for (size_t i = r.begin(); i != r_end; ++i) {
-      for (int j = 0; j < size; j++) {
+  tbb::parallel_for(range2d(0, size, 0, size), [&](const range2d& r) {
+    size_t r_end = r.rows().end();
+    for (size_t i = r.rows().begin(); i != r_end; i++) {
+      size_t c_end = r.cols().end();
+      for (size_t j = r.cols().begin(); j != c_end; j++) {
         if (points[i].x < minX) {
           minX = points[i].x;
         }

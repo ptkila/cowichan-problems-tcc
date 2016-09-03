@@ -49,7 +49,7 @@ int percolate (const int size) {
 
 	#pragma omp parallel shared(found, mask, matrix) private(i, j, row, col, sides)
 	{	
-		#pragma omp for schedule(static, size*size/ n_threads)
+		#pragma omp for schedule(static, size/ n_threads)
 		for (i = 1; i < size - 1 ; i++) {
 			for (j = 1; j < size - 1; j++) {
 				if (mask[i*size + j]) {
@@ -79,7 +79,7 @@ void invperc (const int size, const int nfill) {
 		if(set_new_point(size))
 			break;
 
-		
+		/*
 		for (k = 0; k < size; k++) {
 			for (j = 0; j < size; j++) {
 				printf("%d ", mask[k*size + j]);
@@ -87,7 +87,7 @@ void invperc (const int size, const int nfill) {
 			printf("\n");
 		}
 		printf("\n");
-
+		*/
 	}
 }
 

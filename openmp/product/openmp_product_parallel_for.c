@@ -15,7 +15,7 @@ void product (const int size) {
 
   #pragma omp parallel shared(result, matrix, vector) private (i, j)
   {
-    #pragma omp for schedule (static, size*size/n_threads)
+    #pragma omp for schedule (static, size/n_threads)
     for (i = 0; i < size; i++) {
       for (j = 0; j < size; j++) {
         result[i] += matrix[i * size + j] * vector[j];

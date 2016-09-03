@@ -35,7 +35,7 @@ void turn_to_matrix_and_vector (const int size) {
 
   #pragma omp parallel shared(matrix, size) private (i, j)
   {
-    #pragma omp for schedule(static, size*size/ n_threads)
+    #pragma omp for schedule(static, size/ n_threads)
     for (i = 0; i < size; i++) {
       double n_max = 0.0;
       for (j = 0; j < size; j++) {

@@ -27,7 +27,7 @@ void find_min_max_points (const int size) {
   
   #pragma omp parallel shared(size, points) private(i)
   {
-    #pragma omp for schedule (static, size*size/ n_threads) reduction(max:max_x, max_y), reduction(min:min_x, min_y)
+    #pragma omp for schedule (static, size/ n_threads) reduction(max:max_x, max_y), reduction(min:min_x, min_y)
     for (i = 0; i < size; i++) {
       if (points[i].x < min_x) {
         min_x = points[i].x;
