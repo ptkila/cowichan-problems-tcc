@@ -1,51 +1,53 @@
 #include "tbb/tbb.h"
+#include "tbb/blocked_range2d.h"
 #include <iostream>
 
-typedef tbb::blocked_range<size_t> range;
+typedef tbb::blocked_range2d<size_t, size_t> range2d;
 static int* matrix;
 static int* mask;
 static int* histogram;
 static int numThreads;
 
 int findMax (const int size) {
-  return tbb::parallel_reduce(range(0, size), 0, [&](const range& r, int result)->int {
-      size_t r_end = r.end();
-      for (size_t i = r.begin(); i != r_end; ++i) {
-        for (int j = 0; j < size; j++) {
-          result = std::max(result, matrix[i*size + j]);
-        }
+  int result = 0;
+  tbb::parallel_for(range2d(0, size, 0, size), [&](const range2d& r) {
+    size_t r_end = r.rows().end();
+    for (size_t i = r.rows().begin(); i != r_end; i++) {
+      size_t c_end = r.cols().end();
+      for (size_t j = r.cols().begin(); j != c_end; j++) {
+        result = std::max(result, matrix[i*size + j]);
       }
-      return result;
-    },
-    [](int x, int y)->int {
-      return std::max(x, y);
+    }
   });
+  return result;
 }
 
 void fillHistogram (const int size) {
-  tbb::parallel_for(range(0, size),[&](const range& r) {
-      size_t r_end = r.end();
-      for (size_t i = r.begin(); i != r_end; ++i) {
-        for (int j = 0; j < size; j++) {
-          histogram[matrix[i*size + j]]++;
-        }
+  tbb::parallel_for(range2d(0, size, 0, size), [&](const range2d& r) {
+    size_t r_end = r.rows().end();
+    for (size_t i = r.rows().begin(); i != r_end; i++) {
+      size_t c_end = r.cols().end();
+      for (size_t j = r.cols().begin(); j != c_end; j++) {
+        histogram[matrix[i*size + j]]++;
       }
+    }
   });
 }
 
 void fillMask (const int size, const int threshold) {
-  tbb::parallel_for(range(0, size),[&](const range& r) {
-      size_t r_end = r.end();
-      for (size_t i = r.begin(); i != r_end; ++i) {
-        for (int j = 0; j < size; j++) {
-          mask[i*size + j] = matrix[i*size + j] >= threshold;
-        }
+  tbb::parallel_for(range2d(0, size, 0, size), [&](const range2d& r) {
+    size_t r_end = r.rows().end();
+    for (size_t i = r.rows().begin(); i != r_end; i++) {
+      size_t c_end = r.cols().end();
+      for (size_t j = r.cols().begin(); j != c_end; j++) {
+        mask[i*size + j] = matrix[i*size + j] >= threshold;
       }
+    }
   });
 }
 
 void thresh(int size, int percent) {
-  
+
   int nmax = findMax(size);
   int count = (size * size * percent) / 100;
 

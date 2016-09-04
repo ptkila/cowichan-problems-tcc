@@ -12,7 +12,7 @@ void randmat(const int size, const int seed) {
   int s = 0;
   tbb::parallel_for(range(0, size),[&](const range& r) {
     size_t r_end = r.end();
-    for (size_t i = r.begin(); i != r_end; ++i) {
+    for (size_t i = r.begin(); i != r_end; i++) {
         for (int j = 0; j < size; j++) {
           s = VAL_A * (seed + i + j) + VAL_B;
           matrix[i*size + j] = s % 100;

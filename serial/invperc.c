@@ -1,83 +1,149 @@
-#include "serial.h"
+#include <limits.h>
+#include <math.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+#include <time.h>
 
-#define N_SIDES 4
+struct found_point {
+	int row, col, value;
+};
 
-void set_middle_point (int** mask, int size) {
+static int* matrix;
+static int* mask;
+static int nfill;
+static int n_threads;
+static struct found_point found;
 
-	mask[size/2][size/2] = 1;
+static const int N_SIDES = 4;
+static const int X_STEPS[4] = {1, 0, -1, 0};
+static const int Y_STEPS[4] = {0, 1, 0, -1};
 
+void set_mask_middle_point (const int size) {
+	if (size % 2 == 0) {
+		mask[(size*size)/2 + size/2] = 1;
+	} else {
+		mask[(size*size)/2] = 1;
+	}
 }
 
-void percolate (int** mask, int** matrix, int size) {
-	
-	struct point_int found;
-	int found_value, x, y, side, x_neib, y_neib;
-	int x_steps[4] = {1, 0, -1, 0};
-	int y_steps[4] = {0, 1, 0, -1};
+void reset_found_point() {
+	found.row = -1;
+	found.col = -1;
+	found.value = INT_MAX;
+}
 
-	found.x = -1;
-	found.y = -1;
-	found_value = INT_MAX;
+int set_new_point(const int size) {
+	if (found.row >= 0 && found.col >= 0) {	
+		mask[found.row*size + found.col] = 1;
+		return 0;
+	} else {
+		return 1;
+	}
+}
 
-	for (x = 0; x < size ; ++x) {
-		for (y = 0; y < size; ++y) {
-			if (mask[x][y] == 1) {
-				for (side = 0; side < N_SIDES; ++side) {
-					x_neib = x + x_steps[side];
-					y_neib = y + y_steps[side];
-					if (x_neib < size && x_neib >= 0 && 
-						y_neib < size && y_neib >= 0 &&
-						mask[x_neib][y_neib] == 0 && matrix[x_neib][y_neib] < found_value){
-						found.x = x_neib;
-						found.y = y_neib;
-						found_value = matrix[x_neib][y_neib];
+int percolate (const int size) {
+
+	int i, j, sides, row, col;
+
+	for (i = 1; i < size - 1 ; i++) {
+		for (j = 1; j < size - 1; j++) {
+			if (mask[i*size + j]) {
+				for (sides = 0; sides < N_SIDES; sides++) {
+					row = i + X_STEPS[sides];
+					col = j + Y_STEPS[sides];
+					int pos = row*size + col;
+					if (mask[pos] == 0 && matrix[pos] < found.value) {
+						found.row = row;
+						found.col = col;
+						found.value = matrix[pos]; 
 					}
 				}
 			}
 		}
 	}
+}
 
-	if (found.x >= 0 && found.y >= 0) {
-		mask[found.x][found.y] = 1;
+void invperc (const int size, const int nfill) {
+	
+	int i;
+	//int j, k;
+	for (i = 0; i < nfill; i++){
+		reset_found_point();
+		percolate(size);
+		if(set_new_point(size))
+			break;
+
+		/*
+		for (k = 0; k < size; k++) {
+			for (j = 0; j < size; j++) {
+				printf("%d ", mask[k*size + j]);
+			}
+			printf("\n");
+		}
+		printf("\n");
+		*/
 	}
 }
 
-int** invperc (int **matrix, int size, int nfill) {
+void set_threads_number() {
 
-	int** mask;
-	int i, j, percentage;
 
-	mask = (int**)calloc(size, sizeof(int*));
-	for (i = 0; i < size; ++i){
-		mask[i] = (int*)calloc(size, sizeof(int));
-	}
-	
-	set_middle_point(mask, size);
-	percentage = (size * size * nfill) /100;
+}
 
-	for (i = 0; i < percentage; ++i) {
-
-		percolate(mask, matrix, size);
-	
+void set_matrix_values (const int size) {
+	int  i, j;
+	for (i = 0; i < size; i++) {
+		for (j = 0; j < size; j++) {
+			matrix[i*size + j] = rand() % 1000;
+		}
 	}
 	/*
-	for (i = 0; i < size; ++i) {
-		for (j = 0; j < size; ++j)
-		{
-			printf("%d ", matrix[i][j]);
+	for (i = 0; i < size; i++) {
+		for (j = 0; j < size; j++) {
+			printf("%d ", matrix[i*size + j]);
 		}
 		printf("\n");
 	}
-
 	printf("\n");
-
-	for (i = 0; i < size; ++i) {
-		for (j = 0; j < size; ++j)
-		{
-			printf("%d ", mask[i][j]);
-		}
-		printf("\n");
-	}
 	*/
-	return mask;
+}
+
+int main (int argc, char** argv) {
+
+	if (argc == 4) {
+
+		srand (time(NULL));
+		int size = atoi(argv[1]);
+		n_threads = atoi(argv[2]);
+		int print = atoi(argv[3]);
+
+		matrix = (int*) malloc (sizeof(int) * size * size);
+		mask = (int*) calloc (size * size, sizeof(int));
+		nfill = 5;
+
+		set_threads_number();
+		set_matrix_values(size);
+		set_mask_middle_point(size);
+		invperc(size, nfill);
+
+		if (print == 1) {
+			int i, j;
+			for (i = 0; i < size; i++) {
+				for (j = 0; j < size; j++) {
+					printf("%d ", mask[i*size + j]);
+				}
+				printf("\n");
+			}
+		}
+
+		free(matrix);
+		free(mask);
+
+	} else {
+
+
+	}
+
+	return 0;
 }

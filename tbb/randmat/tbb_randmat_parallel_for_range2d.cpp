@@ -11,9 +11,9 @@ static int numThreads;
 
 void randmat(const int size, const int seed) {
   int s = 0;
-  tbb::parallel_for(range2d(0, size, 0, size),[&](const range2d& r) {
+  tbb::parallel_for(range2d(0, size, 0, size), [&](const range2d& r) {
     size_t r_end = r.rows().end();
-    for (size_t i = r.rows().begin(); i != r_end; ++i) {
+    for (size_t i = r.rows().begin(); i != r_end; i++) {
         size_t c_end = r.cols().end();
         for (size_t j = r.cols().begin(); j != c_end; j++) {
           s = VAL_A * (seed + i + j) + VAL_B;

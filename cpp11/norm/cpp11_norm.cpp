@@ -52,7 +52,8 @@ void findMinMaxPoints (const int startIndex, const int lastIndex) {
 	}
 }
 
-void normalizePoints (const int startIndex, const int lastIndex, const double sclX, const double sclY) {
+void normalizePoints (const int startIndex, const int lastIndex, const double sclX, 
+	const double sclY) {
 
 	for (int i = startIndex; i < lastIndex; ++i) {
 

@@ -114,10 +114,12 @@ void norm (const int size){
 	for (int i = 0; i < numThreads; ++i) {
 		futures[i] = promises[i].get_future();
 		if  (i + 1 == numThreads && numOpThreadR > 0) {
-			threadsList[i] = std::thread(findMinMaxPoints, numOpThreadM * i, numOpThreadM * (i + 1) + numOpThreadR, &promises[i]);
+			threadsList[i] = std::thread(findMinMaxPoints, numOpThreadM * i, 
+				numOpThreadM * (i + 1) + numOpThreadR, &promises[i]);
 			break;
 		} else {
-			threadsList[i] = std::thread(findMinMaxPoints, numOpThreadM * i, numOpThreadM * (i + 1), &promises[i]);
+			threadsList[i] = std::thread(findMinMaxPoints, numOpThreadM * i, 
+				numOpThreadM * (i + 1), &promises[i]);
 		}
 	}
 

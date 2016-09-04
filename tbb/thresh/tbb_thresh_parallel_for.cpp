@@ -9,7 +9,7 @@ static int numThreads;
 
 int findMax (const int size) {
   int result = 0;
-  tbb::parallel_for(range(0, size),[&](const range& r) {
+  tbb::parallel_for(range(0, size), [&](const range& r) {
     size_t r_end = r.end();
     for (size_t i = r.begin(); i != r_end; ++i) {
       for (int j = 0; j < size; j++) {

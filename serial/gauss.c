@@ -1,89 +1,149 @@
-#include <stdio.h>
+#include <limits.h>
+#include <math.h>
 #include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+#include <time.h>
 
-static float* matrix;
-static float* target;
-static float* solution;
+static double* matrix;
+static double* target;
+static double* solution;
+static int n_threads;
 
-void set_values_matrix(int size) {
-    int i, j;
-    for (i = 0; i < size; i++) {
-        for (j = 0; j < size; j++) {
-            matrix[i*size + j] = (float) rand();
+void elimination(const int size) {
+
+    //i = diagonal principal
+    //j = linha abaixo de i
+    //k = colunas de j
+
+    int i, j, k;
+    for (i = 0; i < size-1; i++) {
+        for (j = i + 1; j < size; j++) {
+            
+            //Elemento que zera o valor abaixo da diag prin
+            double mult = matrix[j*size + i]/ matrix[i*size + i];
+
+            //Atualiza linha
+            for (k = i; k < size; k++) {
+
+                matrix[j*size + k] -= matrix[i*size + k] * mult;
+            
+            }
+
+            // Atualiza vetor
+            target[j] -= target[i] * mult;
         }
     }
 }
 
-void gauss(int size) {
+void fill_solution (const int size) {
 
-    int i, j, k;
-    float aux = 0.0;
-    /* loop for the generation of upper triangular matrix*/
+    // i = linha
+    // j = coluna
 
-    for(i = 0; i < size; i++) {
-        for(j = 0; j < size; j++) {
-            if(j > i) {
-                aux = A[j][i]/A[i][i];
-                for(k = 0; k < size; k++) {
-                    A[j][k] = A[j][k] - aux*A[i][k];
-                }
+    int i, j;
+
+    for (i = size - 1; i >= 0; i--) {
+        solution[i] = target[i];
+        for (j = size - 1; j > i; j--) {
+            solution[i] -= matrix[i*size + j] * solution[j];
+        }
+        solution[i] /= matrix[i*size + i];
+    }
+}
+
+void gauss(const int size) {
+
+    elimination(size);
+    fill_solution(size);
+
+}
+
+void set_target_values(const int size) {
+
+    int i;
+    for (i = 0; i < size; i++) {
+        target[i] = (double)(rand() % 1000);
+    }
+    /*
+    target[0] = 2;
+    target[1] = 4;
+    target[2] = 0;
+    */
+}   
+
+void set_matrix_values (const int size) {
+    int  i, j;
+
+    for (i = 0; i < size; i++) {
+        for (j = 0; j < size; j++) {
+            if (i == j) {
+                matrix[i*size + j] = (double)(rand() % 1000);
+            } else {
+                matrix[i*size + j] = (double)(rand() % 100);
             }
         }
     }
-    x[n]=A[n][n+1]/A[n][n];
-    /* this loop is for backward substitution*/
-    for(i=n-1; i>=1; i--)
-    {
-        sum=0;
-        for(j=i+1; j<=n; j++)
-        {
-            sum=sum+A[i][j]*x[j];
-        }
-        x[i]=(A[i][n+1]-sum)/A[i][i];
-    }
-
-}
-
-int main(int argc, char* argv)
-{
-
-    if (argc == 3) {
-
-        int i,j,k,n;
-        float A[20][20],c,x[10],sum=0.0;
-        srand (time(NULL));
-        int size = atoi(argv[1]);
-        int print = atoi(argv[2]);
-        int i;
 
     /*
-    printf("\nEnter the order of matrix: ");
-    scanf("%d",&n);
-    printf("\nEnter the elements of augmented matrix row-wise:\n\n");
-    for(i=1; i<=n; i++)
-    {
-        for(j=1; j<=(n+1); j++)
-        {
-            printf("A[%d][%d] : ", i,j);
-            scanf("%f",&A[i][j]);
-        }
-    }
+    matrix[0] = 1;
+    matrix[1] = 1;
+    matrix[2] = 0;
+
+    matrix[3] = 2;
+    matrix[4] = -1;
+    matrix[5] = 3;
+
+    matrix[6] = -1;
+    matrix[7] = 0;
+    matrix[8] = 1;
     */
 
-    matrix = (float*) malloc(sizeof(float) * size * size);
-    set_values_matrix(size);
-    gauss(size);
-    
-    if (print == 1) {
-        for(i = 0; i < size; i++) {
-            printf("\nx%d=%f\t",i,x[i]); /* x1, x2, x3 are the required solutions*/
+    /*
+    for (i = 0; i < size; i++) {
+        for (j = 0; j < size; j++) {
+            printf("%d ", matrix[i*size + j]);
         }
+        printf("\n");
     }
-} else {
-
-    printf("programa <tamanho> <printar?>\n");
-
+    printf("\n");
+    */
 }
 
-return 0;
+int main (int argc, char** argv) {
+
+    if (argc == 4) {
+
+        srand (time(NULL));
+        int size = atoi(argv[1]);
+        n_threads = atoi(argv[2]);
+        int print = atoi(argv[3]);
+
+        matrix = (double*) malloc (sizeof(double) * size * size);
+        target = (double*) malloc (sizeof(double) * size);
+        solution = (double*) malloc (sizeof(double) * size);
+
+        set_threads_number();
+        set_matrix_values(size);
+        set_target_values(size);
+        gauss(size);
+
+        if (print == 1) {
+            int i;
+            for (i = 0; i < size; i++) {
+                printf("%f ", solution[i]);
+            }
+            printf("\n");
+        }
+
+        free(matrix);
+        free(target);
+        free(solution);
+
+    } else {
+
+
+    }
+
+    return 0;
 }
