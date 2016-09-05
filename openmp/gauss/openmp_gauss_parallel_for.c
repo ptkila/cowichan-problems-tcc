@@ -10,7 +10,6 @@ static double* matrix;
 static double* target;
 static double* solution;
 static int n_threads;
-static pthread_mutex_t m;
 
 void elimination(const int size) {
 
@@ -20,7 +19,7 @@ void elimination(const int size) {
 
 	int i, j, k;
 	for (i = 0; i < size - 1; i++) {
-    	#pragma omp parallel shared(matrix, target) private(j, k)
+    	#pragma omp parallel shared(matrix, target, i) private(j, k)
     	{
     		#pragma omp for schedule(static, size/ n_threads)
 	    	for (j = i + 1; j < size; j++) {
@@ -37,15 +36,16 @@ void elimination(const int size) {
 	    	}
     	}
   	}
-
+  	/*
   	// Testar eliminação
-  	
 	for (i = 0; i < size; i++) {
 		for (j = 0; j < size; j++) {
 			printf("%.0f\t", matrix[i*size + j]);
 		}
 		printf("\n");
-	}		
+	}
+	printf("\n");
+	*/		
 }
 
 void fill_solution (const int size) {
@@ -151,6 +151,22 @@ int main (int argc, char** argv) {
 			}
 			printf("\n");
 		}
+		printf("\n");
+
+		// Testar valores
+		
+		double* result = (double*) calloc (sizeof(double), size);
+		int i, j;
+
+		for (i = 0; i < size; i++) {
+     		for (j = 0; j < size; j++) {
+        		result[i] += matrix[i*size + j] * solution[j];
+      		}
+    	}
+
+		for (i = 0; i < size; i++) {
+        	printf("%f = %f\n", result[i], target[i]);
+    	}
 
 		free(matrix);
 		free(target);

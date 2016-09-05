@@ -12,7 +12,7 @@ static double* matrix;
 static double* target;
 static double* solution;
 static int n_threads;
-static pthread_mutex_t m;
+//static pthread_mutex_t m;
 
 void elimination(const int size) {
 
@@ -21,10 +21,9 @@ void elimination(const int size) {
 	//k = colunas de j
 
 	int i, j, k;
-	cilk_for (i = 0; i < size - 1; i++) {
-		pthread_mutex_lock(&m);
-    	for (j = i + 1; j < size; j++) {
-      		
+	for (i = 0; i < size - 1; i++) {
+    	cilk_for (j = i + 1; j < size; j++) {   		
+      		//pthread_mutex_lock(&m);
       		//Elemento que zera o valor abaixo da diag prin
       		double mult = matrix[j*size + i]/ matrix[i*size + i];
 
@@ -34,19 +33,19 @@ void elimination(const int size) {
       		}
       		// Atualiza vetor
       		target[j] -= target[i] * mult;
+      		//pthread_mutex_unlock(&m);
     	}
-    	pthread_mutex_unlock(&m);
   	}
 
   	// Testar eliminação
-  	/*
+ 	/*
 	for (i = 0; i < size; i++) {
 		for (j = 0; j < size; j++) {
-			printf("%.0f\t", matrix[i*size + j]);
+			printf("%.1f\t", matrix[i*size + j]);
 		}
 		printf("\n");
 	}
-	*/	
+	*/
 }
 
 void fill_solution (const int size) {
@@ -96,7 +95,7 @@ void set_target_values(const int size) {
 
 void set_matrix_values (const int size) {
 	int  i, j;
-
+	
 	for (i = 0; i < size; i++) {
 		for (j = 0; j < size; j++) {
 			if (i == j) {
@@ -144,7 +143,7 @@ int main (int argc, char** argv) {
 		target = (double*) malloc (sizeof(double) * size);
 		solution = (double*) calloc (sizeof(double), size);
 
-		pthread_mutex_init(&m,NULL);
+		//pthread_mutex_init(&m,NULL);
 		set_threads_number();
 		set_matrix_values(size);
 		set_target_values(size);
@@ -157,6 +156,21 @@ int main (int argc, char** argv) {
 			}
 			printf("\n");
 		}
+
+		
+		// Testar valores
+		double* result = (double*) calloc (sizeof(double), size);
+		int i, j;
+
+		for (i = 0; i < size; i++) {
+     		for (j = 0; j < size; j++) {
+        		result[i] += matrix[i*size + j] * solution[j];
+      		}
+    	}
+
+		for (i = 0; i < size; i++) {
+        	printf("%f = %f\n", result[i], target[i]);
+    	}
 
 		free(matrix);
 		free(target);
