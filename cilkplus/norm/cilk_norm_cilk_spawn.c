@@ -45,7 +45,6 @@ void find_max_min_points (const int begin, const int end, const int size) {
     int middle = begin + (end - begin)/ 2;
     cilk_spawn find_max_min_points(begin, middle, size);
     cilk_spawn find_max_min_points(middle, end, size);
-    cilk_sync;
 
   }
 }
@@ -65,7 +64,6 @@ void normalize_points (const int begin, const int end, const double sclX, const 
     int middle = begin + (end - begin)/ 2;
     cilk_spawn normalize_points(begin, middle, sclX, sclY, size);
     cilk_spawn normalize_points(middle, end, sclX, sclY, size);
-    cilk_sync;
 
   }
 }

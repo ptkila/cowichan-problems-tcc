@@ -1,7 +1,6 @@
 #include <cilk/cilk.h>
 #include <cilk/cilk_api.h>
 #include <cilk/reducer.h>
-#include <cilk/reducer_max.h>
 #include <math.h>
 #include <float.h>
 #include <stdlib.h>
@@ -13,6 +12,7 @@ struct point {
   double x;
   double y;
 };
+
 static struct point* norm_points;
 static struct point* points;
 static struct point min_point;

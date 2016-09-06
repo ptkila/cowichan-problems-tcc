@@ -11,17 +11,27 @@ static int *mask;
 static int *histogram;
 static int n_threads;
 
-int find_max (const int size) {
-  int i, j;
-  int max = 0;
-  cilk_for (i = 0; i < size; i++) {
-    for (j = 0; j < size; j++) {
-      if(max < matrix[size*i + j]) {
-        max = matrix[size*i + j];
-      }
+int find_max(const int begin, const int end, const int size) {
+  int left, right;
+  
+  if (begin + 1 == end) {
+    
+    int i;
+    int res = matrix[begin*size + 0];
+    for (i = 1; i < size; i++) {
+      res = MAX(res, matrix[begin*size + i]);
     }
+    return res;
+
+  } else {
+    
+    int middle = begin + (end - begin) / 2;
+    left = cilk_spawn find_max(begin, middle, size);
+    right = cilk_spawn find_max(middle, end, size);
+    cilk_sync;
+    return MAX(left, right);
+  
   }
-  return max;
 }
 
 void fill_histogram(const int size) {
@@ -49,8 +59,8 @@ void thresh(const int size, const int percent) {
 
   nmax = find_max(size);
 
-  fill_histogram(size);
-  count = (size * size * percent) / 100;
+  fill_histogram(0, size, size);
+  count = (size * size * percent)/ 100;
 
   prefixsum = 0;
   threshold = nmax;

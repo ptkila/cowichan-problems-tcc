@@ -41,6 +41,7 @@ void fill_matrix(const int begin, const int end, const int size) {
       matrix[begin*size + begin] = nmax * size;
       vector[begin] = distance(origin, points[begin]);
     }
+    
     return;
   
   } else {
@@ -48,7 +49,6 @@ void fill_matrix(const int begin, const int end, const int size) {
     int middle = begin + (end - begin) / 2;
     cilk_spawn fill_matrix(begin, middle, size);
     cilk_spawn fill_matrix(middle, end, size);
-    cilk_sync;
   
   }
 }

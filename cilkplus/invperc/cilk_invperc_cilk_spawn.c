@@ -59,6 +59,7 @@ void percolate (const int begin, const int end, const int size) {
 
 		int middle = begin + (end - begin)/ 2;
 		cilk_spawn percolate(begin, middle, size);
+		cilk_sync;
 		cilk_spawn percolate(middle, end, size);
 		cilk_sync;
 	

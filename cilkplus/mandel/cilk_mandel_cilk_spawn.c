@@ -43,7 +43,7 @@ void fill_matrix (int const begin, int const end, int const size,
 
 		int middle = begin + (end - begin)/ 2;
 		cilk_spawn fill_matrix(begin, middle, size, x0, y0, dx, dy);
-		cilk_spawn fill_matrix(middle, end, size, x0, y0, dx, dy);
+		fill_matrix(middle, end, size, x0, y0, dx, dy);
 		cilk_sync;
 
 	}

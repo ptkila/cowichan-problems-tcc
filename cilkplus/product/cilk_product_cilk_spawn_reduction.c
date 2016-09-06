@@ -12,6 +12,7 @@ static double* result;
 static int n_threads;
 
 void fill_result(const int begin, const int end, const int size) {
+  
   if (begin + 1 == end) {
     
     int i;
@@ -26,10 +27,9 @@ void fill_result(const int begin, const int end, const int size) {
 
   } else {
 
-    int middle = begin + (end - begin) / 2; 
+    int middle = begin + (end - begin)/ 2; 
     cilk_spawn fill_result(begin, middle, size);
     cilk_spawn fill_result(middle, end, size);
-    cilk_sync;
   
   }
 }

@@ -10,11 +10,12 @@ static int *matrix;
 static int n_threads;
 
 void fill_matrix(const int begin, const int end, const int size, const int seed) {
+  
   if (begin + 1 == end) {
     
     int i, s;
     for (i = 0; i < size; i++) {
-      s = VAL_A * (seed + i) + VAL_B;
+      s = VAL_A * (seed + i + begin) + VAL_B;
       matrix[begin*size + i] = s % 100;
     }
 
@@ -25,7 +26,6 @@ void fill_matrix(const int begin, const int end, const int size, const int seed)
     int middle = begin + (end - begin) / 2;
     cilk_spawn fill_matrix(begin, middle, size, seed);
     cilk_spawn fill_matrix(middle, end, size, seed);
-    cilk_sync;
 
   }
 }

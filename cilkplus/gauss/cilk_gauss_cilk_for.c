@@ -12,7 +12,6 @@ static double* matrix;
 static double* target;
 static double* solution;
 static int n_threads;
-//static pthread_mutex_t m;
 
 void elimination(const int size) {
 

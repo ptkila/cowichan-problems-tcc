@@ -39,7 +39,7 @@ int get_neighbor_count(const int size, const int row, const int col) {
 void update_matrix(const int size) {
 	int i, j;
 	cilk_for (i = 0; i < size; ++i) {
-		for (int j = 0; j < size; ++j) {
+		for (j = 0; j < size; ++j) {
 			matrix[i* size + j] = tmpMatrix[i*size + j];
 		}
 	}

@@ -51,7 +51,6 @@ void fill_histogram(const int begin, const int end, const int size) {
     int middle = begin + (end - begin) / 2;
     cilk_spawn fill_histogram(begin, middle, size);
     cilk_spawn fill_histogram(middle, end, size);
-    cilk_sync;
   
   }
 }
