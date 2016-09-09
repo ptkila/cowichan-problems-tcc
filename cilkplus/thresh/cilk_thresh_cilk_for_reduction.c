@@ -19,8 +19,8 @@ int find_max (const int size) {
   CILK_C_REDUCER_MAX(r, int, 0);
   CILK_C_REGISTER_REDUCER(r);
 
-  cilk_for (i = 0; i < size; i++) {
-    for (j = 0; j < size; j++) {
+  cilk_for (i = 0; i < size; ++i) {
+    for (j = 0; j < size; ++j) {
       CILK_C_REDUCER_MAX_CALC(r, matrix[i*size + j]);
     }
   }
@@ -32,9 +32,9 @@ int find_max (const int size) {
 
 void fill_histogram(const int size) {
   int i, j;
-  cilk_for (i = 0; i < size; i++) {
-    for (j = 0; j < size; j++) {
-      histogram[matrix[i*size + j]]++;
+  cilk_for (i = 0; i < size; ++i) {
+    for (j = 0; j < size; ++j) {
+      ++histogram[matrix[i*size + j]];
     }
   }
 }
@@ -71,8 +71,8 @@ void thresh(const int size, const int percent) {
 
 void set_values_matrix(const int size) {
   int i, j;
-  for (i = 0; i < size; i++) {
-    for (j = 0; j < size; j++) {
+  for (i = 0; i < size; ++i) {
+    for (j = 0; j < size; ++j) {
       matrix[i*size + j] = rand() % 255;
     }
   }
@@ -109,8 +109,8 @@ int main(int argc, char *argv[]) {
 
     if (print == 1) {
       int i, j;
-      for (i = 0; i < size; i++) {
-        for (j = 0; j < size; j++) {
+      for (i = 0; i < size; ++i) {
+        for (j = 0; j < size; ++j) {
           printf("%hhu ", mask[i*size + j]);
         }
         printf("\n");

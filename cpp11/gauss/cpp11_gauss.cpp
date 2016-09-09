@@ -35,7 +35,7 @@ int getPivot(const int j, const int size) {
     double y_best, y_cmp;
     y_best = abs(matrix[k*size + j]);
 
-    for(int i = j + 1; i < size; i++) {
+    for(int i = j + 1; i < size; ++i) {
         y_cmp = abs(matrix[i*size + j]);
         if(y_cmp > y_best) {
             k = i;
@@ -52,7 +52,7 @@ void swapLineMatrix(const int p, const int ksave, const int size) {
 	int jStart = ksave*size;
 	int jEnd = ksave*size + size;
 	
-	for (int i = iStart; i < iEnd; i++){
+	for (int i = iStart; i < iEnd; ++i){
 		if (jStart < jEnd) {
 			tmp = matrix[i];
 			matrix[i] = matrix[jStart];
@@ -74,7 +74,7 @@ void elimination(const int j, const int i, const int p, const int size) {
 	mutex.lock();
 	for (int k = i + j + 1; k < size; k = k + p) {
 		m = matrix[k*size + j]/ matrix[j*size + j];
-		for (int l = j; l < size; l++) {
+		for (int l = j; l < size; ++l) {
 			matrix[k*size + l] -= m * matrix[j*size + l];
 		}
 		target[k] -= m * target[j];
@@ -87,13 +87,13 @@ void gauss(const int size) {
 	ThreadPool pool(numThreads);
 	int ksave;
     
-    for(int j = 0; j < size - 1; j++) {
+    for(int j = 0; j < size - 1; ++j) {
     	
     	ksave = getPivot(j, size);
     	swapLineMatrix(j, ksave, size);
     	swapValueTarget(j, ksave);
     	
-    	for (int i = 0; i < numThreads; i++) {
+    	for (int i = 0; i < numThreads; ++i) {
 
     		pool.enqueue(elimination, j, i, numThreads, size);
     	

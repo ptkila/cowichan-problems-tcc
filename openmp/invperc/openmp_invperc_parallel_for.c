@@ -53,7 +53,7 @@ int percolate (const int size) {
 		for (i = 1; i < size - 1 ; i++) {
 			for (j = 1; j < size - 1; j++) {
 				if (mask[i*size + j]) {
-					for (sides = 0; sides < N_SIDES; sides++) {
+					for (sides = 0; sides < N_SIDES; ++sides) {
 						row = i + X_STEPS[sides];
 						col = j + Y_STEPS[sides];
 						int pos = row*size + col;
@@ -73,7 +73,7 @@ void invperc (const int size, const int nfill) {
 	
 	int i;
 	int j, k;
-	for (i = 0; i < nfill; i++){
+	for (i = 0; i < nfill; ++i){
 		reset_found_point();
 		percolate(size);
 		if(set_new_point(size))
@@ -99,14 +99,14 @@ void set_threads_number() {
 
 void set_matrix_values (const int size) {
 	int  i, j;
-	for (i = 0; i < size; i++) {
-		for (j = 0; j < size; j++) {
+	for (i = 0; i < size; ++i) {
+		for (j = 0; j < size; ++j) {
 			matrix[i*size + j] = rand() % 1000;
 		}
 	}
 	
-	for (i = 0; i < size; i++) {
-		for (j = 0; j < size; j++) {
+	for (i = 0; i < size; ++i) {
+		for (j = 0; j < size; ++j) {
 			printf("%d ", matrix[i*size + j]);
 		}
 		printf("\n");
@@ -135,8 +135,8 @@ int main (int argc, char** argv) {
 
 		if (print == 1) {
 			int i, j;
-			for (i = 0; i < size; i++) {
-				for (j = 0; j < size; j++) {
+			for (i = 0; i < size; ++i) {
+				for (j = 0; j < size; ++j) {
 					printf("%d ", mask[i*size + j]);
 				}
 				printf("\n");

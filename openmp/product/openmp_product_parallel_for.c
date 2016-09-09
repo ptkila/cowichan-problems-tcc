@@ -16,8 +16,8 @@ void product (const int size) {
   #pragma omp parallel shared(result, matrix, vector) private (i, j)
   {
     #pragma omp for schedule (static, size/n_threads)
-    for (i = 0; i < size; i++) {
-      for (j = 0; j < size; j++) {
+    for (i = 0; i < size; ++i) {
+      for (j = 0; j < size; ++j) {
         result[i] += matrix[i * size + j] * vector[j];
       }
     }
@@ -67,7 +67,7 @@ int main(int argc, char** argv) {
 
     if (print == 1) {
       int i;
-      for (i = 0; i < size; i++) {
+      for (i = 0; i < size; ++i) {
         printf("%d ", result[i]);
       }
       printf("\n");

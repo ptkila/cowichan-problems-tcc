@@ -66,11 +66,12 @@ static Point* normPoints;
 static MinMaxPoints minMaxPoints;
 static int numThreads;
 
-void findMinMaxPoints (const int startIndex, const int lastIndex, std::promise<MinMaxPoints>* promise) {
+void findMinMaxPoints (const int startIndex, const int lastIndex, 
+	std::promise<MinMaxPoints>* promise) {
 
 	MinMaxPoints p = MinMaxPoints();
 
-	for (int i = startIndex; i < lastIndex; i++) {
+	for (int i = startIndex; i < lastIndex; ++i) {
 		
 		if (points[i].x < p.minX) {
 			p.minX = points[i].x;
@@ -164,7 +165,7 @@ void norm (const int size){
 }
 
 void setPointsValues (const int size) {
-	for (int i = 0; i < size; i++) {
+	for (int i = 0; i < size; ++i) {
 		points[i].x = (double)(std::rand());
 		points[i].y = (double)(std::rand());
 	}
@@ -194,7 +195,7 @@ int main(int argc, char** argv) {
 		norm(size);
 
 		if (print == 1) {
-			for (int i = 0; i < size; i++) {
+			for (int i = 0; i < size; ++i) {
 				std::cout << normPoints[i].x << " ";
 				std::cout << normPoints[i].y << std::endl;
 			}

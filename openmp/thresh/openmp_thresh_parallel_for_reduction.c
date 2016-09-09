@@ -17,8 +17,8 @@ int find_max (const int size) {
   #pragma omp parallel shared (matrix, size) private (i, j)
   {
     #pragma omp for schedule(static, size/n_threads) reduction(max:max_val)
-    for (i = 0; i < size; i++) {
-      for (j = 0; j < size; j++) {
+    for (i = 0; i < size; ++i) {
+      for (j = 0; j < size; ++j) {
         if (max_val < matrix[i * size + j]) {
           max_val = matrix[i * size + j];
         }
@@ -35,9 +35,9 @@ void fill_histogram(const int size) {
   #pragma omp parallel shared(matrix, histogram) private(i, j)
   {
     #pragma omp for schedule (static, size/ n_threads)
-    for (i = 0; i < size; i++) {
-      for (j = 0; j < size; j++) {
-        histogram[matrix[i* size + j]]++;
+    for (i = 0; i < size; ++i) {
+      for (j = 0; j < size; ++j) {
+        ++histogram[matrix[i* size + j]];
       }
     }
   }

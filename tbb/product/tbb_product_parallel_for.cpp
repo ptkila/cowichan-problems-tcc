@@ -27,15 +27,15 @@ void setThreadsNumber() {
 }
 
 void setMatrixValues(const int size) {
-  for (int i = 0; i < size; i++) {
-    for (int j = 0; j < size; j++) {
+  for (int i = 0; i < size; ++i) {
+    for (int j = 0; j < size; ++j) {
       matrix[i*size + j] = (double)rand();
     }
   }
 }
 
 void setVectorValues(const int size) {
-  for (int i = 0; i < size; i++) {
+  for (int i = 0; i < size; ++i) {
     vector[i] = (double)rand();
   }
 }
@@ -60,7 +60,7 @@ int main(int argc, char** argv) {
    product(size);
 
    if (print == 1) {
-    for (int i = 0; i < size; i++) {
+    for (int i = 0; i < size; ++i) {
         std::cout << result[i] << " ";
     }
     std::cout << std::endl;

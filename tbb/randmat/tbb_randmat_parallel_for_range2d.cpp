@@ -13,9 +13,9 @@ void randmat(const int size, const int seed) {
   int s = 0;
   tbb::parallel_for(range2d(0, size, 0, size), [&](const range2d& r) {
     size_t r_end = r.rows().end();
-    for (size_t i = r.rows().begin(); i != r_end; i++) {
+    for (size_t i = r.rows().begin(); i != r_end; ++i) {
         size_t c_end = r.cols().end();
-        for (size_t j = r.cols().begin(); j != c_end; j++) {
+        for (size_t j = r.cols().begin(); j != c_end; ++j) {
           s = VAL_A * (seed + i + j) + VAL_B;
           matrix[i*size + j] = s % 100;
         }
@@ -45,8 +45,8 @@ int main(int argc, char** argv) {
     randmat(size, rand());
 
     if (print == 1) {
-      for (int i = 0; i < size; i++) {
-        for (int j = 0; j < size; j++) {
+      for (int i = 0; i < size; ++i) {
+        for (int j = 0; j < size; ++j) {
           std::cout << matrix[i*size + j] << " ";
         }
         std::cout << std::endl;

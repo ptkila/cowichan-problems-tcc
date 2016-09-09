@@ -15,8 +15,8 @@ static int nMax;
 void reduceMax (const int startIndex, const int endIndex, const int size) {
   int max = 0;
 
-  for (int i = startIndex; i < endIndex; i++) {
-    for (int j = 0; j < size; j++) {
+  for (int i = startIndex; i < endIndex; ++i) {
+    for (int j = 0; j < size; ++j) {
       if (matrix[i * size + j] > max)
         max = matrix[i*size + j];
     }
@@ -27,16 +27,16 @@ void reduceMax (const int startIndex, const int endIndex, const int size) {
 }
 
 void fillHistogram(const int startIndex, const int endIndex, const int size) {
-  for (int i = startIndex; i < endIndex; i++) {
-    for (int j = 0; j < size; j++) {
+  for (int i = startIndex; i < endIndex; ++i) {
+    for (int j = 0; j < size; ++j) {
       histogram[matrix[i*size + j]]++;
     }
   }
 }
 
 void fillMask(const int startIndex, const int endIndex, const int size, const int threshold) {
-  for (int i = 0; i < size; i++) {
-    for (int j = 0; j < size; j++) {
+  for (int i = 0; i < size; ++i) {
+    for (int j = 0; j < size; ++j) {
       mask[i*size + j] = (matrix[i*size + j] >= threshold);
     }
   }

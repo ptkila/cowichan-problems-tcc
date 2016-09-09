@@ -42,7 +42,7 @@ void outer(const int size) {
     size_t r_end = r.end();
     for (size_t i = r.begin(); i != r_end; ++i) {
         double nmax = 0;
-        for (int j = 0; j < size; j++) {
+        for (int j = 0; j < size; ++j) {
           if (i != j) {
             matrix[i*size + j] = distance(points[i], points[j]);
             nmax = std::fmax(nmax, matrix[i*size + j]);
@@ -55,7 +55,7 @@ void outer(const int size) {
 }
 
 void setPointValues(const int size) {
-  for (int i = 0; i < size; i++) {
+  for (int i = 0; i < size; ++i) {
     points[i].x = rand();
     points[i].y = rand();
   }
@@ -86,15 +86,15 @@ int main(int argc, char** argv) {
     outer(size);
 
     if (print == 1) {
-      for (int i = 0; i < size; i++) {
-        for (int j = 0; j < size; j++) {
+      for (int i = 0; i < size; ++i) {
+        for (int j = 0; j < size; ++j) {
           std::cout << matrix[i*size + j] << " ";
         }
         std::cout << std::endl;
       }
       std::cout << std::endl;
 
-      for (int i = 0; i < size; i++) {
+      for (int i = 0; i < size; ++i) {
         std::cout << vector[i] << " ";
       }
       std::cout << std::endl;

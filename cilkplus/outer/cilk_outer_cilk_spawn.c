@@ -33,7 +33,7 @@ void fill_matrix(const int begin, const int end, const int size) {
   if (begin + 1 == end) {
     int i;   
     double nmax = 0;
-    for (i = 0; i < size; i++) {
+    for (i = 0; i < size; ++i) {
       if (begin != i) {
         matrix[begin*size + i] = distance(points[begin], points[i]);
         nmax = fmax(nmax, matrix[begin*size + i]);
@@ -62,7 +62,7 @@ void outer(const int size) {
 
 void set_vector_of_points(const int size) {
   int i;
-  for (i = 0; i < size; i++) {
+  for (i = 0; i < size; ++i) {
     points[i].i = rand();
     points[i].j = rand();
   }
@@ -100,14 +100,14 @@ int main(int argc, char** argv) {
 
     if (print == 1) {
       int i, j;
-      for (i = 0; i < size; i++) {
-        for (j = 0; j < size; j++) {
+      for (i = 0; i < size; ++i) {
+        for (j = 0; j < size; ++j) {
           printf("%g ", matrix[i*size + j]);
         }
         printf("\n");
       }
       printf("\n");
-      for (i = 0; i < size; i++) {
+      for (i = 0; i < size; ++i) {
         printf("%g ", vector[i]);
       }
       printf("\n");

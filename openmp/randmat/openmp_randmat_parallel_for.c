@@ -46,8 +46,8 @@ int main(int argc, char** argv) {
 
     if (print == 1) {
       int i, j;
-      for (i = 0; i < size; i++) {
-        for (j = 0; j < size; j++) {
+      for (i = 0; i < size; ++i) {
+        for (j = 0; j < size; ++j) {
           printf("%d ", matrix[i * size + j]);
         }
         printf("\n");

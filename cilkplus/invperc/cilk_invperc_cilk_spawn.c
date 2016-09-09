@@ -39,9 +39,9 @@ void percolate (const int begin, const int end, const int size) {
 	
 	if (begin + 1 == end) {
 		int i, sides, row, col;
-		for (i = 1; i < size - 1 ; i++) {
+		for (i = 1; i < size - 1 ; ++i) {
 			if (mask[begin*size + i]) {
-				for (sides = 0; sides < N_SIDES; sides++) {
+				for (sides = 0; sides < N_SIDES; ++sides) {
 					row = begin + X_STEPS[sides];
 					col = i + Y_STEPS[sides];
 					int pos = row*size + col;
@@ -59,7 +59,6 @@ void percolate (const int begin, const int end, const int size) {
 
 		int middle = begin + (end - begin)/ 2;
 		cilk_spawn percolate(begin, middle, size);
-		cilk_sync;
 		cilk_spawn percolate(middle, end, size);
 		cilk_sync;
 	
@@ -77,9 +76,9 @@ int set_new_point(const int size) {
 
 void invperc (const int size, const int nfill) {
 	
-	int i;
-	int j, k;
-	for (i = 0; i < nfill; i++){
+	int i, j, k;
+	
+	for (i = 0; i < nfill; ++i){
 		reset_found_point();
 
 		cilk_spawn percolate(1, size - 1, size);
@@ -90,8 +89,8 @@ void invperc (const int size, const int nfill) {
 			break;
 		}
 		
-		for (k = 0; k < size; k++) {
-			for (j = 0; j < size; j++) {
+		for (k = 0; k < size; ++k) {
+			for (j = 0; j < size; ++j) {
 				printf("%d ", mask[k*size + j]);
 			}
 			printf("\n");

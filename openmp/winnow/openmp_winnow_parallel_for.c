@@ -23,12 +23,14 @@ int count_points (const int size) {
   int counter = 0;
   int sum = 0;
 
-  #pragma omp parallel shared(mask) private(i, j) firstprivate(sum)
+  #pragma omp threadprivate(sum)
+  #pragma omp parallel shared(mask) private(i, j)
   {
     int thread_num = omp_get_thread_num();
-    #pragma omp for schedule(static, size/ n_threads)
-    for (i = 0; i < size; i++) {
-      for (j = 0; j < size; j++) {
+    sum = 0;
+    #pragma omp for schedule(static, size/ n_threads) collapse (2)
+    for (i = 0; i < size; ++i) {
+      for (j = 0; j < size; ++j) {
         if (mask[i*size + j]) {
           sum++;
         }
@@ -38,7 +40,7 @@ int count_points (const int size) {
   }
   
   int len = 0;
-  for (i = 0; i < n_threads; i++) {
+  for (i = 0; i < n_threads; ++i) {
     int tmp = offsets[i];
     offsets[i] = len;
     len += tmp;
@@ -57,9 +59,9 @@ void fill_values(const int size) {
   {
     int thread_num = omp_get_thread_num();
     off = offsets[thread_num];
-    #pragma omp for schedule(static, size/ n_threads)
-    for (i = 0; i < size; i++) {
-      for (j = 0; j < size; j++) {
+    #pragma omp for schedule(static, size/ n_threads) collapse(2)
+    for (i = 0; i < size; ++i) {
+      for (j = 0; j < size; ++j) {
         if (mask[i*size + j]) {
           ev_values[off].weight = matrix[i*size + j];
           ev_values[off].i = i;
@@ -73,8 +75,8 @@ void fill_values(const int size) {
 
 void fill_ev_points(const int len) {
   int i;
-  int chunk = (int)floor((float)len/ (float)nelts);
-  for(i = 0; i < nelts; i++) {
+  int chunk = len/ nelts;
+  for(i = 0; i < nelts; ++i) {
     points[i] = ev_values[i*chunk];
   }
 }
@@ -107,8 +109,8 @@ void winnow (const int size) {
 
 void set_values_matrix(const int size) {
   int i, j;
-  for (i =  0; i < size; i++) {
-    for (j = 0; j < size; j++) {
+  for (i =  0; i < size; ++i) {
+    for (j = 0; j < size; ++j) {
       matrix[i*size + j] = rand();
     }
   }
@@ -116,8 +118,8 @@ void set_values_matrix(const int size) {
 
 void set_values_mask(const int size) {
   int i, j;
-  for (i = 0; i < size; i++) {
-    for (j = 0; j < size; j++) {
+  for (i = 0; i < size; ++i) {
+    for (j = 0; j < size; ++j) {
       mask[i*size + j] = rand() % 2;
     }
   }
@@ -151,7 +153,7 @@ int main(int argc, char** argv) {
 
     if (print == 1) {
       int i;
-      for (i = 0; i < nelts; i++) {
+      for (i = 0; i < nelts; ++i) {
         printf("%d %d %d", ev_values[i].i, ev_values[i].j, ev_values[i].weight);
         printf("\n");
       }

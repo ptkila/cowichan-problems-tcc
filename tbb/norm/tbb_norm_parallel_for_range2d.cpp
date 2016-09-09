@@ -38,9 +38,9 @@ void findMaxMinPoints (const int size) {
 
   tbb::parallel_for(range2d(0, size, 0, size), [&](const range2d& r) {
     size_t r_end = r.rows().end();
-    for (size_t i = r.rows().begin(); i != r_end; i++) {
+    for (size_t i = r.rows().begin(); i != r_end; ++i) {
       size_t c_end = r.cols().end();
-      for (size_t j = r.cols().begin(); j != c_end; j++) {
+      for (size_t j = r.cols().begin(); j != c_end; ++j) {
         if (points[i].x < minX) {
           minX = points[i].x;
         }
@@ -76,7 +76,7 @@ void normalizePoints (const int size) {
     0.0 : 1.0 / (maxPoint.y - minPoint.y));
 
   tbb::parallel_for(range(0, size), [&](const range& r) {
-    for (size_t i = r.begin(); i != r.end(); i++) {
+    for (size_t i = r.begin(); i != r.end(); ++i) {
       normPoints[i].x = sclX * (points[i].x - minPoint.x);
       normPoints[i].y = sclY * (points[i].y - minPoint.y);
     }
@@ -120,7 +120,7 @@ int main(int argc, char** argv) {
     norm(size);
 
     if (print == 1) {
-      for (int i = 0; i < size; i++) {
+      for (int i = 0; i < size; ++i) {
         std::cout << normPoints[i].x << " ";
         std::cout << normPoints[i].y << std::endl;
       }

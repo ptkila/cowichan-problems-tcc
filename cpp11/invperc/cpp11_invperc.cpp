@@ -66,10 +66,10 @@ bool evaluateNeighbors (const int row, const int col, const int size) {
 void calc (const int startIndex, const int lastIndex, const int size) {
 
 	int row, col;
-	for (int i = startIndex; i < lastIndex; i++) {
-		for (int j = 1; j < size - 1; j++) {
+	for (int i = startIndex; i < lastIndex; ++i) {
+		for (int j = 1; j < size - 1; ++j) {
 			if (mask[i*size + j]) {
-				for (int sides = 0; sides < N_SIDES; sides++) {
+				for (int sides = 0; sides < N_SIDES; ++sides) {
 					row = i + X_STEPS[sides];
 					col = j + Y_STEPS[sides];
 					if (evaluateNeighbors(row, col, size)) {
@@ -112,14 +112,14 @@ void invperc (const int size, const int nfill) {
 	
 	int i;
 	int j, k;
-	for (i = 0; i < nfill; i++){
+	for (i = 0; i < nfill; ++i){
 		found.reset();
 		percolate(size);
 		if(setNewPoint(size))
 			break;
 		/*
 		for (k = 0; k < size; k++) {
-			for (j = 0; j < size; j++) {
+			for (j = 0; j < size; ++j) {
 				printf("%d ", mask[k*size + j]);
 			}
 			printf("\n");
@@ -131,14 +131,14 @@ void invperc (const int size, const int nfill) {
 
 void setMatrixValues (const int size) {
 
-	for (int i = 0; i < size; i++) {
-		for (int j = 0; j < size; j++) {
+	for (int i = 0; i < size; ++i) {
+		for (int j = 0; j < size; ++j) {
 			matrix[i*size + j] = rand() % 1000;
 		}
 	}
 	
-	for (int i = 0; i < size; i++) {
-		for (int j = 0; j < size; j++) {
+	for (int i = 0; i < size; ++i) {
+		for (int j = 0; j < size; ++j) {
 			std::cout << matrix[i*size + j] << " ";
 		}
 		std::cout << std::endl;
@@ -165,8 +165,8 @@ int main (int argc, char** argv) {
 		invperc(size, nfill);
 
 		if (print == 1) {
-			for (int i = 0; i < size; i++) {
-				for (int j = 0; j < size; j++) {
+			for (int i = 0; i < size; ++i) {
+				for (int j = 0; j < size; ++j) {
 					std::cout << mask[i*size + j] << " ";
 				}
 				std::cout << std::endl;

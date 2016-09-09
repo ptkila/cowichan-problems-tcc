@@ -48,9 +48,9 @@ void calc (const int startLine, const int endLine, const int size) {
   
   Point origin = new Point();
 
-  for (int i = startLine; i < endLine; i++) {
+  for (int i = startLine; i < endLine; ++i) {
     double nMax = 0;
-    for (int j = 0; j < size; j++) {
+    for (int j = 0; j < size; ++j) {
       if (i != j) {
         matrix[i * size + j] = distance(points[i], points[j]);
         nMax = fmax(nMax, matrix[i][j]);
@@ -84,7 +84,7 @@ void outer(const int size) {
 }
 
 void setPointValues(const int size) {
-  for (int i = 0; i < size; i++) {
+  for (int i = 0; i < size; ++i) {
     points[i].x = rand();
     points[i].y = rand();
   }
@@ -110,14 +110,14 @@ int main(int argc, char** argv) {
     {
       std::cout.precision(0);
 
-      for (int i = 0; i < size; i++) {
-        for (int j = 0; j < size; j++) {
+      for (int i = 0; i < size; ++i) {
+        for (int j = 0; j < size; ++j) {
           std::cout << matrix[i*size + j] << " ";
         }
         std::cout << "\n";
       }
 
-      for (int i = 0; i < size; i++) {
+      for (int i = 0; i < size; ++i) {
         std::cout << vector[i] << " ";
       }
 

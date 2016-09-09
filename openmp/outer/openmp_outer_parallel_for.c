@@ -36,9 +36,9 @@ void turn_to_matrix_and_vector (const int size) {
   #pragma omp parallel shared(matrix, size) private (i, j)
   {
     #pragma omp for schedule(static, size/ n_threads)
-    for (i = 0; i < size; i++) {
+    for (i = 0; i < size; ++i) {
       double n_max = 0.0;
-      for (j = 0; j < size; j++) {
+      for (j = 0; j < size; ++j) {
         if (i != j) {
           matrix[i * size + j] = distance(points[i], points[j]);
           n_max = fmax(n_max, matrix[i* size + j]);
@@ -59,7 +59,7 @@ void outer (const int size) {
 
 void set_points_values(const int size) {
   int i;
-  for (i = 0; i < size; i++) {
+  for (i = 0; i < size; ++i) {
     points[i].x = (double)rand() / (double)(RAND_MAX /INT_MAX);
     points[i].y = (double)rand() / (double)(RAND_MAX /INT_MAX);
   }
@@ -90,8 +90,8 @@ int main(int argc, char** argv) {
 
     if (print == 1) {
       int i, j;
-      for (i = 0; i < size; i++) {
-        for (j = 0; j < size; j++) {
+      for (i = 0; i < size; ++i) {
+        for (j = 0; j < size; ++j) {
           printf("%e ", matrix[i* size + j]);
         }
         printf("\n");
@@ -99,7 +99,7 @@ int main(int argc, char** argv) {
 
       printf("\n");
 
-      for (i = 0; i < size; i++) {
+      for (i = 0; i < size; ++i) {
         printf("%e ", vector[i]);
       }
 

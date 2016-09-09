@@ -9,7 +9,7 @@ static int numThreads;
 int calc (double x, double y) {
 	int iter;
 	double xx;
-	for (iter = 0; iter < MAX_STEPS; iter++)  {
+	for (iter = 0; iter < MAX_STEPS; ++iter)  {
 		xx = x*x - y*y;
 		y = 2.0 * x * y;
 		x = xx;
@@ -30,7 +30,7 @@ void mandel (const int size) {
 	tbb::parallel_for(range(0, size), [&](const range& r) {
 		size_t r_end = r.end();
 		for (size_t i = r.begin(); i != r_end; ++i) {
-			for (int j = 0; j < size; j++) {
+			for (int j = 0; j < size; ++j) {
 				matrix[i*size + j] = calc(x0 + ((double)i * dx), y0 + ((double)j * dy));
 			}
 		}
@@ -58,8 +58,8 @@ int main(int argc, char** argv) {
 		mandel(size);
 
 		if (print == 1) {
-			for (int i = 0; i < size; i++) {
-				for (int j = 0; j < size; j++) {
+			for (int i = 0; i < size; ++i) {
+				for (int j = 0; j < size; ++j) {
 					std::cout << matrix[i*size + j] << " ";
 				}
 				std:: cout << std::endl;

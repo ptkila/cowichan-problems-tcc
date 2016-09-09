@@ -17,8 +17,8 @@ int find_max (const int size) {
   #pragma omp parallel shared (matrix, size) private (i, j)
   {
     #pragma omp for schedule(static, size/ n_threads)
-    for (i = 0; i < size; i++) {
-      for (j = 0; j < size; j++) {
+    for (i = 0; i < size; ++i) {
+      for (j = 0; j < size; ++j) {
         #pragma omp critical
         {  
           if (max_val < matrix[i * size + j]) {
@@ -38,9 +38,9 @@ void fill_histogram(const int size) {
   #pragma omp parallel shared(matrix, histogram) private(i, j)
   {
     #pragma omp for schedule (static, size/ n_threads)
-    for (i = 0; i < size; i++) {
-      for (j = 0; j < size; j++) {
-        histogram[matrix[i* size + j]]++;
+    for (i = 0; i < size; ++i) {
+      for (j = 0; j < size; ++j) {
+        ++histogram[matrix[i* size + j]];
       }
     }
   }
@@ -53,8 +53,8 @@ void fill_mask(const int size, const int threshold) {
   #pragma omp parallel shared(mask, matrix, threshold) private (i, j)
   {
     #pragma omp for schedule (static, size/ n_threads)
-    for (i = 0; i < size; i++) {
-      for (j = 0; j < size; j++) {
+    for (i = 0; i < size; ++i) {
+      for (j = 0; j < size; ++j) {
         mask[i* size + j] = (matrix[i* size + j] >= threshold);
       }
     }
@@ -118,8 +118,8 @@ int main(int argc, char** argv) {
 
     if (print == 1) {
       int i, j;
-      for (i = 0; i < size; i++) {
-        for (j = 0; j < size; j++) {
+      for (i = 0; i < size; ++i) {
+        for (j = 0; j < size; ++j) {
           printf("%hhu ", mask[i*size + j]);
         }
         printf("\n");

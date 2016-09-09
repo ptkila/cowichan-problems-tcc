@@ -105,15 +105,15 @@ void play(const int size) {
 
 void life (const int size, const int numgen) {
 
-	for (int i = 0; i < numgen; i++) {
+	for (int i = 0; i < numgen; ++i) {
 		play(size);
 	}
 	
 }
 
 void setMatrixValues (const int size) {
-	for (int i = 0; i < size; i++) {
-		for (int j = 0; j < size; j++) {
+	for (int i = 0; i < size; ++i) {
+		for (int j = 0; j < size; ++j) {
 			matrix[i*size + j] = rand() % 2;
 		}
 	}
@@ -145,8 +145,8 @@ int main(int argc, char** argv) {
 		life(size, numgen);
 
 		if (print == 1) {
-			for (int i = 0; i < size; i++) {
-				for (int j = 0; j < size; j++) {
+			for (int i = 0; i < size; ++i) {
+				for (int j = 0; j < size; ++j) {
 					std::cout << matrix[i*size + j] << " ";
 				}
 				std::cout << std::endl;

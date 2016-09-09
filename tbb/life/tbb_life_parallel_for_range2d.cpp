@@ -36,9 +36,9 @@ int getNeighborCount(const int size, const int row, const int col) {
 void updateMatrix(const int size) {
 	tbb::parallel_for(range2d(0, size, 0, size), [&](const range2d& r) {
 		size_t r_end = r.rows().end();
-		for (size_t i = r.rows().begin(); i != r_end; i++) {
+		for (size_t i = r.rows().begin(); i != r_end; ++i) {
 			size_t c_end = r.cols().end();
-			for (size_t j = r.cols().begin(); j != c_end; j++) {
+			for (size_t j = r.cols().begin(); j != c_end; ++j) {
 				matrix[i*size + j] = tmpMatrix[i*size + j];
 			}
 		}
@@ -48,8 +48,8 @@ void updateMatrix(const int size) {
 void evaluateMatrix (const int size) {
 	int count = 0;
 	tbb::parallel_for(range2d(0, size, 0, size), [&](const range2d& r) {
-		for (size_t i = r.rows().begin(); i != r.rows().end(); i++) {
-			for (size_t j = r.cols().begin(); j != r.cols().end(); j++) {
+		for (size_t i = r.rows().begin(); i != r.rows().end(); ++i) {
+			for (size_t j = r.cols().begin(); j != r.cols().end(); ++j) {
 				count = getNeighborCount(size, i, j);
 
 				if (matrix[i*size + j] == 1) {
@@ -80,7 +80,7 @@ void play(const int size) {
 
 void life (const int size, const int numgen) {
 
-	for (int i = 0; i < numgen; i++) {
+	for (int i = 0; i < numgen; ++i) {
 		play(size);
 	}
 
@@ -93,8 +93,8 @@ void setThreadsNumber() {
 }
 
 void setMatrixValues (const int size) {
-	for (int i = 0; i < size; i++) {
-		for (int j = 0; j < size; j++) {
+	for (int i = 0; i < size; ++i) {
+		for (int j = 0; j < size; ++j) {
 			matrix[i*size + j] = rand() % 2;
 		}
 	}
@@ -127,8 +127,8 @@ int main(int argc, char** argv) {
 		life(size, numgen);
 
 		if (print == 1) {
-			for (int i = 0; i < size; i++) {
-				for (int j = 0; j < size; j++) {
+			for (int i = 0; i < size; ++i) {
+				for (int j = 0; j < size; ++j) {
 					std::cout << matrix[i*size + j] << " ";
 				}
 				std::cout << std::endl;

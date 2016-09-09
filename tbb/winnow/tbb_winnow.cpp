@@ -1,51 +1,126 @@
 #include "tbb/tbb.h"
+#include <algorithm>
 #include <iostream>
 
+class PointW {
+
+public:
+
+  int i, j, weight;
+
+  PointW() {
+    this->i = 0;
+    this->j = 0;
+    this->weight = 0;
+  }
+
+  PointW(int i, int j, int weight) {
+    this->i = i;
+    this->j = j;
+    this->weight = weight;
+  }
+
+};
+
 typedef tbb::blocked_range<size_t> range;
-static std::pair<int, int> *points;
-static std::pair<int, std::pair<int, int> > *values;
+static PointW* evValues;
+static PointW* points;
+
 static int* matrix;
 static int* mask;
-static int* count_per_line;
-static int* total_count;
+static int* countPerLine;
+static int* totalCount;
+
+static int nelts;
 static int numThreads;
 
-class ScanSum {
+/*// Prefix Scan class
+http://www.drdobbs.com/parallel/implementing-partition-with-prefix-scan/240003508?pgno=1
+
+class pScan {
+  int sum;
+  int* const odata;
+  const int* const idata;
+ 
+public:
+  pScan(int *odata_, const int *idata_) : 
+    sum(0), idata(idata_), odata(odata_) {}
+ 
+  template<typename Tag>
+  void operator()(const blocked_range<int> &r, Tag) {
+    int temp = sum;
+    for (int i = r.begin(); i < r.end(); ++i) {
+      temp = temp + idata[i];
+      if(Tag::is_final_scan())
+        odata[i] = temp;
+    }
+    sum = temp;
+  }
+ 
+  pScan(pScan& b, split) : 
+    sum(0), idata(b.idata), odata(b.odata) {}
+  void reverse_join(pScan& a) {sum = a.sum + sum;}
+  void assign(pScan& b) {sum = b.sum;}
+};*/
+
+class PrefixSum {
+  
   int sum;
 
 public:
-  ScanSum(): sum(0) {}
+  
+  PrefixSum(): sum(0) {}
+  
   template<typename Tag>
-  void operator()(range r, Tag) {
+  void operator()(const range& r, Tag) {
     int res = sum;
-    auto begin = r.begin();
-    auto end = r.end();
-    for (size_t i = begin; i != end; ++i) {
-      res += count_per_line[i];
+    size_t end = r.end();
+    for (size_t i = r.begin(); i != end; ++i) {
+      res += countPerLine[i];
       if (Tag::is_final_scan()) {
-        total_count[i] = res;
+        totalCount[i] = res;
       }
     }
     sum = res;
   }
-  ScanSum(ScanSum& other, tbb::split) : sum(0) {}
-  void reverse_join(ScanSum& other) { sum += other.sum; }
-  void assign(ScanSum& other) { sum = other.sum; }
+
+  PrefixSum(PrefixSum& a, tbb::split) : sum(0) {}
+  void reverse_join(PrefixSum& a) {sum += a.sum;}
+  void assign(PrefixSum& b) {sum = b.sum;}
+
 };
 
-void winnow(int nrows, int ncols, int nelts) {
-  int count = 0;
-  count = parallel_reduce(
-    range(0, nrows), 0,
-    [=](range r, int result)->int {
-      auto begin = r.begin();
-      auto end = r.end();
-      for (size_t i = begin; i != end; i++) {
-        int cur = 0;
-        for (int j = 0; j < ncols; j++) {
-          cur += mask[i*ncols + j];
+void fillValues(const int size) {
+  
+  tbb::parallel_for(range(0, size), [&](const range& r) {
+      size_t end = r.end();
+      for (size_t i = r.begin(); i != end; ++i) {
+        int count = totalCount[i];
+        for (int j = 0; j < size; ++j) {
+          if (mask[i*size + j]) {
+            int v = matrix[i*size + j];
+            evValues[count] = PointW(i, j, v);
+            count++;
+          }
         }
-        result += count_per_line[i + 1] = cur;
+      }
+  });
+
+}
+
+int countPoints(const int size) {
+
+  return parallel_reduce(
+    range(0, size), 0,
+    [=](const range& r, int result)->int {
+      size_t end = r.end();
+      for (size_t i = r.begin(); i != end; ++i) {
+        int cur = 0;
+        for (int j = 0; j < size; ++j) {
+          cur += mask[i*size + j];
+        }
+        countPerLine[i + 1] = cur;
+        result += cur;
       }
       return result;
     },
@@ -53,51 +128,50 @@ void winnow(int nrows, int ncols, int nelts) {
       return x + y;
     });
 
-  ScanSum scan_sum;
-  tbb::parallel_scan(
-    range(0, nrows + 1),
-    scan_sum,
-    tbb::auto_partitioner());
+}
 
-  tbb::parallel_for(
-    range(0, nrows),
-    [=](range r) {
-      auto begin = r.begin();
-      auto end = r.end();
-      for (size_t i = begin; i != end; i++) {
-        int count = total_count[i];
-        for (int j = 0; j < ncols; j++) {
-          if (mask[i*ncols + j]) {
-            int v = matrix [i * ncols + j];
-            values[count] = (std::make_pair(v, std::make_pair(i, j)));
-            count++;
-          }
-        }
-      }
-    });
-
-  sort(values, values + count);
-
-  size_t n = count;
-  size_t chunk = n / nelts;
-
-  for (int i = 0; i < nelts; i++) {
-    int index = i * chunk;
-    points[i] = values[index].second;
+void fillPoints(const int len) {
+  int chunk = len/ nelts;
+  for(int i = 0; i < nelts; ++i) {
+    points[i] = evValues[i*chunk];
   }
 }
 
+void winnow(const int size) {
+  
+  int len = countPoints(size);
+  evValues = new PointW[len];
+
+  PrefixSum prefixSum;
+  tbb::parallel_scan(range(0, size + 1), prefixSum, tbb::auto_partitioner());
+
+  fillValues(size);
+
+  std::sort(evValues, evValues + len, [&](const PointW& a, const PointW& b) -> bool { 
+    return a.weight < b.weight; 
+  });
+
+  nelts = rand() % len;
+  if (nelts == 0) {
+      nelts = 1;
+  }
+  points = new PointW[nelts];
+
+  fillPoints(len);
+
+}
+
 void setValuesMatrix(const int size) {
-  for (int i = 0; i < size; i++) {
-    for (int j = 0; j < size; j++) {
+  for (int i = 0; i < size; ++i) {
+    for (int j = 0; j < size; ++j) {
       matrix[i*size + j] = std::rand();
     }
   }
 }
 
 void setValuesMask(const int size) {
-  for (int i = 0; i < size; i++) {
-    for (int j = 0; j < size; j++) {
+  for (int i = 0; i < size; ++i) {
+    for (int j = 0; j < size; ++j) {
       mask[i*size + j] = std::rand()%2;
     }
   }
@@ -118,25 +192,27 @@ int main(int argc, char** argv) {
     numThreads = atoi(argv[2]);
     int print = atoi(argv[3]);
 
-    matrix = int[size * size];
-    mask = int[size * size];
+    matrix = new int[size * size];
+    mask = new int[size * size];
+    countPerLine = new int[size + 1];
+    totalCount = new int[size + 1];
+
+    setThreadsNumber();
     setValuesMatrix(size);
     setValuesMask(size);
 
-    total_count = (int*) calloc (sizeof(int), (size + 1));
-    count_per_line = (int*) calloc (sizeof(int), (size + 1));
-    points = (std::pair <int, int> *) malloc (sizeof (std::pair <int, int>) * size);
-    values = (std::pair <int, std::pair <int, int> > *) malloc (sizeof (std::pair <int, std::pair <int, int> >) * size);
-
-    setThreadsNumber();
-    winnow(size, size, size);
+    winnow(size);
 
     if (print == 1) {
-      for (int i = 0; i < size; i++) {
-        printf("%d %d\n", points[i].first, points[i].second);
+      for (int i = 0; i < nelts; ++i) {
+        std::cout << points[i].i << " " << points[i].j << " " << points[i].weight << std::endl;
       }
-      printf("\n");
     }
+
+    delete[] matrix;
+    delete[] mask;
+    delete[] countPerLine;
+    delete[] totalCount;
 
   } else {
 

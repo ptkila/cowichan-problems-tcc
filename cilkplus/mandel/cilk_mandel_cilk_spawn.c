@@ -20,7 +20,7 @@ void fill_matrix (int const begin, int const end, int const size,
 		for (i = 0; i < size; ++i) {
 			x = x0 + ((double)begin * dx);
 			y = y0 + ((double)i * dy);
-			for (iter = 0; iter < MAX_STEPS; iter++)  {
+			for (iter = 0; iter < MAX_STEPS; ++iter)  {
 				xx = x*x - y*y;
 				y = 2.0 * x * y;
 				x = xx;
@@ -86,8 +86,8 @@ int main(int argc, char** argv) {
 
 		if (print == 1) {
 			int i, j;
-			for (i = 0; i < size; i++) {
-				for (j = 0; j < size; j++) {
+			for (i = 0; i < size; ++i) {
+				for (j = 0; j < size; ++j) {
 					printf("%d ", matrix[i*size + j]);
 				}
 				printf("\n");

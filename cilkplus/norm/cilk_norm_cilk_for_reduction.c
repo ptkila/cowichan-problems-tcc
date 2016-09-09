@@ -114,7 +114,7 @@ int main(int argc, char** argv) {
 
     if (print == 1) {
       int i;
-      for (i = 0; i < size; i++) {
+      for (i = 0; i < size; ++i) {
         printf("%f ", norm_points[i].x);
         printf("%f\n", norm_points[i].y);
       }

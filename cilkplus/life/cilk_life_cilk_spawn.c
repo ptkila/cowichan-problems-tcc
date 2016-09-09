@@ -51,7 +51,8 @@ void update_matrix(const int begin, const int end, const int size) {
 		int middle = begin + (end - begin)/ 2;
 		cilk_spawn update_matrix(begin, middle, size);
 		cilk_spawn update_matrix(middle, end, size);
-	
+		cilk_sync;
+
 	}
 }
 
@@ -73,7 +74,7 @@ void evaluate_matrix (const int begin, const int end, const int size) {
 		int middle = begin + (end - begin)/ 2;
 		cilk_spawn evaluate_matrix(begin, middle, size);
 		cilk_spawn evaluate_matrix(middle, end, size);
-
+		cilk_sync;
 	}
 }
 
@@ -100,7 +101,7 @@ void play(const int size) {
 
 void life (const int size, const int numgen) {
 	int i = 0;
-	for (i = 0; i < numgen; i++) {
+	for (i = 0; i < numgen; ++i) {
 		play(size);
 	}	
 }
@@ -116,12 +117,12 @@ void set_threads_number() {
 
 void set_matrix_values (const int size) {
 	int  i, j;
-	for (i = 0; i < size; i++) {
-		for (j = 0; j < size; j++) {
+	for (i = 0; i < size; ++i) {
+		for (j = 0; j < size; ++j) {
 			matrix[i*size + j] = rand() % 2;
 		}
 	}
-	
+	/*
 	for (i = 0; i < size; i++) {
 			for (j = 0; j < size; j++) {
 				printf("%d ", matrix[i*size + j]);
@@ -129,7 +130,7 @@ void set_matrix_values (const int size) {
 			printf("\n");
 	}
 	printf("\n");
-	
+	*/
 }
 
 int main(int argc, char** argv) {
@@ -153,8 +154,8 @@ int main(int argc, char** argv) {
 
 		if (print == 1) {
 			int i, j;
-			for (i = 0; i < size; i++) {
-				for (j = 0; j < size; j++) {
+			for (i = 0; i < size; ++i) {
+				for (j = 0; j < size; ++j) {
 					printf("%d ", matrix[i*size + j]);
 				}
 				printf("\n");

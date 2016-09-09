@@ -11,7 +11,7 @@ int findMax (const int size) {
   return tbb::parallel_reduce(range(0, size), 0, [&](const range& r, int result)->int {
       size_t r_end = r.end();
       for (size_t i = r.begin(); i != r_end; ++i) {
-        for (int j = 0; j < size; j++) {
+        for (int j = 0; j < size; ++j) {
           result = std::max(result, matrix[i*size + j]);
         }
       }
@@ -26,8 +26,8 @@ void fillHistogram (const int size) {
   tbb::parallel_for(range(0, size),[&](const range& r) {
       size_t r_end = r.end();
       for (size_t i = r.begin(); i != r_end; ++i) {
-        for (int j = 0; j < size; j++) {
-          histogram[matrix[i*size + j]]++;
+        for (int j = 0; j < size; ++j) {
+          ++histogram[matrix[i*size + j]];
         }
       }
   });

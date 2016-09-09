@@ -14,16 +14,16 @@ void elimination(const int size) {
 	//j = linha abaixo de i
 	//k = colunas de j
 
-	for (int i = 0; i < size - 1; i++) {
+	for (int i = 0; i < size - 1; ++i) {
 		tbb::parallel_for(range(i + 1, size), [&](const range& r) { 
 	    	size_t r_end = r.end();
-	    	for (size_t j = r.begin(); j != r_end; j++) {
+	    	for (size_t j = r.begin(); j != r_end; ++j) {
 	      		
 	      		//Elemento que zera o valor abaixo da diag prin
 	      		double mult = matrix[j*size + i]/ matrix[i*size + i];
 
 	      		//Atualiza linha
-	      		for (int k = i; k < size; k++) {
+	      		for (int k = i; k < size; ++k) {
 
 					matrix[j*size + k] -= matrix[i*size + k] * mult;
 	      		
@@ -73,7 +73,7 @@ void setThreadsNumber() {
 
 void setTargetValues (const int size) {
 	
-	for (int i = 0; i < size; i++) {
+	for (int i = 0; i < size; ++i) {
 		target[i] = (double)(rand() % 1000);
 	}
 	
@@ -86,8 +86,8 @@ void setTargetValues (const int size) {
 
 void setMatrixValues (const int size) {
 	
-	for (int i = 0; i < size; i++) {
-		for (int j = 0; j < size; j++) {
+	for (int i = 0; i < size; ++i) {
+		for (int j = 0; j < size; ++j) {
 			if (i == j) {
 				matrix[i*size + j] = (double)(rand() % 1000);
 			} else {
@@ -139,7 +139,7 @@ int main (int argc, char** argv) {
 		gauss(size);
 
 		if (print == 1) {
-			for (int i = 0; i < size; i++) {
+			for (int i = 0; i < size; ++i) {
 				std::cout << solution[i] << " ";
 			}
 			std::cout << std::endl;
@@ -148,13 +148,13 @@ int main (int argc, char** argv) {
 		
 		// Testar valores
 		double* result = new double[size]();
-		for (int i = 0; i < size; i++) {
-     		for (int j = 0; j < size; j++) {
+		for (int i = 0; i < size; ++i) {
+     		for (int j = 0; j < size; ++j) {
         		result[i] += matrix[i*size + j] * solution[j];
       		}
     	}
 
-		for (int i = 0; i < size; i++) {
+		for (int i = 0; i < size; ++i) {
         	std::cout << result[i] << " = " << target[i] << std::endl;
     	}
 		

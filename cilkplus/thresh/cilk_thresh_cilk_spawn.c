@@ -20,7 +20,7 @@ int find_max(const int begin, const int end, const int size) {
     
     int i;
     int res = matrix[begin*size + 0];
-    for (i = 1; i < size; i++) {
+    for (i = 1; i < size; ++i) {
       res = MAX(res, matrix[begin*size + i]);
     }
     return res;
@@ -41,8 +41,8 @@ void fill_histogram(const int begin, const int end, const int size) {
   if (begin + 1 == end) {
   
     int i;
-    for (i = 0; i < size; i++) {
-      histogram[matrix[begin*size + i]]++;
+    for (i = 0; i < size; ++i) {
+      ++histogram[matrix[begin*size + i]];
     }
     return;
   
@@ -58,7 +58,7 @@ void fill_histogram(const int begin, const int end, const int size) {
 void fill_mask(const int begin, const int end, const int size, const int threshold) {
   if (begin + 1 == end) {
     int i;
-    for (i = 0; i < size; i++) {
+    for (i = 0; i < size; ++i) {
       mask[begin*size + i] = matrix[begin*size + i] >= threshold;
     }
     return;
@@ -110,8 +110,8 @@ void set_threads_number () {
 
 void set_values_matrix(const int size) {
   int i, j;
-  for (i = 0; i < size; i++) {
-    for (j = 0; j < size; j++) {
+  for (i = 0; i < size; ++i) {
+    for (j = 0; j < size; ++j) {
       matrix[i*size + j] = rand() % 255;
     }
   }
@@ -138,8 +138,8 @@ int main(int argc, char *argv[]) {
 
     if (print == 1) {
       int i, j;
-      for (i = 0; i < size; i++) {
-        for (j = 0; j < size; j++) {
+      for (i = 0; i < size; ++i) {
+        for (j = 0; j < size; ++j) {
           printf("%hhu ", mask[i*size + j]);
         }
         printf("\n");

@@ -15,9 +15,9 @@ static int* result;
 static int numThreads;
 
 void calc(const int startIndex, const int lastIndex, const int size) {
-	for (int i = startIndex; i < lastIndex; i++) {
+	for (int i = startIndex; i < lastIndex; ++i) {
 		int sum = 0;
-		for (int j = 0; j < size; j++) {
+		for (int j = 0; j < size; ++j) {
 			sum += matrix[i*size + j] * vector[j];
 		}
 		result[i] = sum;
@@ -32,10 +32,12 @@ void product(const int size) {
 
 	for (int i = 0; i < numThreads; ++i) {
 		if (i + 1 == numThreads && numOpThreadR > 0) {
-			threadsList[i] = (std::thread(calc, numOpThreadM * i, numOpThreadM * (i + 1) + numOpThreadR, size));
+			threadsList[i] = (std::thread(calc, numOpThreadM * i, 
+				numOpThreadM * (i + 1) + numOpThreadR, size));
 			break;
 		} else {
-			threadsList[i] = (std::thread(calc, numOpThreadM * i, numOpThreadM * (i + 1), size));
+			threadsList[i] = (std::thread(calc, numOpThreadM * i, 
+				numOpThreadM * (i + 1), size));
 		}
 	}
 
@@ -77,7 +79,7 @@ int main(int argc, char** argv) {
 		product(size);
 
 		if (print == 1) {
-			for (int i = 0; i < size; i++) {
+			for (int i = 0; i < size; ++i) {
 		
 				std::cout << result[i] << " ";
 		

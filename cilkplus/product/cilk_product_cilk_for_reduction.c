@@ -27,8 +27,8 @@ void product (const int size) {
 
 void set_values_matrix(const int size) {
 	int i, j;
-	for (i = 0; i < size; i++) {
-		for (j = 0; j < size; j++) {
+	for (i = 0; i < size; ++i) {
+		for (j = 0; j < size; ++j) {
 			matrix[i*size + j] = (float) rand();
 		}
 	}
@@ -36,7 +36,7 @@ void set_values_matrix(const int size) {
 
 void set_values_vector(const int size) {
 	int i;
-	for (i = 0; i < size; i++) {
+	for (i = 0; i < size; ++i) {
 		vector[i] = (float) rand();
 	}
 }
@@ -70,7 +70,7 @@ int main(int argc, char** argv) {
 
 		if (print == 1) {
 			int i;
-			for (i = 0; i < size; i++) {
+			for (i = 0; i < size; ++i) {
 				printf("%g ", result[i]);
 			}
 			printf("\n");

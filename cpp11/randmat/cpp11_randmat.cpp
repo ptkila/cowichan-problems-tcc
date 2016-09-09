@@ -4,14 +4,14 @@
 #include <cmath>
 #include <thread>
 
-const int VAL_A = 1313, VAL_B = 3131;
+static const int VAL_A = 1313, VAL_B = 3131;
 static int* matrix;
 static int numThreads;
 
 void calc (const int startIndex, const int endIndex, const int size, const int seed) {
 
 	int s = 0;
-	for (int i = startIndex; i < endIndex; i++) {
+	for (int i = startIndex; i < endIndex; ++i) {
 		for (int j = 0; j < size; j++) {
 			s = VAL_A * (seed + i + j) + VAL_B;
 			matrix[i*size + j] = s % 100;
@@ -27,10 +27,12 @@ void randmat (const int size, const int seed) {
 	
 	for (int i = 0; i < numThreads; ++i) {
 		if (i + 1 == numThreads && numOpThreadR > 0) {
-			threadsList[i] = (std::thread(calc, numOpThreadM * i, numOpThreadM * (i + 1) + numOpThreadR, size, seed));
+			threadsList[i] = (std::thread(calc, numOpThreadM * i, 
+				numOpThreadM * (i + 1) + numOpThreadR, size, seed));
 			break;
 		} else {
-			threadsList[i] = (std::thread(calc, numOpThreadM * i, numOpThreadM * (i + 1), size, seed));
+			threadsList[i] = (std::thread(calc, numOpThreadM * i, 
+				numOpThreadM * (i + 1), size, seed));
 		}
 	}
 
@@ -53,8 +55,8 @@ int main(int argc, char** argv) {
     randmat(size, rand());
 
     if (print == 1) {
-      for (int i = 0; i < size; i++) {
-        for (int j = 0; j < size; j++) {
+      for (int i = 0; i < size; ++i) {
+        for (int j = 0; j < size; ++j) {
         	std::cout << matrix[i*size + j] << " ";
         }
         std::cout << std::endl;

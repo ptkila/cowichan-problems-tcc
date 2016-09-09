@@ -60,11 +60,11 @@ bool evaluateNeighbors (const int row, const int col, const int size) {
 void percolate (const int size) {
 	tbb::parallel_for(range2d(0, size-1, 0, size-1),[&](const range2d& r) {
 		size_t r_end = r.rows().end();
-		for (size_t i = r.rows().begin(); i != r_end; i++) {
+		for (size_t i = r.rows().begin(); i != r_end; ++i) {
 			size_t c_end = r.cols().end();
-			for (size_t j = r.cols().begin(); j != c_end; j++) {
+			for (size_t j = r.cols().begin(); j != c_end; ++j) {
 				if (mask[i*size + j]) {
-					for (int sides = 0; sides < N_SIDES; sides++) {
+					for (int sides = 0; sides < N_SIDES; ++sides) {
 						int row = i + X_STEPS[sides];
 						int col = j + Y_STEPS[sides];
 						int pos = row*size + col;
@@ -84,7 +84,7 @@ void invperc (const int size, const int nfill) {
 	
 	int i;
 	int j, k;
-	for (i = 0; i < nfill; i++){
+	for (i = 0; i < nfill; ++i){
 		found.reset();
 		percolate(size);
 		if(setNewPoint(size))
@@ -109,14 +109,14 @@ void setThreadsNumber() {
 
 void setMatrixValues (const int size) {
 
-	for (int i = 0; i < size; i++) {
-		for (int j = 0; j < size; j++) {
+	for (int i = 0; i < size; ++i) {
+		for (int j = 0; j < size; ++j) {
 			matrix[i*size + j] = rand() % 1000;
 		}
 	}
 	
-	for (int i = 0; i < size; i++) {
-		for (int j = 0; j < size; j++) {
+	for (int i = 0; i < size; ++i) {
+		for (int j = 0; j < size; ++j) {
 			std::cout << matrix[i*size + j] << " ";
 		}
 		std::cout << std::endl;
@@ -144,8 +144,8 @@ int main (int argc, char** argv) {
 		invperc(size, nfill);
 
 		if (print == 1) {
-			for (int i = 0; i < size; i++) {
-				for (int j = 0; j < size; j++) {
+			for (int i = 0; i < size; ++i) {
+				for (int j = 0; j < size; ++j) {
 					std::cout << mask[i*size + j] << " ";
 				}
 				std::cout << std::endl;

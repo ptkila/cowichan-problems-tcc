@@ -36,7 +36,7 @@ void fill_values(const int begin, const int end, const int size) {
   if (begin + 1 == end) {
     int i;
     int count = count_per_line[begin];
-    for (i = 0; i < size; i++) {
+    for (i = 0; i < size; ++i) {
       if (mask[begin*size + i] == 1) {
         ev_values[count].weight = matrix[begin*size + i];
         ev_values[count].i = begin;
@@ -49,7 +49,7 @@ void fill_values(const int begin, const int end, const int size) {
   
   } else {
 
-    int middle = begin + (end - begin) / 2;
+    int middle = begin + (end - begin)/ 2;
     cilk_spawn fill_values(begin, middle, size);
     cilk_spawn fill_values(middle, end, size);
   
@@ -61,7 +61,7 @@ int count_points(const int begin, const int end, const int size) {
   if (begin + 1 == end) {
     
     int i, count = 0;
-    for (i = 0; i < size; i++) {
+    for (i = 0; i < size; ++i) {
       count += mask[begin*size + i];
     }
     count_per_line[begin + 1] = count;
@@ -87,7 +87,7 @@ void prefix_sum_for (const int size) {
     } else {
 
       int itr;   
-      for (itr = 1; (1 << itr) <= size; itr++){
+      for (itr = 1; (1 << itr) <= size; ++itr){
           int i;
           cilk_for(i = (1 << itr); i <= size; i += (1 << itr)){
               count_per_line[i] = count_per_line[i] + count_per_line[i - (1 << (itr - 1))];
@@ -119,17 +119,17 @@ void set_values_matrix(const int size) {
 
 void set_values_mask(const int size) {
   int i, j;
-  for (i = 0; i < size; i++) {
-    for (j = 0; j < size; j++) {
+  for (i = 0; i < size; ++i) {
+    for (j = 0; j < size; ++j) {
       mask[i*size +j] = rand() % 2;
     }
   }
 }
 
-void fill_ev_points(const int len) {
+void fill_points(const int len) {
   int i;
-  int chunk = (int)floor((float)len/ (float)nelts);
-  cilk_for(i = 0; i < nelts; i++) {
+  int chunk = len/ nelts;
+  cilk_for(i = 0; i < nelts; ++i) {
     points[i] = ev_values[i*chunk];
   }
 }
@@ -155,7 +155,7 @@ void winnow (const int size) {
   }
   
   points = (struct point_w*) malloc (sizeof(struct point_w) * nelts);
-  fill_ev_points(len);
+  fill_points(len);
 
 }
 
@@ -188,7 +188,7 @@ int main(int argc, char *argv[]) {
 
     if (print) {
       int i;
-      for (i = 0; i < nelts; i++) {
+      for (i = 0; i < nelts; ++i) {
         printf("%d %d %d\n", points[i].i, points[i].j, points[i].weight);
       }
     }

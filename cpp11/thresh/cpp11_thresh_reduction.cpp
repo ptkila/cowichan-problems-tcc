@@ -14,11 +14,12 @@ static int* mask;
 static int* histogram;
 static int numThreads; 
 
-void reduceMax (const int startIndex, const int endIndex, const int size, std::promise<int>* promise) {
+void reduceMax (const int startIndex, const int endIndex, const int size, 
+  std::promise<int>* promise) {
   int max = 0;
 
-  for (int i = startIndex; i < endIndex; i++) {
-    for (int j = 0; j < size; j++) {
+  for (int i = startIndex; i < endIndex; ++i) {
+    for (int j = 0; j < size; ++j) {
       if (matrix[i * size + j] > max)
         max = matrix[i*size + j];
     }
@@ -27,16 +28,16 @@ void reduceMax (const int startIndex, const int endIndex, const int size, std::p
 }
 
 void fillHistogram(const int startIndex, const int endIndex, const int size) {
-  for (int i = startIndex; i < endIndex; i++) {
-    for (int j = 0; j < size; j++) {
+  for (int i = startIndex; i < endIndex; ++i) {
+    for (int j = 0; j < size; ++j) {
       histogram[matrix[i*size + j]]++;
     }
   }
 }
 
 void fillMask(const int startIndex, const int endIndex, const int size, const int threshold) {
-  for (int i = 0; i < size; i++) {
-    for (int j = 0; j < size; j++) {
+  for (int i = 0; i < size; ++i) {
+    for (int j = 0; j < size; ++j) {
       mask[i*size + j] = (matrix[i*size + j] >= threshold);
     }
   }
@@ -76,10 +77,12 @@ void thresh(const int size, const int percent) {
 
   for (int i = 0; i < numThreads; ++i) {
     if (i + 1 == numThreads && numOpThreadR > 0) {
-      threadsList[i] = std::thread(fillHistogram, numOpThreadM * i, numOpThreadM * (i + 1) + numOpThreadR, size);
+      threadsList[i] = std::thread(fillHistogram, numOpThreadM * i, 
+        numOpThreadM * (i + 1) + numOpThreadR, size);
       break;    
     } else {
-      threadsList[i] = std::thread(fillHistogram, numOpThreadM * i, numOpThreadM * (i + 1), size);
+      threadsList[i] = std::thread(fillHistogram, numOpThreadM * i, 
+        numOpThreadM * (i + 1), size);
     }
   }
 
@@ -140,8 +143,8 @@ int main(int argc, char** argv) {
     thresh(size, percent);
 
     if (print == 1) {
-      for (int i = 0; i < size; i++) {
-        for (int j = 0; j < size; j++) {
+      for (int i = 0; i < size; ++i) {
+        for (int j = 0; j < size; ++j) {
           std:: cout << mask[i*size + j] << " ";
         }
         std::cout << std::endl;

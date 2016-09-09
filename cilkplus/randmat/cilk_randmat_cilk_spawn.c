@@ -4,8 +4,8 @@
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
-
-const int VAL_A = 1313, VAL_B = 3131;
+ 
+static const int VAL_A = 1313, VAL_B = 3131;
 static int *matrix;
 static int n_threads;
 
@@ -14,7 +14,7 @@ void fill_matrix(const int begin, const int end, const int size, const int seed)
   if (begin + 1 == end) {
     
     int i, s;
-    for (i = 0; i < size; i++) {
+    for (i = 0; i < size; ++i) {
       s = VAL_A * (seed + i + begin) + VAL_B;
       matrix[begin*size + i] = s % 100;
     }
@@ -63,8 +63,8 @@ int main(int argc, char *argv[]) {
 
     if (print == 1) {
       int i, j;
-      for (i = 0; i < size; i++) {
-        for (j = 0; j < size; j++) {
+      for (i = 0; i < size; ++i) {
+        for (j = 0; j < size; ++j) {
           printf("%d ", matrix[i*size + j]);
         }
         printf("\n");

@@ -12,7 +12,7 @@ static int n_threads;
 int calc (double x, double y) {
 	int iter;
 	double xx;
-	for (iter = 0; iter < MAX_STEPS; iter++)  {
+	for (iter = 0; iter < MAX_STEPS; ++iter)  {
 		xx = x*x - y*y;
 		y = 2.0 * x * y;
 		x = xx;
@@ -64,8 +64,8 @@ int main(int argc, char** argv) {
 
 		if (print == 1) {
 			int i, j;
-			for (i = 0; i < size; i++) {
-				for (j = 0; j < size; j++) {
+			for (i = 0; i < size; ++i) {
+				for (j = 0; j < size; ++j) {
 					printf("%d ", matrix[i*size + j]);
 				}
 				printf("\n");
