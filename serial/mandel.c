@@ -1,36 +1,72 @@
-#include <stdio.h>
+#include <cilk/cilk.h>
+#include <cilk/cilk_api.h>
 #include <math.h>
 #include <stdlib.h>
-void color();
+#include <stdio.h>
+#include <string.h>
+#include <time.h>
 
-main()
-{
-	double x,xx,y,cx,cy;
-	int iteration,hx,hy;
-	int itermax = 100;		/* how many iterations to do	*/
-	double magnify=1.0;		/* no magnification		*/
-	int hxres = 500;		/* horizonal resolution		*/
-	int hyres = 500;		/* vertical resolution		*/
+static const int MAX_STEPS = 150;
+static int* matrix;
 
-	for (hy=1;hy<=hyres;hy++)  {
-		for (hx=1;hx<=hxres;hx++)  {
-			cx = (((float)hx)/((float)hxres)-0.5)/magnify*3.0-0.7;
-			cy = (((float)hy)/((float)hyres)-0.5)/magnify*3.0;
-			x = 0.0; y = 0.0;
-			for (iteration=1;iteration<itermax;iteration++)  {
-				xx = x*x-y*y+cx;
-				y = 2.0*x*y+cy;
-				x = xx;
-				if (x*x+y*y>100.0)  iteration = 999999;
-			}
-			if (iteration<99999)  color(0,255,255);
-			else color(180,0,0);
+int calc (double x, double y) {
+	int iter;
+	double xx;
+	for (iter = 0; iter < MAX_STEPS; ++iter)  {
+		xx = x*x - y*y;
+		y = 2.0 * x * y;
+		x = xx;
+		if ((x*x + y*y) >= 2.0) {
+			return iter;
+		}
+	}
+	return MAX_STEPS;
+}
+
+void mandel (const int size) {
+	
+	int i, j;	
+	const double x0 = ((double)rand()/(double)RAND_MAX);
+	const double y0 = ((double)rand()/(double)RAND_MAX);
+	const double dx = ((double)rand()/(double)RAND_MAX)/ (double)(size - 1);
+	const double dy = ((double)rand()/(double)RAND_MAX)/ (double)(size - 1);
+	
+	for (i = 0; i < size; ++i) {
+		for (j = 0; j < size; ++j) {
+			matrix[i*size + j] = calc(x0 + ((double)i * dx), y0 + ((double)j * dy));
 		}
 	}
 }
 
-void color(int red, int green, int blue)  {
-	fputc((char)red,stdout);
-	fputc((char)green,stdout);
-	fputc((char)blue,stdout);
+int main(int argc, char** argv) {
+
+	if (argc == 3) {
+
+		srand (time(NULL));
+		int size = atoi(argv[1]);
+		int print = atoi(argv[2]);
+
+		matrix = (int*) malloc (sizeof(int) * size * size);
+
+		mandel(size);
+
+		if (print == 1) {
+			int i, j;
+			for (i = 0; i < size; ++i) {
+				for (j = 0; j < size; ++j) {
+					printf("%d ", matrix[i*size + j]);
+				}
+				printf("\n");
+			}
+		}
+
+		free(matrix);
+
+	} else {
+
+		printf("programa <tamanho> <printar>\n");
+
+	}
+
+	return 0;
 }

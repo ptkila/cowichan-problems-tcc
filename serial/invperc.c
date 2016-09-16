@@ -12,7 +12,6 @@ struct found_point {
 static int* matrix;
 static int* mask;
 static int nfill;
-static int n_threads;
 static struct found_point found;
 
 static const int N_SIDES = 4;
@@ -35,10 +34,14 @@ void reset_found_point() {
 
 int set_new_point(const int size) {
 	if (found.row >= 0 && found.col >= 0) {	
+		
 		mask[found.row*size + found.col] = 1;
 		return 0;
+	
 	} else {
+
 		return 1;
+	
 	}
 }
 
@@ -46,10 +49,10 @@ int percolate (const int size) {
 
 	int i, j, sides, row, col;
 
-	for (i = 1; i < size - 1 ; i++) {
-		for (j = 1; j < size - 1; j++) {
+	for (i = 1; i < size - 1; ++i) {
+		for (j = 1; j < size - 1; ++j) {
 			if (mask[i*size + j]) {
-				for (sides = 0; sides < N_SIDES; sides++) {
+				for (sides = 0; sides < N_SIDES; ++sides) {
 					row = i + X_STEPS[sides];
 					col = j + Y_STEPS[sides];
 					int pos = row*size + col;
@@ -68,7 +71,7 @@ void invperc (const int size, const int nfill) {
 	
 	int i;
 	//int j, k;
-	for (i = 0; i < nfill; i++){
+	for (i = 0; i < nfill; ++i){
 		reset_found_point();
 		percolate(size);
 		if(set_new_point(size))
@@ -86,15 +89,10 @@ void invperc (const int size, const int nfill) {
 	}
 }
 
-void set_threads_number() {
-
-
-}
-
 void set_matrix_values (const int size) {
 	int  i, j;
-	for (i = 0; i < size; i++) {
-		for (j = 0; j < size; j++) {
+	for (i = 0; i < size; ++i) {
+		for (j = 0; j < size; ++j) {
 			matrix[i*size + j] = rand() % 1000;
 		}
 	}
@@ -111,26 +109,24 @@ void set_matrix_values (const int size) {
 
 int main (int argc, char** argv) {
 
-	if (argc == 4) {
+	if (argc == 3) {
 
 		srand (time(NULL));
 		int size = atoi(argv[1]);
-		n_threads = atoi(argv[2]);
-		int print = atoi(argv[3]);
+		int print = atoi(argv[2]);
 
 		matrix = (int*) malloc (sizeof(int) * size * size);
 		mask = (int*) calloc (size * size, sizeof(int));
-		nfill = 5;
+		nfill = rand() % (size * size);
 
-		set_threads_number();
 		set_matrix_values(size);
 		set_mask_middle_point(size);
 		invperc(size, nfill);
 
 		if (print == 1) {
 			int i, j;
-			for (i = 0; i < size; i++) {
-				for (j = 0; j < size; j++) {
+			for (i = 0; i < size; ++i) {
+				for (j = 0; j < size; ++j) {
 					printf("%d ", mask[i*size + j]);
 				}
 				printf("\n");
@@ -142,6 +138,7 @@ int main (int argc, char** argv) {
 
 	} else {
 
+		printf("programa <tamanho> <printar>\n");
 
 	}
 

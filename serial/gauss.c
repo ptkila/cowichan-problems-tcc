@@ -8,7 +8,6 @@
 static double* matrix;
 static double* target;
 static double* solution;
-static int n_threads;
 
 void elimination(const int size) {
 
@@ -17,14 +16,14 @@ void elimination(const int size) {
     //k = colunas de j
 
     int i, j, k;
-    for (i = 0; i < size-1; i++) {
-        for (j = i + 1; j < size; j++) {
+    for (i = 0; i < size-1; ++i) {
+        for (j = i + 1; j < size; ++j) {
             
             //Elemento que zera o valor abaixo da diag prin
             double mult = matrix[j*size + i]/ matrix[i*size + i];
 
             //Atualiza linha
-            for (k = i; k < size; k++) {
+            for (k = i; k < size; ++k) {
 
                 matrix[j*size + k] -= matrix[i*size + k] * mult;
             
@@ -43,9 +42,9 @@ void fill_solution (const int size) {
 
     int i, j;
 
-    for (i = size - 1; i >= 0; i--) {
+    for (i = size - 1; i >= 0; --i) {
         solution[i] = target[i];
-        for (j = size - 1; j > i; j--) {
+        for (j = size - 1; j > i; --j) {
             solution[i] -= matrix[i*size + j] * solution[j];
         }
         solution[i] /= matrix[i*size + i];
@@ -62,7 +61,7 @@ void gauss(const int size) {
 void set_target_values(const int size) {
 
     int i;
-    for (i = 0; i < size; i++) {
+    for (i = 0; i < size; ++i) {
         target[i] = (double)(rand() % 1000);
     }
     /*
@@ -75,8 +74,8 @@ void set_target_values(const int size) {
 void set_matrix_values (const int size) {
     int  i, j;
 
-    for (i = 0; i < size; i++) {
-        for (j = 0; j < size; j++) {
+    for (i = 0; i < size; ++i) {
+        for (j = 0; j < size; ++j) {
             if (i == j) {
                 matrix[i*size + j] = (double)(rand() % 1000);
             } else {
@@ -112,25 +111,23 @@ void set_matrix_values (const int size) {
 
 int main (int argc, char** argv) {
 
-    if (argc == 4) {
+    if (argc == 3) {
 
         srand (time(NULL));
         int size = atoi(argv[1]);
-        n_threads = atoi(argv[2]);
-        int print = atoi(argv[3]);
+        int print = atoi(argv[2]);
 
         matrix = (double*) malloc (sizeof(double) * size * size);
         target = (double*) malloc (sizeof(double) * size);
         solution = (double*) malloc (sizeof(double) * size);
 
-        set_threads_number();
         set_matrix_values(size);
         set_target_values(size);
         gauss(size);
 
         if (print == 1) {
             int i;
-            for (i = 0; i < size; i++) {
+            for (i = 0; i < size; ++i) {
                 printf("%f ", solution[i]);
             }
             printf("\n");
@@ -142,6 +139,7 @@ int main (int argc, char** argv) {
 
     } else {
 
+        printf("programa <tamanho> <printar>\n");
 
     }
 

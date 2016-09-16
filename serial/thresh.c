@@ -1,62 +1,113 @@
-#include "serial.h"
+#include <math.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+#include <time.h>
 
-int set_max_number (int** matrix, int size) {
+#define MAX( a, b ) ( ( a > b) ? a : b )
 
-  int i, j;
-  int tmpNumber = 0;
+static int *matrix;
+static int *mask;
+static int *histogram;
+
+int find_max(const int size) {
   
-  for (i = 0; i < size; i++) {
-    for (j = 0; j < size; j++) {
-      if (tmpNumber < matrix[i][j]) tmpNumber = matrix[i][j];
+  int i, j;
+  int res = 0;
+
+  for (i = 0; i < size; ++i) {
+    for (j = 0; j < size; ++j) {
+      res = MAX(res, matrix[i*size + j]);
     }
   }
-  return tmpNumber;
+
+  return res;
+
 }
 
-void set_histogram (int* histogram, int** matrix, int size) {
+void fill_histogram(const int size) {
   int i, j;
-  for (i = 0; i < size; i++) {
-    for (j = 0; j < size; j++) {
-      histogram[matrix[i][j]]++;
-    }
-  }
-}
-
-int set_threshold (int* histogram, int max_number, int proportion) {
-
-  int i, tmpNumber, prefix_sum = 0;
-
-  for (i = max_number; i >= 0 && prefix_sum <= proportion; i--) {
-    prefix_sum += histogram[i];
-    tmpNumber = i;
-  }
-
-  return tmpNumber;
-}
-
-void set_mask (int** mask, int** matrix, int size, int threshold) {
-
-  int i, j;
-
-  for (i = 0; i < size; i++) {
-    for (j = 0; j < size; j++) {
-      mask[i][j] = (int)(matrix[i][j] > threshold);
+  for (i = 0; i < size; ++i) {
+    for (j = 0; j < size; ++j) {
+      ++histogram[matrix[i*size + j]];
     }
   }
 }
 
-int** thresh (int** matrix, int size, int percent, int** mask) {
+void fill_mask (const int size, const int threshold) {
+  int i, j;
+  for (i = 0; i < size; ++i) {
+    for (j = 0; j < size; ++j) {
+      mask[i*size + j] = matrix [i*size + j] >= threshold;
+    }
+  }
+}
 
-  int max_number, threshold, prefix_sum, proportion, i, j;
-  int* histogram;
+void thresh(const int size, const int percent) {
+  int i;
+  int nmax = 0;
+  int count, prefixsum, threshold;
 
-  max_number = set_max_number(matrix, size);
-  
-  histogram = (int*)malloc(sizeof(int) * (max_number + 1));
-  set_histogram(histogram, matrix, size);
+  nmax = find_max(size);
 
-  proportion = (size * size * percent) / 100;
-  threshold = set_threshold(histogram, max_number, proportion);
-  set_mask(mask, matrix, size, threshold);
-  
+  fill_histogram(size);
+  count = (size * size * percent)/ 100;
+
+  prefixsum = 0;
+  threshold = nmax;
+
+  for (i = nmax; i >= 0 && prefixsum <= count; --i) {
+    prefixsum += histogram[i];
+    threshold = i;
+  }
+
+  fill_mask(size, threshold);
+}
+
+void set_values_matrix(const int size) {
+  int i, j;
+  for (i = 0; i < size; ++i) {
+    for (j = 0; j < size; ++j) {
+      matrix[i*size + j] = rand() % 255;
+    }
+  }
+}
+
+int main(int argc, char *argv[]) {
+
+  if (argc == 3) {
+
+    srand (time(NULL));
+    int size = atoi(argv[1]);
+    int print = atoi(argv[2]);
+    int percent = 50;
+
+    matrix = (int*) malloc (sizeof(int) * size * size);
+    mask = (int*) malloc (sizeof(int) * size * size);
+    histogram = (int*) malloc (sizeof(int) * 256);
+
+    set_values_matrix(size);
+    thresh(size, percent);
+
+    if (print == 1) {
+      int i, j;
+      for (i = 0; i < size; ++i) {
+        for (j = 0; j < size; ++j) {
+          printf("%hhu ", mask[i*size + j]);
+        }
+        printf("\n");
+      }
+    }
+
+    free(matrix);
+    free(mask);
+    free(histogram);
+
+  } else {
+
+     printf("programa <tamanho> <printar>\n");
+
+  }
+
+  return 0;
 }
