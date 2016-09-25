@@ -17,18 +17,15 @@ static int n_threads;
 
 int find_max(const int begin, const int end, const int size) {
   
-  int left, right;
-
   if (begin + 1 == end) {
     
-    int i, max;
+    int i;
     CILK_C_REDUCER_MAX(r, int, 0);
     CILK_C_REGISTER_REDUCER(r);
-
     cilk_for (i = 0; i < size; ++i) {
       CILK_C_REDUCER_MAX_CALC(r, matrix[begin*size + i]);
     }
-    max = REDUCER_VIEW(r);
+    int max = REDUCER_VIEW(r);
     CILK_C_UNREGISTER_REDUCER(r);
 
     return max;
@@ -36,8 +33,8 @@ int find_max(const int begin, const int end, const int size) {
   } else {
 
     int middle = begin + (end - begin) / 2;
-    left = cilk_spawn find_max(begin, middle, size);
-    right = cilk_spawn find_max(middle, end, size);
+    int left = cilk_spawn find_max(begin, middle, size);
+    int right = cilk_spawn find_max(middle, end, size);
     cilk_sync;
     return MAX(left, right);
   
@@ -83,29 +80,33 @@ void fill_mask(const int begin, const int end, const int size, const int thresho
   }
 }
 
-void thresh(const int size, const int percent) {
+int calc_threshold (const int percent, const int nmax, const int size) {
   int i;
-  int nmax = 0;
-  int count, prefixsum, threshold;
+  int count = (size * size * percent)/ 100;
+  int prefixsum = 0;
+  int threshold = nmax;
 
-  nmax = cilk_spawn find_max(0, size, size);
+  for (i = nmax; i >= 0 && prefixsum <= count; --i) {
+    prefixsum += histogram[i];
+    threshold = i;
+  }
+
+  return threshold;
+}
+
+void thresh(const int size, const int percent) {
+
+  int nmax = cilk_spawn find_max(0, size, size);
   cilk_sync;
 
   cilk_spawn fill_histogram(0, size, size);
   cilk_sync;
 
-  count = (size * size * percent) / 100;
-
-  prefixsum = 0;
-  threshold = nmax;
-
-  for (i = nmax; i >= 0 && prefixsum <= count; i--) {
-    prefixsum += histogram[i];
-    threshold = i;
-  }
+  int threshold = calc_threshold(percent, nmax, size);
 
   cilk_spawn fill_mask(0, size, size, threshold);
   cilk_sync;
+
 }
 
 void set_threads_number () {

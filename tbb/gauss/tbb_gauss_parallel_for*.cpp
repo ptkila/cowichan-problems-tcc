@@ -15,7 +15,7 @@ void elimination(const int size) {
 	//k = colunas de j
 
 	for (int i = 0; i < size - 1; ++i) {
-		tbb::parallel_for(range(i + 1, size), [&](const range& r) { 
+		tbb::parallel_for(range(i + 1, size), [&](const range& r) -> void { 
 	    	size_t r_end = r.end();
 	    	for (size_t j = r.begin(); j != r_end; ++j) {
 	      		

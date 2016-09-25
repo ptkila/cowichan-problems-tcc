@@ -12,12 +12,12 @@ static int n_threads;
 void product (const int size) {
 
   int i, j;
-
-  #pragma omp parallel shared(result, matrix, vector) private (i, j)
+  double sum = 0.0;
+  
+  #pragma omp parallel shared(result, matrix, vector) private (i, j) reduction(+:sum)
   {
     #pragma omp for schedule (static, size/ n_threads)
     for (i = 0; i < size; ++i) {
-      double sum = 0.0;
       for (j = 0; j < size; ++j) {
         sum += matrix[i * size + j] * vector[j];
       }
@@ -42,7 +42,7 @@ void set_values_matrix(const int size) {
     printf("\n");
   }
   printf("\n");
-  */
+ */ 
 }
 
 void set_values_vector (const int size) {

@@ -17,11 +17,11 @@ static std::mutex mutex;
 void fillSolution (const int size) {
 	/**/
 	// back-tracking
-	for (int i = size - 1; i >= 0; i--) {
+	for (int i = size - 1; i >= 0; --i) {
     	// x0, x1, ...
     	solution[i] = target[i];
     	// Substitui a var x0, x1, ... e reduz do final
-    	for (int j = size - 1; j > i; j--) {
+    	for (int j = size - 1; j > i; --j) {
       		solution[i] -= matrix[i*size + j] * solution[j];
     	}
     	// Divide pela diagonal princ?
@@ -115,7 +115,7 @@ void gauss(const int size) {
 }
 
 void setTargetValues (const int size) {
-	for (int i = 0; i < size; i++) {
+	for (int i = 0; i < size; ++i) {
 		target[i] = (double)(rand() % 1000);
 	}
 	
@@ -127,8 +127,8 @@ void setTargetValues (const int size) {
 }	
 
 void setMatrixValues (const int size) {
-	for (int i = 0; i < size; i++) {
-		for (int j = 0; j < size; j++) {
+	for (int i = 0; i < size; ++i) {
+		for (int j = 0; j < size; ++j) {
 			if (i == j) {
 				matrix[i*size + j] = (double)(rand() % 1000);
 			} else {
@@ -179,7 +179,7 @@ int main (int argc, char** argv) {
 		gauss(size);
 
 		if (print == 1) {
-			for (int i = 0; i < size; i++) {
+			for (int i = 0; i < size; ++i) {
 				std::cout << solution[i] << " ";
 			}
 			std::cout << std::endl;
@@ -187,13 +187,13 @@ int main (int argc, char** argv) {
 
 		// Testar valores
 		double* result = new double[size]();
-		for (int i = 0; i < size; i++) {
-     		for (int j = 0; j < size; j++) {
+		for (int i = 0; i < size; ++i) {
+     		for (int j = 0; j < size; ++j) {
         		result[i] += matrix[i*size + j] * solution[j];
       		}
     	}
     	int count = 0;		
-		for (int i = 0; i < size; i++) {
+		for (int i = 0; i < size; ++i) {
         	std::cout << result[i] << " = " << target[i] << "\n"; 
     	}
 		

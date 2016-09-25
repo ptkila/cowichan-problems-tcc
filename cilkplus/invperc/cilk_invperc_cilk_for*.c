@@ -46,14 +46,14 @@ int set_new_point(const int size) {
 
 int percolate (const int size) {
 
-	int i, j, sides, row, col;
+	int i, j, sides;
 
 	cilk_for (i = 1; i < size - 1; ++i) {
 		for (j = 1; j < size - 1; ++j) {
 			if (mask[i*size + j]) {
 				for (sides = 0; sides < N_SIDES; ++sides) {
-					row = i + X_STEPS[sides];
-					col = j + Y_STEPS[sides];
+					int row = i + X_STEPS[sides];
+					int col = j + Y_STEPS[sides];
 					int pos = row*size + col;
 					if (mask[pos] == 0 && matrix[pos] < found.value) {
 						found.row = row;

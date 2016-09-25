@@ -38,12 +38,10 @@ void set_values_vector(const int size) {
 }
 
 void set_threads_number() {
-
 	char threads[2];
 	sprintf(threads,"%d", n_threads);
 	__cilkrts_end_cilk();  
 	__cilkrts_set_param("nworkers", threads);
-
 }
 
 int main(int argc, char** argv) {
@@ -56,7 +54,7 @@ int main(int argc, char** argv) {
 		int print = atoi(argv[3]);
 
 		matrix = (double*) malloc (sizeof(double) * size * size);
-		result = (double*) calloc (sizeof(double), size);
+		result = (double*) malloc (sizeof(double) * size);
 		vector = (double*) malloc (sizeof(double) * size);
 
 		set_threads_number();

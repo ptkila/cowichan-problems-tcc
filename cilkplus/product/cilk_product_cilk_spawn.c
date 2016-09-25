@@ -11,14 +11,16 @@ static double* result;
 static int n_threads;
 
 void fill_result(const int begin, const int end, const int size) {
+  
   if (begin + 1 == end) {
-    
+
     int i;
     double sum = 0.0;
     for (i = 0; i < size; ++i) {
       sum += matrix[begin*size + i] * vector[i];
     }
     result[begin] = sum;
+    
     return;
 
   } else {
@@ -26,6 +28,7 @@ void fill_result(const int begin, const int end, const int size) {
     int middle = begin + (end - begin) / 2;
     cilk_spawn fill_result(begin, middle, size);
     cilk_spawn fill_result(middle, end, size);
+    cilk_sync;
   
   }
 }

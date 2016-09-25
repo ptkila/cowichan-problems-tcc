@@ -7,7 +7,6 @@
 
 static int* matrix;
 static int* tmpMatrix;
-static int numgen;
 static int n_threads; 
 
 int get_neighbor_value(const int size, const int row, const int col) {
@@ -50,15 +49,12 @@ void update_matrix(const int size) {
 
 void evaluate_matrix (const int size) {
 	int i, j;
-	int count = 0;
-	#pragma omp parallel shared(size, matrix, tmpMatrix) private(i, j, count)
+	#pragma omp parallel shared(size, matrix, tmpMatrix) private(i, j)
 	{
 		#pragma omp for schedule(static, size/ n_threads)
 		for (i = 0; i < size; ++i) {
-			for (j = 0; j < size; ++j)
-			{
-				count = get_neighbor_count(size, i, j);
-
+			for (j = 0; j < size; ++j) {
+				int count = get_neighbor_count(size, i, j);
 				if (matrix[i*size + j] == 1) {
 					tmpMatrix[i*size + j] = (count == 2 || count == 3) ? 1 : 0;
 				} else {
@@ -71,11 +67,10 @@ void evaluate_matrix (const int size) {
 
 void play(const int size) {
 
-	int i, j;
-
 	evaluate_matrix(size);
 	update_matrix(size);
 	/*
+	int i, j;
 	for (i = 0; i < size; i++) {
 			for (j = 0; j < size; j++) {
 				printf("%d ", matrix[i*size + j]);
@@ -129,7 +124,7 @@ int main(int argc, char** argv) {
 
 		matrix = (int*) malloc (sizeof(int) * size * size);
 		tmpMatrix = (int*) malloc (sizeof(int) * size * size);
-		numgen = 5;
+		int numgen = 5;
 
 		set_threads_number();
 		set_matrix_values(size);

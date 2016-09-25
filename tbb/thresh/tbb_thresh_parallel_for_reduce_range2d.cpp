@@ -9,27 +9,28 @@ static int* histogram;
 static int numThreads;
 
 int findMax (const int size) {
-  return tbb::parallel_reduce(range2d(0, size, 0, size), 0, [&](const range2d& r, int result)->int {
-      size_t r_end = r.rows().end();
-      for (size_t i = r.rows().begin(); i != r_end; ++i) {
-        size_t c_end = r.cols().end();
-        for (size_t j = r.cols().begin(); j != c_end; ++j) {
+  return tbb::parallel_reduce(range2d(0, size, 0, size), 0, [&](const range2d& r, int result)
+   -> int {
+      std::size_t r_end = r.rows().end();
+      for (std::size_t i = r.rows().begin(); i != r_end; ++i) {
+        std::size_t c_end = r.cols().end();
+        for (std::size_t j = r.cols().begin(); j != c_end; ++j) {
           result = std::max(result, matrix[i*size + j]);
         }
       }
       return result;
     },
-    [](int x, int y)->int {
+    [](int x, int y) -> int {
       return std::max(x, y);
   });
 }
 
 void fillHistogram (const int size) {
-  tbb::parallel_for(range2d(0, size, 0, size), [&](const range2d& r) {
-    size_t r_end = r.rows().end();
-    for (size_t i = r.rows().begin(); i != r_end; ++i) {
-      size_t c_end = r.cols().end();
-      for (size_t j = r.cols().begin(); j != c_end; ++j) {
+  tbb::parallel_for(range2d(0, size, 0, size), [&](const range2d& r) -> void {
+    std::size_t r_end = r.rows().end();
+    for (std::size_t i = r.rows().begin(); i != r_end; ++i) {
+      std::size_t c_end = r.cols().end();
+      for (std::size_t j = r.cols().begin(); j != c_end; ++j) {
         histogram[matrix[i*size + j]]++;
       }
     }
@@ -37,33 +38,41 @@ void fillHistogram (const int size) {
 }
 
 void fillMask (const int size, const int threshold) {
-  tbb::parallel_for(range2d(0, size, 0, size), [&](const range2d& r) {
-    size_t r_end = r.rows().end();
-    for (size_t i = r.rows().begin(); i != r_end; ++i) {
-      size_t c_end = r.cols().end();
-      for (size_t j = r.cols().begin(); j != c_end; ++j) {
+  tbb::parallel_for(range2d(0, size, 0, size), [&](const range2d& r) -> void {
+    std::size_t r_end = r.rows().end();
+    for (std::size_t i = r.rows().begin(); i != r_end; ++i) {
+      std::size_t c_end = r.cols().end();
+      for (std::size_t j = r.cols().begin(); j != c_end; ++j) {
         mask[i*size + j] = matrix[i*size + j] >= threshold;
       }
     }
   });
 }
 
-void thresh(int size, int percent) {
-
-  int nmax = findMax(size);
-  int count = (size * size * percent) / 100;
-
-  fillHistogram(size);
-
+int calcThreshold (const int percent, const int nmax, const int size) {
+  int i;
+  int count = (size * size * percent)/ 100;
   int prefixsum = 0;
   int threshold = nmax;
 
-  for (int i = nmax; i >= 0 && prefixsum <= count; i--) {
+  for (i = nmax; i >= 0 && prefixsum <= count; --i) {
     prefixsum += histogram[i];
     threshold = i;
   }
 
+  return threshold;
+}
+
+void thresh(const int size, const int percent) {
+  
+  int nmax = findMax(size);
+  
+  fillHistogram(size);
+  
+  int threshold = calcThreshold(percent, nmax, size);
+  
   fillMask(size, threshold);
+
 }
 
 void setValuesMatrix (int size) {

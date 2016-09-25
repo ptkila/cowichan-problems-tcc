@@ -26,7 +26,6 @@ public:
 typedef tbb::blocked_range2d<size_t, size_t> range2d;
 static int* matrix;
 static int* mask;
-static int nfill;
 static int numThreads;
 static foundPoint found;
 
@@ -58,7 +57,7 @@ bool evaluateNeighbors (const int row, const int col, const int size) {
 }
 
 void percolate (const int size) {
-	tbb::parallel_for(range2d(0, size-1, 0, size-1),[&](const range2d& r) {
+	tbb::parallel_for(range2d(0, size-1, 0, size-1),[&](const range2d& r) -> void {
 		size_t r_end = r.rows().end();
 		for (size_t i = r.rows().begin(); i != r_end; ++i) {
 			size_t c_end = r.cols().end();
@@ -136,11 +135,12 @@ int main (int argc, char** argv) {
 		matrix = new int[size*size];
 		mask = new int[size*size]();
 		found = foundPoint();
-		nfill = 1000;
 
 		setThreadsNumber();
 		setMatrixValues(size);
 		setMaskMiddlePoint(size);
+		int nfill = 1000;
+		
 		invperc(size, nfill);
 
 		if (print == 1) {

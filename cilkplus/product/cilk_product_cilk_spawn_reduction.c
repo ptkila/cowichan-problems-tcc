@@ -30,7 +30,7 @@ void fill_result(const int begin, const int end, const int size) {
     int middle = begin + (end - begin)/ 2; 
     cilk_spawn fill_result(begin, middle, size);
     cilk_spawn fill_result(middle, end, size);
-  
+    cilk_sync;
   }
 }
 

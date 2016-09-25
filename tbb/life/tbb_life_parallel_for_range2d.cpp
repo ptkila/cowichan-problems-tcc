@@ -5,7 +5,6 @@
 typedef tbb::blocked_range2d<size_t, size_t> range2d;
 static int* matrix;
 static int* tmpMatrix;
-static int numgen;
 static int numThreads; 
 
 int getNeighborValue(const int size, const int row, const int col) {
@@ -34,11 +33,11 @@ int getNeighborCount(const int size, const int row, const int col) {
 }
 
 void updateMatrix(const int size) {
-	tbb::parallel_for(range2d(0, size, 0, size), [&](const range2d& r) {
-		size_t r_end = r.rows().end();
-		for (size_t i = r.rows().begin(); i != r_end; ++i) {
-			size_t c_end = r.cols().end();
-			for (size_t j = r.cols().begin(); j != c_end; ++j) {
+	tbb::parallel_for(range2d(0, size, 0, size), [&](const range2d& r) -> void {
+		std::size_t r_end = r.rows().end();
+		for (std::size_t i = r.rows().begin(); i != r_end; ++i) {
+			std::size_t c_end = r.cols().end();
+			for (std::size_t j = r.cols().begin(); j != c_end; ++j) {
 				matrix[i*size + j] = tmpMatrix[i*size + j];
 			}
 		}
@@ -46,12 +45,12 @@ void updateMatrix(const int size) {
 }
 
 void evaluateMatrix (const int size) {
-	int count = 0;
-	tbb::parallel_for(range2d(0, size, 0, size), [&](const range2d& r) {
-		for (size_t i = r.rows().begin(); i != r.rows().end(); ++i) {
-			for (size_t j = r.cols().begin(); j != r.cols().end(); ++j) {
-				count = getNeighborCount(size, i, j);
-
+	tbb::parallel_for(range2d(0, size, 0, size), [&](const range2d& r) -> void {
+		std::size_t r_end = r.rows().end();
+		for (std::size_t i = r.rows().begin(); i != r_end; ++i) {
+			std::size_t c_end = r.cols().end();
+			for (std::size_t j = r.cols().begin(); j != c_end; ++j) {
+				int count = getNeighborCount(size, i, j);
 				if (matrix[i*size + j] == 1) {
 					tmpMatrix[i*size + j] = (count == 2 || count == 3) ? 1 : 0;
 				} else {
@@ -120,7 +119,7 @@ int main(int argc, char** argv) {
 
 		matrix = new int[size * size];
 		tmpMatrix = new int[size * size];
-		numgen = 5;
+		int numgen = 5;
 
 		setThreadsNumber();
 		setMatrixValues(size);

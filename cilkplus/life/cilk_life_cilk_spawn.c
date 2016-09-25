@@ -8,7 +8,6 @@
 
 static int* matrix;
 static int* tmpMatrix;
-static int numgen;
 static int n_threads; 
 
 int get_neighbor_value(const int size, const int row, const int col) {
@@ -80,8 +79,6 @@ void evaluate_matrix (const int begin, const int end, const int size) {
 
 void play(const int size) {
 
-	//int i, j;
-
 	cilk_spawn evaluate_matrix(0, size, size);
 	cilk_sync;
 
@@ -89,6 +86,7 @@ void play(const int size) {
 	cilk_sync;
 	
 	/*
+	int i, j;
 	for (i = 0; i < size; i++) {
 			for (j = 0; j < size; j++) {
 				printf("%d ", matrix[i*size + j]);
@@ -144,7 +142,7 @@ int main(int argc, char** argv) {
 
 		matrix = (int*) malloc (sizeof(int) * size * size);
 		tmpMatrix = (int*) malloc (sizeof(int) * size * size);
-		numgen = 4;
+		int numgen = 5;
 
 		set_threads_number();
 		set_matrix_values(size);

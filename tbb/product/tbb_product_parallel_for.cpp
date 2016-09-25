@@ -8,10 +8,10 @@ static double* result;
 static int numThreads;
 
 void product(const int size) {
-  tbb::parallel_for(range(0, size),[&](const range& r) {
+  tbb::parallel_for(range(0, size),[&](const range& r) -> void {
     size_t r_end = r.end();
     for (size_t i = r.begin(); i != r_end; ++i) {
-      double sum = 0;
+      double sum = 0.0;
       for (int j = 0; j < size; ++j) {
         sum += matrix [i*size + j] * vector [j];
       }
@@ -29,14 +29,14 @@ void setThreadsNumber() {
 void setMatrixValues(const int size) {
   for (int i = 0; i < size; ++i) {
     for (int j = 0; j < size; ++j) {
-      matrix[i*size + j] = (double)rand();
+      matrix[i*size + j] = rand() % 10;
     }
   }
 }
 
 void setVectorValues(const int size) {
   for (int i = 0; i < size; ++i) {
-    vector[i] = (double)rand();
+    vector[i] = rand() % 10;
   }
 }
 

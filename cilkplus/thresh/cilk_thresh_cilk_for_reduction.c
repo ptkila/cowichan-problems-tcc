@@ -15,7 +15,6 @@ static int n_threads;
 
 int find_max (const int size) {
   int i, j;
-  int max = 0;
   CILK_C_REDUCER_MAX(r, int, 0);
   CILK_C_REGISTER_REDUCER(r);
 
@@ -24,7 +23,7 @@ int find_max (const int size) {
       CILK_C_REDUCER_MAX_CALC(r, matrix[i*size + j]);
     }
   }
-  max = REDUCER_VIEW(r);
+  int max = REDUCER_VIEW(r);
   CILK_C_UNREGISTER_REDUCER(r);
 
   return max;
@@ -48,25 +47,30 @@ void fill_mask (const int size, const int threshold) {
   }
 }
 
-void thresh(const int size, const int percent) {
+int calc_threshold (const int percent, const int nmax, const int size) {
   int i;
-  int nmax = 0;
-  int count, prefixsum, threshold;
+  int count = (size * size * percent)/ 100;
+  int prefixsum = 0;
+  int threshold = nmax;
 
-  nmax = find_max(size);
-
-  fill_histogram(size);
-  count = (size * size * percent) / 100;
-
-  prefixsum = 0;
-  threshold = nmax;
-
-  for (i = nmax; i >= 0 && prefixsum <= count; i--) {
+  for (i = nmax; i >= 0 && prefixsum <= count; --i) {
     prefixsum += histogram[i];
     threshold = i;
   }
 
+  return threshold;
+}
+
+void thresh(const int size, const int percent) {
+  
+  int nmax = find_max(size);
+  
+  fill_histogram(size);
+  
+  int threshold = calc_threshold(percent, nmax, size);
+  
   fill_mask(size, threshold);
+
 }
 
 void set_values_matrix(const int size) {

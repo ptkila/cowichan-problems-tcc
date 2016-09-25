@@ -8,7 +8,6 @@
 
 static int* matrix;
 static int* tmpMatrix;
-static int numgen;
 static int n_threads; 
 
 int get_neighbor_value(const int size, const int row, const int col) {
@@ -38,9 +37,7 @@ int get_neighbor_count(const int size, const int row, const int col) {
 
 void update_matrix(const int size) {
 	int i, j;
-	// ver operações simd
 	cilk_for (i = 0; i < size; ++i) {
-		#pragma simd
 		for (j = 0; j < size; ++j) {
 			matrix[i* size + j] = tmpMatrix[i*size + j];
 		}
@@ -51,8 +48,8 @@ void evaluate_matrix (const int size) {
 	int i, j;
 	int count = 0;
 	cilk_for (i = 0; i < size; ++i) {
-		for (j = 0; j < size; ++j)
-		{
+		for (j = 0; j < size; ++j) {
+			
 			count = get_neighbor_count(size, i, j);
 
 			if (matrix[i*size + j] == 1) {
@@ -66,11 +63,10 @@ void evaluate_matrix (const int size) {
 
 void play(const int size) {
 
-	//int i, j;
-
 	evaluate_matrix(size);
 	update_matrix(size);
 	/*
+	int i, j;
 	for (i = 0; i < size; i++) {
 			for (j = 0; j < size; j++) {
 				printf("%d ", matrix[i*size + j]);
@@ -127,7 +123,7 @@ int main(int argc, char** argv) {
 
 		matrix = (int*) malloc (sizeof(int) * size * size);
 		tmpMatrix = (int*) malloc (sizeof(int) * size * size);
-		numgen = rand() % 100;
+		int numgen = rand() % 100;
 
 		set_threads_number();
 		set_matrix_values(size);

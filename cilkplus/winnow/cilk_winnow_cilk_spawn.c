@@ -8,18 +8,14 @@
 #include <time.h>
 
 struct point_w {
-
 	int weight, i, j;
-
 };
 
 static int* matrix;
 static int* mask;
 static int* count_per_line;
-
 static struct point_w* ev_values;
 static struct point_w* points;
-
 static int nelts;
 static int n_threads;
 
@@ -52,7 +48,7 @@ void fill_values(const int begin, const int end, const int size) {
     int middle = begin + (end - begin) / 2;
     cilk_spawn fill_values(begin, middle, size);
     cilk_spawn fill_values(middle, end, size);
-  
+    cilk_sync;
   }
 }
 
@@ -97,7 +93,7 @@ void scan_update_elements(const int begin, const int end, const int itr) {
     int middle = begin + count * itr;
     cilk_spawn scan_update_elements(begin, middle, itr);
     cilk_spawn scan_update_elements(middle, end, itr);
-  
+    cilk_sync;
   }
 }
 

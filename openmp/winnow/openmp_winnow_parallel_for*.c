@@ -6,7 +6,9 @@
 #include "omp.h"
 
 struct point_w {
+
   int weight, i, j;
+
 };
 
 static int* matrix;
@@ -14,7 +16,6 @@ static int* mask;
 static int* offsets;
 static struct point_w* ev_values;
 static struct point_w* points;
-static int nelts;
 static int n_threads;
 
 int count_points (const int size) {
@@ -23,12 +24,10 @@ int count_points (const int size) {
   int counter = 0;
   int sum = 0;
 
-  #pragma omp threadprivate(sum)
-  #pragma omp parallel shared(mask) private(i, j)
+  #pragma omp parallel shared(mask) private(i, j, sum)
   {
     int thread_num = omp_get_thread_num();
-    sum = 0;
-    #pragma omp for schedule(static, size/ n_threads) collapse (2)
+    #pragma omp for schedule(static, size/ n_threads) //collapse (2)
     for (i = 0; i < size; ++i) {
       for (j = 0; j < size; ++j) {
         if (mask[i*size + j]) {
@@ -55,11 +54,11 @@ void fill_values(const int size) {
   int i, j;
   int off = 0;
 
-  #pragma omp parallel shared(mask, matrix) private(off, i, j)
+  #pragma omp parallel shared(mask, matrix) private(i, j, off)
   {
     int thread_num = omp_get_thread_num();
     off = offsets[thread_num];
-    #pragma omp for schedule(static, size/ n_threads) collapse(2)
+    #pragma omp for schedule(static, size/ n_threads)
     for (i = 0; i < size; ++i) {
       for (j = 0; j < size; ++j) {
         if (mask[i*size + j]) {
@@ -73,12 +72,16 @@ void fill_values(const int size) {
   }
 }
 
-void fill_ev_points(const int len) {
+void fill_ev_points(const int len, const int nelts) {
   int i;
-  int chunk = len/ nelts;
-  for(i = 0; i < nelts; ++i) {
-    points[i] = ev_values[i*chunk];
-  }
+  const int chunk = len/ nelts;
+  #pragma omp parallel shared(points, ev_values) private(i)
+  {
+    #pragma omp for schedule(static, nelts/ n_threads)
+    for(i = 0; i < nelts; ++i) {
+      points[i] = ev_values[i*chunk];
+    }
+  } 
 }
 
 int compare (const void * a, const void * b) {
@@ -95,15 +98,16 @@ void winnow (const int size) {
   ev_values = (struct point_w*) malloc(sizeof(struct point_w) * len);
   
   fill_values(size);
+
   qsort(ev_values, len, sizeof(*ev_values), compare);
 
-  nelts = rand() % len;
+  int nelts = rand() % len;
   if (nelts == 0) {
     nelts = 1;
   }
 
   points = (struct point_w*) malloc (sizeof(struct point_w) * nelts);
-  fill_ev_points(len);
+  fill_ev_points(len, nelts);
 
 }
 
@@ -143,7 +147,6 @@ int main(int argc, char** argv) {
     matrix = (int*) malloc (sizeof (int) * size * size);
     mask = (int*) malloc (sizeof (int) * size * size);
     offsets = (int*) malloc (sizeof (int) * n_threads);
-    nelts = 0;
 
     set_threads_number();
     set_values_matrix(size);
@@ -154,7 +157,7 @@ int main(int argc, char** argv) {
     if (print == 1) {
       int i;
       for (i = 0; i < nelts; ++i) {
-        printf("%d %d %d", ev_values[i].i, ev_values[i].j, ev_values[i].weight);
+        printf("%d\t %d\t %d", ev_values[i].i, ev_values[i].j, ev_values[i].weight);
         printf("\n");
       }
     }

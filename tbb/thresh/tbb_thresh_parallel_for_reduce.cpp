@@ -8,24 +8,25 @@ static int* histogram;
 static int numThreads;
 
 int findMax (const int size) {
-  return tbb::parallel_reduce(range(0, size), 0, [&](const range& r, int result)->int {
-      size_t r_end = r.end();
-      for (size_t i = r.begin(); i != r_end; ++i) {
+  return tbb::parallel_reduce(range(0, size), 0, [&](const range& r, int result) 
+    -> int {
+      std::size_t r_end = r.end();
+      for (std::size_t i = r.begin(); i != r_end; ++i) {
         for (int j = 0; j < size; ++j) {
           result = std::max(result, matrix[i*size + j]);
         }
       }
       return result;
     },
-    [](int x, int y)->int {
+    [](int x, int y) -> int {
       return std::max(x, y);
   });
 }
 
 void fillHistogram (const int size) {
-  tbb::parallel_for(range(0, size),[&](const range& r) {
-      size_t r_end = r.end();
-      for (size_t i = r.begin(); i != r_end; ++i) {
+  tbb::parallel_for(range(0, size),[&](const range& r) -> void {
+      std::size_t r_end = r.end();
+      for (std::size_t i = r.begin(); i != r_end; ++i) {
         for (int j = 0; j < size; ++j) {
           ++histogram[matrix[i*size + j]];
         }
@@ -34,9 +35,9 @@ void fillHistogram (const int size) {
 }
 
 void fillMask (const int size, const int threshold) {
-  tbb::parallel_for(range(0, size),[&](const range& r) {
-      size_t r_end = r.end();
-      for (size_t i = r.begin(); i != r_end; ++i) {
+  tbb::parallel_for(range(0, size),[&](const range& r) -> void {
+      std::size_t r_end = r.end();
+      for (std::size_t i = r.begin(); i != r_end; ++i) {
         for (int j = 0; j < size; j++) {
           mask[i*size + j] = matrix[i*size + j] >= threshold;
         }
@@ -44,22 +45,30 @@ void fillMask (const int size, const int threshold) {
   });
 }
 
-void thresh(int size, int percent) {
-  
-  int nmax = findMax(size);
-  int count = (size * size * percent) / 100;
-
-  fillHistogram(size);
-
+int calcThreshold (const int percent, const int nmax, const int size) {
+  int i;
+  int count = (size * size * percent)/ 100;
   int prefixsum = 0;
   int threshold = nmax;
 
-  for (int i = nmax; i >= 0 && prefixsum <= count; i--) {
+  for (i = nmax; i >= 0 && prefixsum <= count; --i) {
     prefixsum += histogram[i];
     threshold = i;
   }
 
+  return threshold;
+}
+
+void thresh(const int size, const int percent) {
+  
+  int nmax = findMax(size);
+  
+  fillHistogram(size);
+  
+  int threshold = calcThreshold(percent, nmax, size);
+  
   fillMask(size, threshold);
+
 }
 
 void setValuesMatrix (int size) {
@@ -84,11 +93,11 @@ int main(int argc, char** argv) {
     int size = atoi(argv[1]);
     numThreads = atoi(argv[2]);
     int print = atoi(argv[3]);
-    int percent = 50;
 
     matrix = new int[size * size];
     mask = new int[size * size];
     histogram = new int[256];
+    int percent = 50;
 
     setThreadsNumber();
     setValuesMatrix(size);

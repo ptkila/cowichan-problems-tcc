@@ -31,37 +31,7 @@ static int* mask;
 static int* countPerLine;
 static int* totalCount;
 
-static int nelts;
 static int numThreads;
-
-/*// Prefix Scan class
-http://www.drdobbs.com/parallel/implementing-partition-with-prefix-scan/240003508?pgno=1
-
-class pScan {
-  int sum;
-  int* const odata;
-  const int* const idata;
- 
-public:
-  pScan(int *odata_, const int *idata_) : 
-    sum(0), idata(idata_), odata(odata_) {}
- 
-  template<typename Tag>
-  void operator()(const blocked_range<int> &r, Tag) {
-    int temp = sum;
-    for (int i = r.begin(); i < r.end(); ++i) {
-      temp = temp + idata[i];
-      if(Tag::is_final_scan())
-        odata[i] = temp;
-    }
-    sum = temp;
-  }
- 
-  pScan(pScan& b, split) : 
-    sum(0), idata(b.idata), odata(b.odata) {}
-  void reverse_join(pScan& a) {sum = a.sum + sum;}
-  void assign(pScan& b) {sum = b.sum;}
-};*/
 
 class PrefixSum {
   
@@ -91,10 +61,9 @@ public:
 };
 
 void fillValues(const int size) {
-  
   tbb::parallel_for(range(0, size), [&](const range& r) {
-      size_t end = r.end();
-      for (size_t i = r.begin(); i != end; ++i) {
+      std::size_t end = r.end();
+      for (std::size_t i = r.begin(); i != end; ++i) {
         int count = totalCount[i];
         for (int j = 0; j < size; ++j) {
           if (mask[i*size + j]) {
@@ -105,16 +74,13 @@ void fillValues(const int size) {
         }
       }
   });
-
 }
 
 int countPoints(const int size) {
-
-  return parallel_reduce(
-    range(0, size), 0,
-    [=](const range& r, int result)->int {
-      size_t end = r.end();
-      for (size_t i = r.begin(); i != end; ++i) {
+  return parallel_reduce(range(0, size), 0, [&](const range& r, int result) 
+    -> int {
+      std::size_t end = r.end();
+      for (std::size_t i = r.begin(); i != end; ++i) {
         int cur = 0;
         for (int j = 0; j < size; ++j) {
           cur += mask[i*size + j];
@@ -124,17 +90,19 @@ int countPoints(const int size) {
       }
       return result;
     },
-    [](int x, int y)->int {
+    [](int x, int y) -> int {
       return x + y;
     });
-
 }
 
-void fillPoints(const int len) {
-  int chunk = len/ nelts;
-  for(int i = 0; i < nelts; ++i) {
-    points[i] = evValues[i*chunk];
-  }
+void fillPoints(const int len, const int nelts) {
+  const int chunk = len/ nelts;
+  tbb::parallel_for(range(0, nelts), [&](const range& r) -> void {
+    std::size_t end = r.end();
+    for (std::size_t i = r.begin(); i != end; ++i) {
+      points[i] = evValues[i*chunk];
+    }
+  });
 }
 
 void winnow(const int size) {
@@ -151,13 +119,13 @@ void winnow(const int size) {
     return a.weight < b.weight; 
   });
 
-  nelts = rand() % len;
+  int nelts = rand() % len;
   if (nelts == 0) {
       nelts = 1;
   }
   points = new PointW[nelts];
 
-  fillPoints(len);
+  fillPoints(len, nelts);
 
 }
 

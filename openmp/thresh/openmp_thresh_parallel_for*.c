@@ -61,25 +61,30 @@ void fill_mask(const int size, const int threshold) {
   }
 }
 
-void thresh(const int size, const int percent) {
+int calc_threshold (const int percent, const int nmax, const int size) {
+  int i;
+  int count = (size * size * percent)/ 100;
+  int prefixsum = 0;
+  int threshold = nmax;
 
-  int i, j;
-  int n_max = 0;
-
-  n_max = find_max(size);
-
-  fill_histogram(size);
-
-  int count = (size * size * percent) / 100;
-  int prefix_sum = 0;
-  int threshold = n_max;
-
-  for (i = n_max; i >= 0 && prefix_sum <= count; i--) {
-    prefix_sum += histogram[i];
+  for (i = nmax; i >= 0 && prefixsum <= count; --i) {
+    prefixsum += histogram[i];
     threshold = i;
   }
 
+  return threshold;
+}
+
+void thresh(const int size, const int percent) {
+  
+  int nmax = find_max(size);
+  
+  fill_histogram(size);
+  
+  int threshold = calc_threshold(percent, nmax, size);
+  
   fill_mask(size, threshold);
+
 }
 
 void set_values_matrix(const int size) {

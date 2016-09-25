@@ -33,7 +33,7 @@ int getNeighborCount(const int size, const int row, const int col) {
 }
 
 void updateMatrix(const int size) {
-	tbb::parallel_for(range(0, size), [&](const range& r) {
+	tbb::parallel_for(range(0, size), [&](const range& r) -> void {
 		size_t r_end = r.end();
 		for (size_t i = r.begin(); i != r_end; ++i) {
 			for (int j = 0; j < size; ++j) {
@@ -44,14 +44,11 @@ void updateMatrix(const int size) {
 }
 
 void evaluateMatrix (const int size) {
-	int count = 0;
-	tbb::parallel_for(range(0, size), [&](const range& r) {
+	tbb::parallel_for(range(0, size), [&](const range& r) -> void {
 		size_t r_end = r.end();
 		for (size_t i = r.begin(); i != r_end; ++i) {
-			for (int j = 0; j < size; ++j)
-			{
-				count = getNeighborCount(size, i, j);
-
+			for (int j = 0; j < size; ++j) {
+				int count = getNeighborCount(size, i, j);
 				if (matrix[i*size + j] == 1) {
 					tmpMatrix[i*size + j] = (count == 2 || count == 3) ? 1 : 0;
 				} else {

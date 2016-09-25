@@ -6,15 +6,25 @@
 
 static int* matrix;
 static int* tmpMatrix;
-static int numgen;
-static int numThreads; 
+static int numThreads;
+
+void printMatrix(const int size) {
+	for (int i = 0; i < size; ++i) {
+		for (int j = 0; j < size; ++j) {
+			std::cout << matrix[i*size + j] << " ";
+		}
+		std::cout << std::endl;
+	}
+	std::cout << std::endl;
+}
 
 int getNeighborValue(const int size, const int row, const int col) {
 
-	if((row < 0 || row >= size) || (col < 0 || col >= size))
+	if((row < 0 || row >= size) || (col < 0 || col >= size)){
 		return 0;
-	return (matrix[row*size + col] == 1) ? 1 : 0;
-
+	} else {
+		return (matrix[row*size + col] == 1) ? 1 : 0;
+	}
 }
 
 int getNeighborCount(const int size, const int row, const int col) {
@@ -34,7 +44,7 @@ int getNeighborCount(const int size, const int row, const int col) {
 
 }
 
-void updateMatrix(const int startIndex, const int lastIndex, const int size) {
+void updateMatrix (const int startIndex, const int lastIndex, const int size) {
 	for (int i = startIndex; i < lastIndex; ++i) {
 		for (int j = 0; j < size; ++j) {
 			matrix[i*size + j] = tmpMatrix[i*size + j];
@@ -56,59 +66,60 @@ void evaluateMatrix (const int startIndex, const int lastIndex, const int size) 
 	}
 }
 
+/*
+template<class F>
+void setTasks(F&& f, const int numOpThreadM, const int numOpThreadR, const int size, 
+	ThreadPool& pool) {
+	
+	for (int i = 0; i < numThreads; ++i) {
+		if (i + 1 == numThreads && numOpThreadR > 0 || numOpThreadM == 0) {
+			pool.enqueue(f, numOpThreadM * i, numOpThreadM * (i + 1) + numOpThreadR, size);
+			break;
+		} else {
+			pool.enqueue(f, numOpThreadM * i, numOpThreadM * (i + 1), size);
+		}
+	}
+
+	pool.waitForAll();
+}
+*/
+
+template<class F>
+void setTasks(F&& f, const int numOpThreadM, const int numOpThreadR, const int size) {
+	
+	std::vector <std::thread> threads;
+
+	for (int i = 0; i < numThreads; ++i) {
+		if (i + 1 == numThreads && numOpThreadR > 0) {
+			threads.push_back(std::thread(f, numOpThreadM * i, 
+				numOpThreadM * (i + 1) + numOpThreadR, size));
+			break;
+		} else {
+			threads.push_back(std::thread(f, numOpThreadM * i, 
+				numOpThreadM * (i + 1), size));
+		}
+	}
+
+	for (auto& t : threads) {
+		t.join();
+	}
+}
+
 void play(const int size) {
 
 	int numOpThreadM = (int)floor((float)size/ (float)numThreads);
 	int numOpThreadR = size % numThreads;  
-	std::thread threadsList[numThreads];
 
-	for (int i = 0; i < numThreads; ++i) {
-		if (i + 1 == numThreads && numOpThreadR > 0) {
-			threadsList[i] = std::thread(evaluateMatrix, numOpThreadM * i, 
-				numOpThreadM * (i + 1) + numOpThreadR, size);
-			break;
-		} else {
-			threadsList[i] = std::thread(evaluateMatrix, numOpThreadM * i, 
-				numOpThreadM * (i + 1), size);
-		}
-	}
+	setTasks(evaluateMatrix, numOpThreadM, numOpThreadR, size);
+	setTasks(updateMatrix, numOpThreadM, numOpThreadR, size);	
 
-	for ( auto &t : threadsList ) {
-		t.join();
-	}	
-
-	for (int i = 0; i < numThreads; ++i) {
-		if  (i + 1 == numThreads && numOpThreadR > 0) {
-			threadsList[i] = std::thread(updateMatrix, numOpThreadM * i, 
-				numOpThreadM * (i + 1) + numOpThreadR, size);
-			break;
-		} else {
-			threadsList[i] = std::thread(updateMatrix, numOpThreadM * i, 
-				numOpThreadM * (i + 1), size);
-		}
-	}
-
-	for ( auto &t : threadsList ) {
-		t.join();
-	}
-	
-	/*
-	for (int i = 0; i < size; i++) {
-			for (int j = 0; j < size; j++) {
-				printf("%d ", matrix[i*size + j]);
-			}
-			printf("\n");
-	}
-	printf("\n");
-	*/	
 }
 
 void life (const int size, const int numgen) {
-
 	for (int i = 0; i < numgen; ++i) {
+		//printMatrix(size);
 		play(size);
 	}
-	
 }
 
 void setMatrixValues (const int size) {
@@ -117,15 +128,6 @@ void setMatrixValues (const int size) {
 			matrix[i*size + j] = rand() % 2;
 		}
 	}
-	/*
-	for (int i = 0; i < size; i++) {
-			for (int j = 0; j < size; j++) {
-				printf("%d ", matrix[i*size + j]);
-			}
-			printf("\n");
-	}
-	printf("\n");
-	*/
 }
 
 int main(int argc, char** argv) {
@@ -139,18 +141,13 @@ int main(int argc, char** argv) {
 
 		matrix = new int[size * size];
 		tmpMatrix = new int[size * size];
-		numgen = 5;
+		int numgen = 5;
 
 		setMatrixValues(size);
 		life(size, numgen);
 
 		if (print == 1) {
-			for (int i = 0; i < size; ++i) {
-				for (int j = 0; j < size; ++j) {
-					std::cout << matrix[i*size + j] << " ";
-				}
-				std::cout << std::endl;
-			}
+			printMatrix(size);
 		}
 
 		delete[] matrix;

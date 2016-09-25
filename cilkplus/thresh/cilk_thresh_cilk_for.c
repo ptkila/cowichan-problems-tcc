@@ -6,28 +6,28 @@
 #include <string.h>
 #include <time.h>
 
+#define MAX( a, b ) ( ( a > b) ? a : b )
+
 static int *matrix;
 static int *mask;
 static int *histogram;
 static int n_threads;
 
 int find_max(const int begin, const int end, const int size) {
-  int left, right;
-  
   if (begin + 1 == end) {
     
     int i;
-    int res = matrix[begin*size + 0];
+    int max = matrix[begin*size + 0];
     for (i = 1; i < size; ++i) {
-      res = MAX(res, matrix[begin*size + i]);
+      max = MAX(max, matrix[begin*size + i]);
     }
-    return res;
+    return max;
 
   } else {
     
     int middle = begin + (end - begin) / 2;
-    left = cilk_spawn find_max(begin, middle, size);
-    right = cilk_spawn find_max(middle, end, size);
+    int left = cilk_spawn find_max(begin, middle, size);
+    int right = cilk_spawn find_max(middle, end, size);
     cilk_sync;
     return MAX(left, right);
   
@@ -52,25 +52,30 @@ void fill_mask (const int size, const int threshold) {
   }
 }
 
-void thresh(const int size, const int percent) {
+int calc_threshold (const int percent, const int nmax, const int size) {
   int i;
-  int nmax = 0;
-  int count, prefixsum, threshold;
+  int count = (size * size * percent)/ 100;
+  int prefixsum = 0;
+  int threshold = nmax;
 
-  nmax = find_max(size);
-
-  fill_histogram(0, size, size);
-  count = (size * size * percent)/ 100;
-
-  prefixsum = 0;
-  threshold = nmax;
-
-  for (i = nmax; i >= 0 && prefixsum <= count; i--) {
+  for (i = nmax; i >= 0 && prefixsum <= count; --i) {
     prefixsum += histogram[i];
     threshold = i;
   }
 
+  return threshold;
+}
+
+void thresh(const int size, const int percent) {
+  
+  int nmax = find_max(size);
+  
+  fill_histogram(size);
+  
+  int threshold = calc_threshold(percent, nmax, size);
+  
   fill_mask(size, threshold);
+
 }
 
 void set_values_matrix(const int size) {

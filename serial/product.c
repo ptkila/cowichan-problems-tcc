@@ -43,7 +43,7 @@ int main(int argc, char** argv) {
     int print = atoi(argv[2]);
 
     matrix = (double*) malloc (sizeof(double) * size * size);
-    result = (double*) calloc (sizeof(double), size);
+    result = (double*) malloc (sizeof(double) * size);
     vector = (double*) malloc (sizeof(double) * size);
 
     set_values_matrix(size);
