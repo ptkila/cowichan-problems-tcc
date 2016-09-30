@@ -5,7 +5,6 @@
 typedef tbb::blocked_range2d<size_t, size_t> range2d;
 static int* matrix;
 static int* tmpMatrix;
-static int numThreads; 
 
 int getNeighborValue(const int size, const int row, const int col) {
 
@@ -85,12 +84,6 @@ void life (const int size, const int numgen) {
 
 }
 
-void setThreadsNumber() {
-
-  tbb::task_scheduler_init init(numThreads);
-
-}
-
 void setMatrixValues (const int size) {
 	for (int i = 0; i < size; ++i) {
 		for (int j = 0; j < size; ++j) {
@@ -108,20 +101,26 @@ void setMatrixValues (const int size) {
 	*/
 }
 
+void setThreadsNumber(const int numThreads) {
+
+  tbb::task_scheduler_init init(numThreads);
+
+}
+
 int main(int argc, char** argv) {
 
 	if (argc == 4) {
 
 		srand (time(NULL));
 		int size = atoi(argv[1]);
-		numThreads = atoi(argv[2]);
+		int numThreads = atoi(argv[2]);
 		int print = atoi(argv[3]);
 
 		matrix = new int[size * size];
 		tmpMatrix = new int[size * size];
 		int numgen = 5;
 
-		setThreadsNumber();
+		setThreadsNumber(numThreads);
 		setMatrixValues(size);
 		life(size, numgen);
 

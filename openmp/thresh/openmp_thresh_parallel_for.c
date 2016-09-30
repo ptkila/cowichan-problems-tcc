@@ -7,14 +7,13 @@
 static int* matrix;
 static int* mask;
 static int* histogram; 
-static int n_threads;
 
 int find_max (const int size) {
 
   int i, j;
   int max_val = 0;
 
-  #pragma omp parallel shared (matrix, size) private (i, j)
+  #pragma omp parallel shared (matrix, size, max_val) private (i, j)
   {
     #pragma omp for schedule(static, size/ n_threads)
     for (i = 0; i < size; ++i) {
@@ -28,6 +27,7 @@ int find_max (const int size) {
       }
     }
   }
+  //printf("%d\n", max_val);
   return max_val;
 }
 
@@ -95,9 +95,18 @@ void set_values_matrix(const int size) {
       matrix[i*size + j] = rand() % 255;    
     }
   }
+  /*
+  for (i = 0; i < size; ++i) {
+    for (j = 0; j < size; ++j) {
+      printf("%d ", matrix[i*size + j]);    
+    }
+    printf("\n");
+  }
+  printf("\n");
+  */
 }
 
-void set_threads_number() {
+void set_threads_number(const int n_threads) {
 
   omp_set_num_threads(n_threads);
 
@@ -109,7 +118,7 @@ int main(int argc, char** argv) {
 
     srand (time(NULL));
     int size = atoi(argv[1]);
-    n_threads = atoi(argv[2]);
+    int n_threads = atoi(argv[2]);
     int print = atoi(argv[3]);
     int percent = 50;
 
@@ -117,8 +126,8 @@ int main(int argc, char** argv) {
     mask = (int*) malloc (sizeof (int) * size * size);
     histogram = (int*) calloc (sizeof (int), 256);
 
+    set_threads_number(n_threads);
     set_values_matrix(size);
-    set_threads_number();
     thresh(size, percent);
 
     if (print == 1) {

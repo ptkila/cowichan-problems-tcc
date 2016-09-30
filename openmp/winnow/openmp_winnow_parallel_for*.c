@@ -16,7 +16,6 @@ static int* mask;
 static int* offsets;
 static struct point_w* ev_values;
 static struct point_w* points;
-static int n_threads;
 
 int count_points (const int size) {
   
@@ -129,7 +128,7 @@ void set_values_mask(const int size) {
   }
 }
 
-void set_threads_number() {
+void set_threads_number(const int n_threads) {
 
   omp_set_num_threads(n_threads);
 
@@ -141,14 +140,14 @@ int main(int argc, char** argv) {
 
     srand (time(NULL));
     int size = atoi(argv[1]);
-    n_threads = atoi(argv[2]);
+    int n_threads = atoi(argv[2]);
     int print = atoi(argv[3]);
 
     matrix = (int*) malloc (sizeof (int) * size * size);
     mask = (int*) malloc (sizeof (int) * size * size);
     offsets = (int*) malloc (sizeof (int) * n_threads);
 
-    set_threads_number();
+    set_threads_number(n_threads);
     set_values_matrix(size);
     set_values_mask(size);
 

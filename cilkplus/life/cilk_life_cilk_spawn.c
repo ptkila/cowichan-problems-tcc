@@ -8,7 +8,6 @@
 
 static int* matrix;
 static int* tmpMatrix;
-static int n_threads; 
 
 int get_neighbor_value(const int size, const int row, const int col) {
 
@@ -104,7 +103,7 @@ void life (const int size, const int numgen) {
 	}	
 }
 
-void set_threads_number() {
+void set_threads_number(const int n_threads) {
 
 	char threads[2];
 	sprintf(threads,"%d", n_threads);
@@ -137,14 +136,14 @@ int main(int argc, char** argv) {
 
 		srand (time(NULL));
 		int size = atoi(argv[1]);
-		n_threads = atoi(argv[2]);
+		int n_threads = atoi(argv[2]);
 		int print = atoi(argv[3]);
 
 		matrix = (int*) malloc (sizeof(int) * size * size);
 		tmpMatrix = (int*) malloc (sizeof(int) * size * size);
 		int numgen = 5;
 
-		set_threads_number();
+		set_threads_number(n_threads);
 		set_matrix_values(size);
 		
 		cilk_spawn life(size, numgen);

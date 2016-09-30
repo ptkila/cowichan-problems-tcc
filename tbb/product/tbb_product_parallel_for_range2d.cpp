@@ -6,7 +6,6 @@ typedef tbb::blocked_range2d<size_t, size_t> range2d;
 static double* matrix;
 static double* vector;
 static double* result;
-static int numThreads;
 
 void product(const int size) {
   tbb::parallel_for(range2d(0, size, 0, size),[&](const range2d& r) -> void {
@@ -20,12 +19,6 @@ void product(const int size) {
       result[i] = sum;
     }
   });
-}
-
-void setThreadsNumber() {
-
-  tbb::task_scheduler_init init(numThreads);
-
 }
 
 void setMatrixValues(const int size) {
@@ -42,20 +35,26 @@ void setVectorValues(const int size) {
   }
 }
 
+void setThreadsNumber(const int numThreads) {
+
+  tbb::task_scheduler_init init(numThreads);
+
+}
+
 int main(int argc, char** argv) {
 
   if (argc == 4) {
 
    srand (time(NULL));
    int size = atoi(argv[1]);
-   numThreads = atoi(argv[2]);
+   int numThreads = atoi(argv[2]);
    int print = atoi(argv[3]);
 
    matrix = new double[size * size];
    result = new double[size];
    vector = new double[size];
 
-   setThreadsNumber();
+   setThreadsNumber(numThreads);
    setMatrixValues(size);
    setVectorValues(size);
    

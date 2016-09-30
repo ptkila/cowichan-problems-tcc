@@ -9,7 +9,6 @@
 static double* matrix;
 static double* vector;
 static double* result;
-static int n_threads;
 
 void product (const int size) {
 	int i, j;
@@ -41,7 +40,7 @@ void set_values_vector(const int size) {
 	}
 }
 
-void set_threads_number() {
+void set_threads_number(const int n_threads) {
 
 	char threads[2];
 	sprintf(threads,"%d", n_threads);
@@ -56,14 +55,14 @@ int main(int argc, char** argv) {
 
 		srand (time(NULL));
 		int size = atoi(argv[1]);
-		n_threads = atoi(argv[2]);
+		int n_threads = atoi(argv[2]);
 		int print = atoi(argv[3]);
 
 		matrix = (double*) malloc (sizeof(double) * size * size);
 		result = (double*) calloc (sizeof(double), size);
 		vector = (double*) malloc (sizeof(double) * size);
 
-		set_threads_number();
+		set_threads_number(n_threads);
 		set_values_matrix(size);
 		set_values_vector(size);
 		product(size);

@@ -13,8 +13,6 @@ struct found_point {
 
 static int* matrix;
 static int* mask;
-static int nfill;
-static int n_threads;
 static struct found_point found;
 
 static const int N_SIDES = 4;
@@ -88,7 +86,7 @@ void invperc (const int size, const int nfill) {
 	}
 }
 
-void set_threads_number() {
+void set_threads_number(const int n_threads) {
 
 	char threads[2];
 	sprintf(threads,"%d", n_threads);
@@ -121,12 +119,12 @@ int main (int argc, char** argv) {
 
 		srand (time(NULL));
 		int size = atoi(argv[1]);
-		n_threads = atoi(argv[2]);
+		int n_threads = atoi(argv[2]);
 		int print = atoi(argv[3]);
 
 		matrix = (int*) malloc (sizeof(int) * size * size);
 		mask = (int*) calloc (size * size, sizeof(int));
-		nfill = 5;
+		int nfill = 5;
 
 		set_threads_number();
 		set_matrix_values(size);

@@ -2,11 +2,10 @@
 #include <cstdlib>
 #include <ctime>
 #include <cmath>
-#include <thread>
+#include "../ThreadPool.h"
 
 static int* matrix;
 static int* tmpMatrix;
-static int numThreads;
 
 void printMatrix(const int size) {
 	for (int i = 0; i < size; ++i) {
@@ -66,59 +65,23 @@ void evaluateMatrix (const int startIndex, const int lastIndex, const int size) 
 	}
 }
 
-/*
-template<class F>
-void setTasks(F&& f, const int numOpThreadM, const int numOpThreadR, const int size, 
-	ThreadPool& pool) {
+void play(const int size, ThreadPool& pool) {  
 	
-	for (int i = 0; i < numThreads; ++i) {
-		if (i + 1 == numThreads && numOpThreadR > 0 || numOpThreadM == 0) {
-			pool.enqueue(f, numOpThreadM * i, numOpThreadM * (i + 1) + numOpThreadR, size);
-			break;
-		} else {
-			pool.enqueue(f, numOpThreadM * i, numOpThreadM * (i + 1), size);
-		}
-	}
+	pool.parallel_for(evaluateMatrix, size);
+	pool.waitAll();
 
-	pool.waitForAll();
+	pool.parallel_for(updateMatrix, size);
+	pool.waitAll();	
+
 }
-*/
 
-template<class F>
-void setTasks(F&& f, const int numOpThreadM, const int numOpThreadR, const int size) {
+void life (const int size, const int numgen, const int numThreads) {
 	
-	std::vector <std::thread> threads;
-
-	for (int i = 0; i < numThreads; ++i) {
-		if (i + 1 == numThreads && numOpThreadR > 0) {
-			threads.push_back(std::thread(f, numOpThreadM * i, 
-				numOpThreadM * (i + 1) + numOpThreadR, size));
-			break;
-		} else {
-			threads.push_back(std::thread(f, numOpThreadM * i, 
-				numOpThreadM * (i + 1), size));
-		}
-	}
-
-	for (auto& t : threads) {
-		t.join();
-	}
-}
-
-void play(const int size) {
-
-	int numOpThreadM = (int)floor((float)size/ (float)numThreads);
-	int numOpThreadR = size % numThreads;  
-
-	setTasks(evaluateMatrix, numOpThreadM, numOpThreadR, size);
-	setTasks(updateMatrix, numOpThreadM, numOpThreadR, size);	
-
-}
-
-void life (const int size, const int numgen) {
+	ThreadPool pool(numThreads);
+	
 	for (int i = 0; i < numgen; ++i) {
 		//printMatrix(size);
-		play(size);
+		play(size, pool);
 	}
 }
 
@@ -136,7 +99,7 @@ int main(int argc, char** argv) {
 
 		srand (time(NULL));
 		int size = atoi(argv[1]);
-		numThreads = atoi(argv[2]);
+		int numThreads = atoi(argv[2]);
 		int print = atoi(argv[3]);
 
 		matrix = new int[size * size];
@@ -144,7 +107,7 @@ int main(int argc, char** argv) {
 		int numgen = 5;
 
 		setMatrixValues(size);
-		life(size, numgen);
+		life(size, numgen, numThreads);
 
 		if (print == 1) {
 			printMatrix(size);

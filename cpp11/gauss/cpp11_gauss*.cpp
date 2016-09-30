@@ -3,7 +3,6 @@
 #include <ctime>
 #include <cmath>
 #include <thread>
-#include <iomanip>
 #include <mutex>
 #include <vector>
 #include "../ThreadPool.h"
@@ -11,7 +10,6 @@
 static double* matrix;
 static double* target;
 static double* solution;
-static int numThreads;
 static std::mutex mutex;
 
 void fillSolution (const int size) {
@@ -82,7 +80,7 @@ void elimination(const int j, const int i, const int p, const int size) {
 	mutex.unlock();
 }
 
-void gauss(const int size) {
+void gauss(const int size, const int numThreads) {
 
 	ThreadPool pool(numThreads);
 	int ksave;
@@ -167,7 +165,7 @@ int main (int argc, char** argv) {
 
 		srand (time(NULL));
 		int size = atoi(argv[1]);
-		numThreads = atoi(argv[2]);
+		int numThreads = atoi(argv[2]);
 		int print = atoi(argv[3]);
 
 		matrix = new double[size*size];
@@ -176,7 +174,7 @@ int main (int argc, char** argv) {
 
 		setMatrixValues(size);
 		setTargetValues(size);
-		gauss(size);
+		gauss(size, numThreads);
 
 		if (print == 1) {
 			for (int i = 0; i < size; ++i) {

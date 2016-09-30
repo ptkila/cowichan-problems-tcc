@@ -11,7 +11,6 @@
 static int *matrix;
 static int *mask;
 static int *histogram;
-static int n_threads;
 
 int find_max (const int size) {
   int i, j;
@@ -82,7 +81,7 @@ void set_values_matrix(const int size) {
   }
 }
 
-void set_threads_number () {
+void set_threads_number (const int n_threads) {
 
   char threads[2];
   sprintf(threads,"%d", n_threads);
@@ -99,7 +98,7 @@ int main(int argc, char *argv[]) {
 
     srand (time(NULL));
     int size = atoi(argv[1]);
-    n_threads = atoi(argv[2]);
+    int n_threads = atoi(argv[2]);
     int print = atoi(argv[3]);
     int percent = 50;
 
@@ -107,7 +106,7 @@ int main(int argc, char *argv[]) {
     mask = (int*) malloc (sizeof(int) * size * size);
     histogram = (int*) malloc (sizeof(int) * 256);
 
-    set_threads_number();
+    set_threads_number(n_threads);
     set_values_matrix(size);
     thresh(size, percent);
 

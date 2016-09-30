@@ -11,7 +11,6 @@
 static double* matrix;
 static double* target;
 static double* solution;
-static int n_threads;
 
 void elimination(const int size) {
 
@@ -69,7 +68,7 @@ void gauss(const int size) {
 
 }
 
-void set_threads_number() {
+void set_threads_number(const int n_threads) {
 
 	char threads[2];
 	sprintf(threads,"%d", n_threads);
@@ -135,15 +134,14 @@ int main (int argc, char** argv) {
 
 		srand (time(NULL));
 		int size = atoi(argv[1]);
-		n_threads = atoi(argv[2]);
+		int n_threads = atoi(argv[2]);
 		int print = atoi(argv[3]);
 
 		matrix = (double*) malloc (sizeof(double) * size * size);
 		target = (double*) malloc (sizeof(double) * size);
 		solution = (double*) calloc (sizeof(double), size);
 
-		//pthread_mutex_init(&m,NULL);
-		set_threads_number();
+		set_threads_number(n_threads);
 		set_matrix_values(size);
 		set_target_values(size);
 		gauss(size);

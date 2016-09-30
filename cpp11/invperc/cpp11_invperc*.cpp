@@ -4,9 +4,9 @@
 #include <ctime>
 #include <cmath>
 #include <thread>
-#include <mutex>
+#include "../ThreadPool.h"
 
-class foundPoint {
+class FoundPoint {
 public:
 
 	int row, col, value;
@@ -30,10 +30,7 @@ public:
 
 static int* matrix;
 static int* mask;
-static int nfill;
-static int numThreads;
 static std::mutex m;
-static foundPoint found;
 
 static const int N_SIDES = 4;
 static const int X_STEPS[4] = {1, 0, -1, 0};
@@ -63,8 +60,9 @@ bool evaluateNeighbors (const int row, const int col, const int size) {
 
 }
 
-void calc (const int startIndex, const int lastIndex, const int size) {
+FoundPoint* calc (const int startIndex, const int lastIndex, const int size) {
 
+	FoundPoint found();
 	int row, col;
 	for (int i = startIndex; i < lastIndex; ++i) {
 		for (int j = 1; j < size - 1; ++j) {
@@ -84,6 +82,9 @@ void calc (const int startIndex, const int lastIndex, const int size) {
 			}
 		}
 	}
+
+	return found;
+
 }
 
 void percolate (const int size) {
@@ -108,16 +109,15 @@ void percolate (const int size) {
 	}
 }
 
-void invperc (const int size, const int nfill) {
+void invperc (const int size, const int nfill, const int numThreads) {
 	
 	int i;
-	int j, k;
 	for (i = 0; i < nfill; ++i){
-		found.reset();
 		percolate(size);
 		if(setNewPoint(size))
 			break;
 		/*
+		int j, k;
 		for (k = 0; k < size; k++) {
 			for (j = 0; j < size; ++j) {
 				printf("%d ", mask[k*size + j]);
@@ -152,17 +152,17 @@ int main (int argc, char** argv) {
 
 		srand (time(NULL));
 		int size = atoi(argv[1]);
-		numThreads = atoi(argv[2]);
+		int numThreads = atoi(argv[2]);
 		int print = atoi(argv[3]);
 
 		matrix = new int[size*size];
 		mask = new int[size*size]();
 		found = foundPoint();
-		nfill = 5;
+		int nfill = 5;
 
 		setMatrixValues(size);
 		setMaskMiddlePoint(size);
-		invperc(size, nfill);
+		invperc(size, nfill, numThreads);
 
 		if (print == 1) {
 			for (int i = 0; i < size; ++i) {

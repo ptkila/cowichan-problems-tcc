@@ -8,7 +8,6 @@
 static double* matrix;
 static double* vector;
 static double* result;
-static int n_threads;
 
 void fill_result(const int begin, const int end, const int size) {
   
@@ -56,7 +55,7 @@ void set_values_vector(const int size) {
   }
 }
 
-void set_threads_number () {
+void set_threads_number (const int n_threads) {
 
   char threads[2];
   sprintf(threads,"%d", n_threads);
@@ -70,14 +69,14 @@ int main(int argc, char** argv) {
   if (argc == 4) {
     srand (time(NULL));
     int size = atoi(argv[1]);
-    n_threads = atoi(argv[2]);
+    int n_threads = atoi(argv[2]);
     int print = atoi(argv[3]);
 
     matrix = (double*) malloc (sizeof(double) * size * size);
     result = (double*) calloc (sizeof(double), size);
     vector = (double*) malloc (sizeof(double) * size);
 
-    set_threads_number();
+    set_threads_number(n_threads);
     set_values_matrix(size);
     set_values_vector(size);
 

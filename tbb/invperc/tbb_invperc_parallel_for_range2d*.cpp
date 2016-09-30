@@ -26,7 +26,6 @@ public:
 typedef tbb::blocked_range2d<size_t, size_t> range2d;
 static int* matrix;
 static int* mask;
-static int numThreads;
 static foundPoint found;
 
 static const int N_SIDES = 4;
@@ -82,13 +81,13 @@ void percolate (const int size) {
 void invperc (const int size, const int nfill) {
 	
 	int i;
-	int j, k;
 	for (i = 0; i < nfill; ++i){
 		found.reset();
 		percolate(size);
 		if(setNewPoint(size))
 			break;
 		/*
+		int j, k;
 		for (k = 0; k < size; k++) {
 			for (j = 0; j < size; j++) {
 				printf("%d ", mask[k*size + j]);
@@ -98,12 +97,6 @@ void invperc (const int size, const int nfill) {
 		printf("\n");
 		*/
 	}
-}
-
-void setThreadsNumber() {
-
-	tbb::task_scheduler_init init(numThreads);
-
 }
 
 void setMatrixValues (const int size) {
@@ -123,23 +116,29 @@ void setMatrixValues (const int size) {
 	std::cout << std::endl;
 }
 
+void setThreadsNumber(const int numThreads) {
+
+	tbb::task_scheduler_init init(numThreads);
+
+}
+
 int main (int argc, char** argv) {
 
 	if (argc == 4) {
 
 		srand (time(NULL));
 		int size = atoi(argv[1]);
-		numThreads = atoi(argv[2]);
+		int numThreads = atoi(argv[2]);
 		int print = atoi(argv[3]);
 
 		matrix = new int[size*size];
 		mask = new int[size*size]();
 		found = foundPoint();
 
-		setThreadsNumber();
+		setThreadsNumber(numThreads);
 		setMatrixValues(size);
 		setMaskMiddlePoint(size);
-		int nfill = 1000;
+		int nfill = 5;
 		
 		invperc(size, nfill);
 

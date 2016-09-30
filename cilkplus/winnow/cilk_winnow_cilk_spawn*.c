@@ -16,8 +16,6 @@ static int* mask;
 static int* count_per_line;
 static struct point_w* ev_values;
 static struct point_w* points;
-static int nelts;
-static int n_threads;
 
 int compare (const void * a, const void * b) {
 
@@ -124,25 +122,7 @@ void prefix_sum_rec(const int size) {
 
 }
 
-void set_values_matrix(const int size) {
-  int i, j;
-  for (i = 0; i < size; ++i) {
-    for (j = 0; j < size; ++j) {
-      matrix[i*size +j] = rand();
-    }
-  }
-}
-
-void set_values_mask(const int size) {
-  int i, j;
-  for (i = 0; i < size; ++i) {
-    for (j = 0; j < size; ++j) {
-      mask[i*size +j] = rand() % 2;
-    }
-  }
-}
-
-void fill_points(const int len) {
+void fill_points(const int len, const int nelts) {
   int i;
   int chunk = len/ nelts;
   cilk_for(i = 0; i < nelts; ++i) {
@@ -166,17 +146,35 @@ void winnow (const int size) {
   qsort(ev_values, len, sizeof(*ev_values), compare);
   
   // Garante nelts <= n_points && > 0
-  nelts = rand() % len;
+  int nelts = rand() % len;
   if (!nelts) {
     nelts = 1;
   }
   
   points = (struct point_w*) malloc (sizeof(struct point_w) * nelts);
-  fill_points(len);
+  fill_points(len, nelts);
 
 }
 
-void set_threads_number () {
+void set_values_matrix(const int size) {
+  int i, j;
+  for (i = 0; i < size; ++i) {
+    for (j = 0; j < size; ++j) {
+      matrix[i*size +j] = rand();
+    }
+  }
+}
+
+void set_values_mask(const int size) {
+  int i, j;
+  for (i = 0; i < size; ++i) {
+    for (j = 0; j < size; ++j) {
+      mask[i*size +j] = rand() % 2;
+    }
+  }
+}
+
+void set_threads_number (const int n_threads) {
 
   char threads[2];
   sprintf(threads,"%d", n_threads);
@@ -190,14 +188,14 @@ int main(int argc, char *argv[]) {
 
     srand (time(NULL));
     int size = atoi(argv[1]);
-    n_threads = atoi(argv[2]);
+    int n_threads = atoi(argv[2]);
     int print = atoi(argv[3]);
 
     matrix = (int*) malloc (sizeof(int) * size * size);
     mask = (int*) malloc (sizeof(int) * size * size);
     count_per_line = (int*) malloc (sizeof(int) * (size + 1)); // i = 1
 
-    set_threads_number();
+    set_threads_number(n_threads);
     set_values_matrix(size);
     set_values_mask(size);
 

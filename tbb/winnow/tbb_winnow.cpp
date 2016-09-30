@@ -23,15 +23,12 @@ public:
 };
 
 typedef tbb::blocked_range<size_t> range;
-static PointW* evValues;
-static PointW* points;
-
 static int* matrix;
 static int* mask;
 static int* countPerLine;
 static int* totalCount;
-
-static int numThreads;
+static PointW* evValues;
+static PointW* points;
 
 class PrefixSum {
   
@@ -145,7 +142,7 @@ void setValuesMask(const int size) {
   }
 }
 
-void setThreadsNumber() {
+void setThreadsNumber(const int numThreads) {
 
   tbb::task_scheduler_init init(numThreads);
 
@@ -157,7 +154,7 @@ int main(int argc, char** argv) {
 
     srand (time(NULL));
     int size = atoi(argv[1]);
-    numThreads = atoi(argv[2]);
+    int numThreads = atoi(argv[2]);
     int print = atoi(argv[3]);
 
     matrix = new int[size * size];
@@ -165,7 +162,7 @@ int main(int argc, char** argv) {
     countPerLine = new int[size + 1];
     totalCount = new int[size + 1];
 
-    setThreadsNumber();
+    setThreadsNumber(numThreads);
     setValuesMatrix(size);
     setValuesMask(size);
 

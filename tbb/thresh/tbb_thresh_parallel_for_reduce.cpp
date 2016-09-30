@@ -5,7 +5,6 @@ typedef tbb::blocked_range<size_t> range;
 static int* matrix;
 static int* mask;
 static int* histogram;
-static int numThreads;
 
 int findMax (const int size) {
   return tbb::parallel_reduce(range(0, size), 0, [&](const range& r, int result) 
@@ -20,7 +19,7 @@ int findMax (const int size) {
     },
     [](int x, int y) -> int {
       return std::max(x, y);
-  });
+    });
 }
 
 void fillHistogram (const int size) {
@@ -63,6 +62,8 @@ void thresh(const int size, const int percent) {
   
   int nmax = findMax(size);
   
+  //std::cout << nmax << std::endl;
+
   fillHistogram(size);
   
   int threshold = calcThreshold(percent, nmax, size);
@@ -74,12 +75,21 @@ void thresh(const int size, const int percent) {
 void setValuesMatrix (int size) {
   for (int i = 0; i < size; i++) {
     for (int j = 0; j < size; j++) {
-     matrix[i*size + j] = std::rand() % 255;
-   }
- }
+      matrix[i*size + j] = std::rand() % 255;
+    }
+  }
+  /*
+  for (int i = 0; i < size; i++) {
+    for (int j = 0; j < size; j++) {
+      std::cout << matrix[i*size + j] << " ";
+    }
+    std::cout << std::endl;
+  }
+  std::cout << std::endl;
+  */
 }
 
-void setThreadsNumber() {
+void setThreadsNumber(const int numThreads) {
 
   tbb::task_scheduler_init init(numThreads);
 
@@ -91,7 +101,7 @@ int main(int argc, char** argv) {
 
     srand (time(NULL));
     int size = atoi(argv[1]);
-    numThreads = atoi(argv[2]);
+    int numThreads = atoi(argv[2]);
     int print = atoi(argv[3]);
 
     matrix = new int[size * size];
@@ -99,7 +109,7 @@ int main(int argc, char** argv) {
     histogram = new int[256];
     int percent = 50;
 
-    setThreadsNumber();
+    setThreadsNumber(numThreads);
     setValuesMatrix(size);
     thresh(size, percent);
 

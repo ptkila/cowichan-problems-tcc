@@ -11,14 +11,13 @@
 static int *matrix;
 static int *mask;
 static int *histogram;
-static int n_threads;
 
 int find_max(const int begin, const int end, const int size) {
   if (begin + 1 == end) {
     
     int i;
-    int max = matrix[begin*size + 0];
-    for (i = 1; i < size; ++i) {
+    int max = -1;
+    for (i = 0; i < size; ++i) {
       max = MAX(max, matrix[begin*size + i]);
     }
     return max;
@@ -68,7 +67,7 @@ int calc_threshold (const int percent, const int nmax, const int size) {
 
 void thresh(const int size, const int percent) {
   
-  int nmax = find_max(size);
+  int nmax = find_max(0, size, size);
   
   fill_histogram(size);
   
@@ -87,7 +86,7 @@ void set_values_matrix(const int size) {
   }
 }
 
-void set_threads_number () {
+void set_threads_number (const int n_threads) {
 
   char threads[2];
   sprintf(threads,"%d", n_threads);
@@ -104,7 +103,7 @@ int main(int argc, char *argv[]) {
 
     srand (time(NULL));
     int size = atoi(argv[1]);
-    n_threads = atoi(argv[2]);
+    int n_threads = atoi(argv[2]);
     int print = atoi(argv[3]);
     int percent = 50;
 
@@ -112,7 +111,7 @@ int main(int argc, char *argv[]) {
     mask = (int*) malloc (sizeof(int) * size * size);
     histogram = (int*) malloc (sizeof(int) * 256);
 
-    set_threads_number();
+    set_threads_number(n_threads);
     set_values_matrix(size);
     thresh(size, percent);
 

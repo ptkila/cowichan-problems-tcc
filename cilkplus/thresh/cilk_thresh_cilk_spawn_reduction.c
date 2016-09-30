@@ -13,7 +13,6 @@
 static int *matrix;
 static int *mask;
 static int *histogram;
-static int n_threads;
 
 int find_max(const int begin, const int end, const int size) {
   
@@ -109,7 +108,16 @@ void thresh(const int size, const int percent) {
 
 }
 
-void set_threads_number () {
+void set_values_matrix(const int size) {
+  int i, j;
+  for (i = 0; i < size; ++i) {
+    for (j = 0; j < size; ++j) {
+      matrix[i*size + j] = rand() % 255;
+    }
+  }
+}
+
+void set_threads_number (const int n_threads) {
 
   char threads[2];
   sprintf(threads,"%d", n_threads);
@@ -120,21 +128,12 @@ void set_threads_number () {
   //printf("%d\n",  __cilkrts_get_nworkers() );
 }
 
-void set_values_matrix(const int size) {
-  int i, j;
-  for (i = 0; i < size; ++i) {
-    for (j = 0; j < size; ++j) {
-      matrix[i*size + j] = rand() % 255;
-    }
-  }
-}
-
 int main(int argc, char *argv[]) {
   if (argc == 4) {
 
     srand (time(NULL));
     int size = atoi(argv[1]);
-    n_threads = atoi(argv[2]);
+    int n_threads = atoi(argv[2]);
     int print = atoi(argv[3]);
     int percent = 50;
 
@@ -142,7 +141,7 @@ int main(int argc, char *argv[]) {
     mask = (int*) malloc (sizeof(int) * size * size);
     histogram = (int*) malloc (sizeof(int) * 256);
 
-    set_threads_number();
+    set_threads_number(n_threads);
     set_values_matrix(size);
 
     cilk_spawn thresh(size, percent);
