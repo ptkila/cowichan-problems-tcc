@@ -12,7 +12,6 @@ struct found_point {
 
 static int* matrix;
 static int* mask;
-static struct found_point found;
 
 static const int N_SIDES = 4;
 static const int X_STEPS[4] = {1, 0, -1, 0};
@@ -26,27 +25,32 @@ void set_mask_middle_point (const int size) {
 	}
 }
 
-void reset_found_point() {
-	found.row = -1;
-	found.col = -1;
-	found.value = INT_MAX;
+void set_initial_values(struct found_point& point) {
+	point.row = -1;
+	point.col = -1;
+	point.value = INT_MAX;
 }
 
-int set_new_point(const int size) {
-	if (found.row >= 0 && found.col >= 0) {	
-		mask[found.row*size + found.col] = 1;
+int set_new_point(const int size, const struct found_point& point) {
+	if (point.row >= 0 && point.col >= 0) {	
+		mask[point.row*size + point.col] = 1;
 		return 0;
 	} else {
 		return 1;
 	}
 }
 
-int percolate (const int size) {
+struct found_point percolate (const int size) {
 
+	const int n_threads = omp_get_num_threads();
 	int i, j, sides, row, col;
+	struct found_point points[n_threads];
+	struct found_point point;
+	set_initial_values(point);
 
-	#pragma omp parallel shared(found, mask, matrix) private(i, j, row, col, sides)
+	#pragma omp parallel shared(mask, matrix, n_threads, points) private(i, j, row, col, sides, point)
 	{	
+		int thread_num = omp_get_thread_num();
 		#pragma omp for schedule(static, size/ n_threads)
 		for (i = 1; i < size - 1 ; i++) {
 			for (j = 1; j < size - 1; j++) {
@@ -55,29 +59,34 @@ int percolate (const int size) {
 						row = i + X_STEPS[sides];
 						col = j + Y_STEPS[sides];
 						int pos = row*size + col;
-						if (mask[pos] == 0 && matrix[pos] < found.value) {
-							found.row = row;
-							found.col = col;
-							found.value = matrix[pos]; 
+						if (mask[pos] == 0 && matrix[pos] < point.value) {
+							point.row = row;
+							point.col = col;
+							point.value = matrix[pos];
+							points[thread_num] = point;
 						}
 					}
 				}
 			}
 		}
 	}
+
+	point = points[0];
+	for (i = 1; i < n_threads; ++i) {
+		if (point.value > points[i].value) {
+			point = points[i];
+		}
+	}
+
+	return point;
 }
 
 void invperc (const int size, const int nfill) {
 	
 	int i;
-	int j, k;
 	for (i = 0; i < nfill; ++i){
-		reset_found_point();
-		percolate(size);
-		if(set_new_point(size))
-			break;
-
 		/*
+		int j, k;
 		for (k = 0; k < size; k++) {
 			for (j = 0; j < size; j++) {
 				printf("%d ", mask[k*size + j]);
@@ -86,13 +95,9 @@ void invperc (const int size, const int nfill) {
 		}
 		printf("\n");
 		*/
+		struct found_point point = percolate(size);
+		if(set_new_point(size, point)) { break; }
 	}
-}
-
-void set_threads_number(const int n_threads) {
-
-	omp_set_num_threads(n_threads);
-
 }
 
 void set_matrix_values (const int size) {
@@ -113,6 +118,12 @@ void set_matrix_values (const int size) {
 
 }
 
+void set_threads_number(const int n_threads) {
+
+	omp_set_num_threads(n_threads);
+
+}
+
 int main (int argc, char** argv) {
 
 	if (argc == 4) {
@@ -126,7 +137,7 @@ int main (int argc, char** argv) {
 		mask = (int*) calloc (size * size, sizeof(int));
 		int nfill = 5;
 
-		set_threads_number();
+		set_threads_number(n_threads);
 		set_matrix_values(size);
 		set_mask_middle_point(size);
 		invperc(size, nfill);

@@ -58,6 +58,8 @@ void thresh(const int size, const int percent, const int numThreads) {
 
   int nMax = pool.parallel_reducer(compare, size, "max");
 
+  //std::cout << nMax << std::endl;
+
   pool.parallel_for(fillHistogram, size);
   pool.waitAll();
 
@@ -74,14 +76,14 @@ void setValuesMatrix(const int size) {
       matrix[i*size + j] = rand() % 256;    
     }
   }
-  /*
+  
   for (int i = 0; i < size; ++i) {
     for (int j = 0; j < size; ++j) {
       std::cout << matrix[i*size + j] << " ";    
     }
     std::cout << "\n";
   }
-  */
+
 }
 
 int main(int argc, char** argv) {

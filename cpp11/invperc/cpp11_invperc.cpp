@@ -7,30 +7,21 @@
 #include "../ThreadPool.h"
 
 class FoundPoint {
+
 public:
 
 	int row, col, value;
 
-	foundPoint() {
-
-		this->row = 0;
-		this->col = 0;
-		this->value = 0;
-
-	}
+	FoundPoint(): 
+		row(-1), col(-1), value(INT_MAX) {};
 	
-	void reset() {
+	FoundPoint(int _row, int _col, int _value): 
+		row(_row), col(_col), value(_value) {};
 
-		this->row = -1;
-		this->col = -1;
-		this->value = INT_MAX;
-	
-	}
 };
 
 static int* matrix;
 static int* mask;
-static std::mutex m;
 
 static const int N_SIDES = 4;
 static const int X_STEPS[4] = {1, 0, -1, 0};
@@ -44,15 +35,15 @@ void setMaskMiddlePoint (const int size) {
 	}
 }
 
-int setNewPoint(const int size) {
-	if (found.row >= 0 && found.col >= 0) {	
-		mask[found.row*size + found.col] = 1;
-		return 0;
+bool setNewPoint(const int size, const FoundPoint point) {
+	
+	if (point.row >= 0 && point.col >= 0) {	
+		mask[point.row*size + point.col] = 1;
+		return false;
 	} else {
-		return 1;
+		return true;
 	}
 }
-
 
 bool evaluateNeighbors (const int row, const int col, const int size) {
 
@@ -60,9 +51,9 @@ bool evaluateNeighbors (const int row, const int col, const int size) {
 
 }
 
-FoundPoint* calc (const int startIndex, const int lastIndex, const int size) {
+FoundPoint calc (const int startIndex, const int lastIndex, const int size) {
 
-	FoundPoint found();
+	FoundPoint found = FoundPoint();
 	int row, col;
 	for (int i = startIndex; i < lastIndex; ++i) {
 		for (int j = 1; j < size - 1; ++j) {
@@ -87,35 +78,49 @@ FoundPoint* calc (const int startIndex, const int lastIndex, const int size) {
 
 }
 
-void percolate (const int size) {
+FoundPoint percolate (const int size, ThreadPool& pool) {
 
-	int numOpThreadM = (int)floor((float)size/ (float)numThreads);
-	int numOpThreadR = size % numThreads;  
-	std::thread threadsList[numThreads];
+	std::vector<std::future<FoundPoint>> points;
+	FoundPoint max = FoundPoint();
+	int numThreads = pool.getSize();
+	int numOpThreadM = size/ numThreads;
+	int numOpThreadR = size % numThreads;
+	bool end = false;  
 
 	for (int i = 0; i < numThreads; ++i) {
-		if (i + 1 == numThreads && numOpThreadR > 0) {
-			threadsList[i] = std::thread(calc, numOpThreadM * i, 
-				numOpThreadM * (i + 1) + numOpThreadR, size);
-			break;
-		} else {
-			threadsList[i] = std::thread(calc, numOpThreadM * i, 
-				numOpThreadM * (i + 1), size);
-		}
-	}
+            
+            int startIndex = numOpThreadM * i;
+            int lastIndex = numOpThreadM * (i + 1);
 
-	for ( auto &t : threadsList ) {
-		t.join();
-	}
+            if ((i + 1 == numThreads && numOpThreadR > 0) || numOpThreadM == 0) {
+                lastIndex += numOpThreadR;
+                end = true;
+            }    
+
+            points.emplace_back(pool.enqueue(calc, startIndex, lastIndex, size));
+            
+            if (end) break;
+    }
+
+    for (auto& f: points) {
+    	FoundPoint tmpFP = f.get();
+    	if (tmpFP.value < max.value){
+    		max = tmpFP;
+    	}
+    }
+
+	return max;
 }
 
 void invperc (const int size, const int nfill, const int numThreads) {
 	
+	ThreadPool pool(numThreads);
+
 	int i;
 	for (i = 0; i < nfill; ++i){
-		percolate(size);
-		if(setNewPoint(size))
-			break;
+		
+		FoundPoint point = percolate(size, pool);
+		if(setNewPoint(size, point)) { break; }
 		/*
 		int j, k;
 		for (k = 0; k < size; k++) {
@@ -136,7 +141,7 @@ void setMatrixValues (const int size) {
 			matrix[i*size + j] = rand() % 1000;
 		}
 	}
-	
+	/*
 	for (int i = 0; i < size; ++i) {
 		for (int j = 0; j < size; ++j) {
 			std::cout << matrix[i*size + j] << " ";
@@ -144,6 +149,7 @@ void setMatrixValues (const int size) {
 		std::cout << std::endl;
 	}
 	std::cout << std::endl;
+	*/
 }
 
 int main (int argc, char** argv) {
@@ -157,7 +163,6 @@ int main (int argc, char** argv) {
 
 		matrix = new int[size*size];
 		mask = new int[size*size]();
-		found = foundPoint();
 		int nfill = 5;
 
 		setMatrixValues(size);

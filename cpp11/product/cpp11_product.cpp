@@ -47,12 +47,12 @@ void setValuesVector(const int size) {
 	for (int i = 0; i < size; ++i) {
 		vector[i] = rand() % 10;
 	}
-	/*
+	
 	for (int i = 0; i < size; ++i) {
 		std::cout << vector[i] << " ";
 	}
 	std::cout << std::endl;
-	*/
+	
 }
 
 int main(int argc, char** argv) {

@@ -34,8 +34,11 @@ int get_neighbor_count(const int size, const int row, const int col) {
 }
 
 void update_matrix(const int size) {
+
+	const int n_threads = omp_get_num_threads();
 	int i, j;
-	#pragma omp parallel shared(size, matrix, tmpMatrix) private(i, j)
+	
+	#pragma omp parallel shared(size, matrix, tmpMatrix, n_threads) private(i, j)
 	{
 		#pragma omp for schedule(static, size/ n_threads)
 		for (i = 0; i < size; ++i) {
@@ -47,8 +50,11 @@ void update_matrix(const int size) {
 }
 
 void evaluate_matrix (const int size) {
+
+	const int n_threads = omp_get_num_threads();
 	int i, j;
-	#pragma omp parallel shared(size, matrix, tmpMatrix) private(i, j)
+
+	#pragma omp parallel shared(size, matrix, tmpMatrix, n_threads) private(i, j)
 	{
 		#pragma omp for schedule(static, size/ n_threads)
 		for (i = 0; i < size; ++i) {

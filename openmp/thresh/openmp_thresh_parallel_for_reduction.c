@@ -10,10 +10,11 @@ static int* histogram;
 
 int find_max (const int size) {
 
+  const int n_threads = omp_get_num_threads();
   int i, j;
   int max_val = 0;
 
-  #pragma omp parallel shared (matrix, size) private (i, j)
+  #pragma omp parallel shared (matrix, size, n_threads) private (i, j)
   {
     #pragma omp for schedule(static, size/n_threads) reduction(max:max_val)
     for (i = 0; i < size; ++i) {

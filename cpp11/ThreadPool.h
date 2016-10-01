@@ -31,9 +31,12 @@ public:
     ThreadPool(std::size_t);
     
     ~ThreadPool();
-    
     template<class F, class... Args>
     void enqueue(F&& f, Args&&... args);
+
+    template<class F, class... Args>
+    auto enqueue_return(F&& f, Args&&... args)
+        -> std::future<typename std::result_of<F(Args...)>::type>;
     
     template<class F, class... Args>
     void parallel_for(F&& f, const int size, Args&&... extra_args);
@@ -41,6 +44,8 @@ public:
     template <class F>
     auto parallel_reducer(F&& f, const int size, const std::string operation)
         -> decltype(f(0, 0, 0));
+
+    int getSize() const;
 
     void waitAll() const;
 
@@ -108,31 +113,18 @@ void ThreadPool::parallel_for(F&& f, const int size, Args&&... extra_args) {
     const int numOpThreadR = size % this->n_threads;
     bool end = false;
 
-    //int size_extra_params = sizeof...(extra_args);
-    //using return_type = typename std::remove_reference<decltype(f)>::type;
-
     for (int i = 0; i < this->n_threads; ++i) {
-        
+
         int firstIndex = numOpThreadM * i;
         int lastIndex = numOpThreadM * (i + 1);
 
         if (i + 1 == this->n_threads && numOpThreadR > 0 || numOpThreadM == 0) {
             lastIndex += numOpThreadR;
             end = true;
-        }    
-            
-        auto task = std::make_shared< std::packaged_task<void()> >(
-            std::bind(std::forward<F>(f), firstIndex, lastIndex, size, 
-                std::forward<Args>(extra_args)...)
-            );
-        {
-            std::unique_lock<std::mutex> lock(this->queue_mutex);
-            if(this->stop) { throw std::runtime_error("enqueue on stopped ThreadPool"); }
-            this->tasks.emplace([task]() -> void { (*task)(); });
         }
-        this->taskCount++;
-        this->condition.notify_one();
-        
+
+        enqueue(f, firstIndex, lastIndex, size, std::forward<Args>(extra_args)...);
+
         if (end) break;
     }
 }
@@ -159,22 +151,10 @@ auto ThreadPool::parallel_reducer(F&& f, const int size, const std::string opera
             if ((i + 1 == this->n_threads && numOpThreadR > 0) || numOpThreadM == 0) {
                 lastIndex += numOpThreadR;
                 end = true;
-            }    
-
-            auto task = std::make_shared< std::packaged_task<return_type()> >(
-                std::bind(std::forward<F>(f), firstIndex, lastIndex, size)
-            );
-
-            values.emplace_back(task->get_future());
-
-            {
-                std::unique_lock<std::mutex> lock(this->queue_mutex);
-                if(this->stop) { throw std::runtime_error("enqueue on stopped ThreadPool"); }
-                this->tasks.emplace([task]() -> void { (*task)(); });
             }
-            this->taskCount++;
-            this->condition.notify_one();
-            
+
+            values.emplace_back(enqueue_return(f, firstIndex, lastIndex, size));
+
             if (end) break;
         }
 
@@ -221,16 +201,34 @@ auto ThreadPool::parallel_reducer(F&& f, const int size, const std::string opera
     }
 }
 
-void ThreadPool::waitAll() const 
+template<class F, class... Args>
+auto ThreadPool::enqueue_return(F&& f, Args&&... args)
+    -> std::future<typename std::result_of<F(Args...)>::type> 
 {
-    while(this->taskCount != 0) {
-        std::this_thread::yield();
+
+    using return_type = typename std::result_of<F(Args...)>::type;
+
+    auto task = std::make_shared< std::packaged_task<return_type()> >(
+        std::bind(std::forward<F>(f), std::forward<Args>(args)...)
+    );
+
+    std::future<return_type> res = task->get_future();
+    {
+        std::unique_lock<std::mutex> lock(this->queue_mutex);
+        if(this->stop) { throw std::runtime_error("enqueue on stopped ThreadPool"); }
+        tasks.emplace([task](){ (*task)(); });
     }
+
+    this->taskCount++;
+    this->condition.notify_one();
+
+    return res;
 }
 
 template<class F, class... Args>
 void ThreadPool::enqueue(F&& f, Args&&... args)
 {
+
     auto task = std::make_shared< std::packaged_task<void()> >(
         std::bind(std::forward<F>(f), std::forward<Args>(args)...)
     );
@@ -243,6 +241,18 @@ void ThreadPool::enqueue(F&& f, Args&&... args)
 
     this->taskCount++;
     this->condition.notify_one();
+}
+
+void ThreadPool::waitAll() const 
+{
+    while(this->taskCount != 0) {
+        std::this_thread::yield();
+    }
+}
+
+int ThreadPool::getSize() const 
+{
+    return this->n_threads;
 }
 
 void ThreadPool::joinAll() {

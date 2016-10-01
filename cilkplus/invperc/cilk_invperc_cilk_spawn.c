@@ -13,7 +13,6 @@ struct found_point {
 
 static int* matrix;
 static int* mask;
-static struct found_point found;
 
 static const int N_SIDES = 4;
 static const int X_STEPS[4] = {1, 0, -1, 0};
@@ -27,15 +26,17 @@ void set_mask_middle_point (const int size) {
 	}
 }
 
-void reset_found_point() {
-	found.row = -1;
-	found.col = -1;
-	found.value = INT_MAX;
+void set_initial_values(struct found_point& point) {
+	point.row = -1;
+	point.col = -1;
+	point.value = INT_MAX;
 }
 
-void percolate (const int begin, const int end, const int size) {
+struct found_point percolate (const int begin, const int end, const int size) {
 	
 	if (begin + 1 == end) {
+		struct found_point point;
+		set_initial_values(point);
 		int i, sides, row, col;
 		for (i = 1; i < size - 1 ; ++i) {
 			if (mask[begin*size + i]) {
@@ -43,29 +44,31 @@ void percolate (const int begin, const int end, const int size) {
 					row = begin + X_STEPS[sides];
 					col = i + Y_STEPS[sides];
 					int pos = row*size + col;
-					if (mask[pos] == 0 && matrix[pos] < found.value) {
-						found.row = row;
-						found.col = col;
-						found.value = matrix[pos]; 
+					if (mask[pos] == 0 && matrix[pos] < point.value) {
+						point.row = row;
+						point.col = col;
+						point.value = matrix[pos]; 
 					}
 				}
 			}
 		}
-		return;
+		return point;
 
 	} else {
 
 		int middle = begin + (end - begin)/ 2;
-		cilk_spawn percolate(begin, middle, size);
-		cilk_spawn percolate(middle, end, size);
+		struct found_point point_l = cilk_spawn percolate(begin, middle, size);
+		struct found_point point_r = cilk_spawn percolate(middle, end, size);
 		cilk_sync;
+	
+		return point_l.value < point_r.value ? point_l: point_r; 
 	
 	}
 }
 
-int set_new_point(const int size) {
-	if (found.row >= 0 && found.col >= 0) {	
-		mask[found.row*size + found.col] = 1;
+int set_new_point(const int size, const struct found_point point) {
+	if (point.row >= 0 && point.col >= 0) {	
+		mask[point.row*size + point.col] = 1;
 		return 0;
 	} else {
 		return 1;
@@ -74,19 +77,11 @@ int set_new_point(const int size) {
 
 void invperc (const int size, const int nfill) {
 	
-	int i, j, k;
-	
+	int i;
 	for (i = 0; i < nfill; ++i){
-		reset_found_point();
 
-		cilk_spawn percolate(1, size - 1, size);
-		cilk_sync;
-
-		if (set_new_point(size)) {
-			printf("%d break\n", i);
-			break;
-		}
-		
+		/*
+		int j, k;
 		for (k = 0; k < size; ++k) {
 			for (j = 0; j < size; ++j) {
 				printf("%d ", mask[k*size + j]);
@@ -94,7 +89,12 @@ void invperc (const int size, const int nfill) {
 			printf("\n");
 		}
 		printf("\n");
-		
+		*/
+
+		struct found_point point = cilk_spawn percolate(1, size - 1, size);
+		cilk_sync;
+
+		if (set_new_point(size, point)) { break; }
 	}
 }
 

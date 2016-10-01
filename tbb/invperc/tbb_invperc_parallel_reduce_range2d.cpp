@@ -1,31 +1,24 @@
 #include "tbb/tbb.h"
 #include <iostream>
+#include <cmath>
 
-class foundPoint {
+class FoundPoint {
+
 public:
 
 	int row, col, value;
 
-	foundPoint() {
-
-		this->row = 0;
-		this->col = 0;
-		this->value = 0;
-	}
+	FoundPoint(): 
+		row(-1), col(-1), value(INT_MAX) {};
 	
-	void reset() {
+	FoundPoint(int _row, int _col, int _value): 
+		row(_row), col(_col), value(_value) {};
 
-		this->row = -1;
-		this->col = -1;
-		this->value = INT_MAX;
-	
-	}
 };
 
-typedef tbb::blocked_range<size_t> range;
+typedef tbb::blocked_range2d<std::size_t, std::size_t> range2d;
 static int* matrix;
 static int* mask;
-static foundPoint found;
 
 static const int N_SIDES = 4;
 static const int X_STEPS[4] = {1, 0, -1, 0};
@@ -39,12 +32,13 @@ void setMaskMiddlePoint (const int size) {
 	}
 }
 
-int setNewPoint(const int size) {
-	if (found.row >= 0 && found.col >= 0) {	
-		mask[found.row*size + found.col] = 1;
-		return 0;
+bool setNewPoint(const int size, const FoundPoint& point) {
+	
+	if (point.row >= 0 && point.col >= 0) {	
+		mask[point.row*size + point.col] = 1;
+		return false;
 	} else {
-		return 1;
+		return true;
 	}
 }
 
@@ -54,37 +48,44 @@ bool evaluateNeighbors (const int row, const int col, const int size) {
 
 }
 
-void percolate (const int size) {
-	tbb::parallel_for(range(1, size-1),[&](const range& r) -> void {
-		size_t r_end = r.end();
-		for (size_t i = r.begin(); i != r_end; ++i) {
-			for (int j = 1; j < size - 1; ++j) {
-				if (mask[i*size + j]) {
-					for (int sides = 0; sides < N_SIDES; ++sides) {
-						int row = i + X_STEPS[sides];
-						int col = j + Y_STEPS[sides];
-						int pos = row*size + col;
-						if (mask[pos] == 0 && matrix[pos] < found.value) {
-							found.row = row;
-							found.col = col;
-							found.value = matrix[pos]; 
+FoundPoint percolate (const int size) {
+	 return 
+	 tbb::parallel_reduce(
+	 	range2d(1, size-1, 1, size-1),
+	 	FoundPoint(),
+	 	[&](const range2d& r, FoundPoint point) -> FoundPoint {
+             std::size_t r_end = r.rows().end();
+             for (std::size_t i = r.rows().begin(); i != r_end; ++i) {
+                std::size_t c_end = r.cols().end();
+                for (std::size_t j = r.cols().begin(); j != c_end; ++j) {
+					if (mask[i*size + j]) {
+						for (int sides = 0; sides < N_SIDES; ++sides) {
+							int row = i + X_STEPS[sides];
+							int col = j + Y_STEPS[sides];
+							int pos = row*size + col;
+							if (mask[pos] == 0 && matrix[pos] < point.value) {
+								point.row = row;
+								point.col = col;
+								point.value = matrix[pos]; 
+							}
 						}
 					}
 				}
-			}
-		}
-	});
+             }
+             return point;
+         },
+         [](FoundPoint a, FoundPoint b) -> FoundPoint {
+
+         	return a.value < b.value ? a : b;
+         
+         }
+     );
 }
 
 void invperc (const int size, const int nfill) {
 	
 	int i;
 	for (i = 0; i < nfill; ++i){
-		found.reset();
-		percolate(size);
-		if(setNewPoint(size))
-			break;
-
 		/*
 		int j, k;
 		for (k = 0; k < size; k++) {
@@ -95,6 +96,8 @@ void invperc (const int size, const int nfill) {
 		}
 		printf("\n");
 		*/
+		FoundPoint point = percolate(size);
+		if(setNewPoint(size, point)) { break; }
 	}
 }
 
@@ -105,7 +108,7 @@ void setMatrixValues (const int size) {
 			matrix[i*size + j] = rand() % 1000;
 		}
 	}
-	/*
+	
 	for (int i = 0; i < size; i++) {
 		for (int j = 0; j < size; j++) {
 			std::cout << matrix[i*size + j] << " ";
@@ -113,7 +116,7 @@ void setMatrixValues (const int size) {
 		std::cout << std::endl;
 	}
 	std::cout << std::endl;
-	*/
+	
 }
 
 void setThreadsNumber(const int numThreads) {
@@ -133,12 +136,11 @@ int main (int argc, char** argv) {
 
 		matrix = new int[size*size];
 		mask = new int[size*size]();
-		found = foundPoint();
 
 		setThreadsNumber(numThreads);
 		setMatrixValues(size);
 		setMaskMiddlePoint(size);
-		int nfill = 1000;
+		int nfill = 5;
 
 		invperc(size, nfill);
 

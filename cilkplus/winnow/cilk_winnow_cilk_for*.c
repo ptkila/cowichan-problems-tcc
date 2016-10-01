@@ -112,7 +112,7 @@ void fill_points(const int len, const int nelts) {
   }
 }
 
-void winnow (const int size) {
+void winnow (const int size, const int nelts) {
 
   int len = cilk_spawn count_points(0, size, size);
   cilk_sync;
@@ -125,12 +125,6 @@ void winnow (const int size) {
   cilk_sync;
 
   qsort(ev_values, len, sizeof(*ev_values), compare);
-  
-  // Garante nelts <= n_points && > 0
-  int nelts = rand() % len;
-  if (!nelts) {
-    nelts = 1;
-  }
   
   points = (struct point_w*) malloc (sizeof(struct point_w) * nelts);
   fill_points(len, nelts);
@@ -175,12 +169,13 @@ int main(int argc, char *argv[]) {
     matrix = (int*) malloc (sizeof(int) * size * size);
     mask = (int*) malloc (sizeof(int) * size * size);
     count_per_line = (int*) malloc (sizeof(int) * (size + 1)); // i = 1
+    int nelts = 5;
 
     set_threads_number(n_threads);
     set_values_matrix(size);
     set_values_mask(size);
 
-    winnow(size);
+    winnow(size, nelts);
 
     if (print) {
       int i;
@@ -191,6 +186,7 @@ int main(int argc, char *argv[]) {
 
     free (matrix);
     free (mask);
+    free (count_per_line);
     free (ev_values);
     free (points);
 

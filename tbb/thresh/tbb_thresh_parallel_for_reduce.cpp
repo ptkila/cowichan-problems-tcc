@@ -7,10 +7,13 @@ static int* mask;
 static int* histogram;
 
 int findMax (const int size) {
-  return tbb::parallel_reduce(range(0, size), 0, [&](const range& r, int result) 
-    -> int {
-      std::size_t r_end = r.end();
-      for (std::size_t i = r.begin(); i != r_end; ++i) {
+  return 
+  tbb::parallel_reduce(
+    range(0, size), 
+    0, 
+    [&](const range& r, int result) -> int {
+      std::size_t end = r.end();
+      for (std::size_t i = r.begin(); i != end; ++i) {
         for (int j = 0; j < size; ++j) {
           result = std::max(result, matrix[i*size + j]);
         }

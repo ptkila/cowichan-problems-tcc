@@ -8,17 +8,11 @@ public:
 
   int i, j, weight;
 
-  PointW() {
-    this->i = 0;
-    this->j = 0;
-    this->weight = 0;
-  }
+  PointW(): 
+    i(0), j(0), weight(0) {};
 
-  PointW(int i, int j, int weight) {
-    this->i = i;
-    this->j = j;
-    this->weight = weight;
-  }
+  PointW(int _i, int _j, int _weight):
+    i(_i), j(_j), weight(_weight) {};
 
 };
 
@@ -74,8 +68,11 @@ void fillValues(const int size) {
 }
 
 int countPoints(const int size) {
-  return parallel_reduce(range(0, size), 0, [&](const range& r, int result) 
-    -> int {
+  return 
+  parallel_reduce(
+    range(0, size), 
+    0, 
+    [&](const range& r, int result) -> int {
       std::size_t end = r.end();
       for (std::size_t i = r.begin(); i != end; ++i) {
         int cur = 0;
@@ -102,7 +99,7 @@ void fillPoints(const int len, const int nelts) {
   });
 }
 
-void winnow(const int size) {
+void winnow(const int size, const int nelts) {
   
   int len = countPoints(size);
   evValues = new PointW[len];
@@ -112,14 +109,12 @@ void winnow(const int size) {
 
   fillValues(size);
 
-  std::sort(evValues, evValues + len, [&](const PointW& a, const PointW& b) -> bool { 
-    return a.weight < b.weight; 
-  });
+  std::sort(evValues, evValues + len, 
+    [&](const PointW& a, const PointW& b) -> bool { 
+      return a.weight < b.weight; 
+    }
+  );
 
-  int nelts = rand() % len;
-  if (nelts == 0) {
-      nelts = 1;
-  }
   points = new PointW[nelts];
 
   fillPoints(len, nelts);
@@ -161,16 +156,18 @@ int main(int argc, char** argv) {
     mask = new int[size * size];
     countPerLine = new int[size + 1];
     totalCount = new int[size + 1];
+    int nelts = 5;
 
     setThreadsNumber(numThreads);
     setValuesMatrix(size);
     setValuesMask(size);
 
-    winnow(size);
+    winnow(size, nelts);
 
     if (print == 1) {
       for (int i = 0; i < nelts; ++i) {
-        std::cout << points[i].i << " " << points[i].j << " " << points[i].weight << std::endl;
+        std::cout << points[i].i << " " << points[i].j <<
+          " " << points[i].weight << std::endl;
       }
     }
 

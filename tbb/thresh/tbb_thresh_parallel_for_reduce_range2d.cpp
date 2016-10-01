@@ -1,5 +1,4 @@
 #include "tbb/tbb.h"
-#include "tbb/blocked_range2d.h"
 #include <iostream>
 
 typedef tbb::blocked_range2d<size_t, size_t> range2d;
@@ -8,8 +7,11 @@ static int* mask;
 static int* histogram;
 
 int findMax (const int size) {
-  return tbb::parallel_reduce(range2d(0, size, 0, size), 0, [&](const range2d& r, int result)
-   -> int {
+  return 
+  tbb::parallel_reduce(
+    range2d(0, size, 0, size), 
+    0, 
+    [&](const range2d& r, int result) -> int {
       std::size_t r_end = r.rows().end();
       for (std::size_t i = r.rows().begin(); i != r_end; ++i) {
         std::size_t c_end = r.cols().end();
@@ -30,7 +32,7 @@ void fillHistogram (const int size) {
     for (std::size_t i = r.rows().begin(); i != r_end; ++i) {
       std::size_t c_end = r.cols().end();
       for (std::size_t j = r.cols().begin(); j != c_end; ++j) {
-        histogram[matrix[i*size + j]]++;
+        ++histogram[matrix[i*size + j]];
       }
     }
   });

@@ -19,11 +19,12 @@ static struct point_w* points;
 
 int count_points (const int size) {
   
+  const int n_threads = omp_get_num_threads();
   int i, j;
   int counter = 0;
   int sum = 0;
 
-  #pragma omp parallel shared(mask) private(i, j, sum)
+  #pragma omp parallel shared(mask, n_threads) private(i, j, sum)
   {
     int thread_num = omp_get_thread_num();
     #pragma omp for schedule(static, size/ n_threads) //collapse (2)
@@ -91,7 +92,7 @@ int compare (const void * a, const void * b) {
 
 }
 
-void winnow (const int size) {
+void winnow (const int size, const int nelts) {
 
   int len = count_points(size);
   ev_values = (struct point_w*) malloc(sizeof(struct point_w) * len);
@@ -99,11 +100,6 @@ void winnow (const int size) {
   fill_values(size);
 
   qsort(ev_values, len, sizeof(*ev_values), compare);
-
-  int nelts = rand() % len;
-  if (nelts == 0) {
-    nelts = 1;
-  }
 
   points = (struct point_w*) malloc (sizeof(struct point_w) * nelts);
   fill_ev_points(len, nelts);
@@ -146,12 +142,13 @@ int main(int argc, char** argv) {
     matrix = (int*) malloc (sizeof (int) * size * size);
     mask = (int*) malloc (sizeof (int) * size * size);
     offsets = (int*) malloc (sizeof (int) * n_threads);
+    int nelts = 5;
 
     set_threads_number(n_threads);
     set_values_matrix(size);
     set_values_mask(size);
 
-    winnow(size);
+    winnow(size, nelts);
 
     if (print == 1) {
       int i;
