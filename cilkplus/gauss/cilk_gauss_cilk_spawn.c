@@ -1,60 +1,81 @@
-#include <limits.h>
+#include <cilk/cilk.h>
+#include <cilk/cilk_api.h>
 #include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <string.h>
 #include <time.h>
-#include "omp.h"
 
 static double* matrix;
 static double* target;
 static double* solution;
 
-void elimination(const int size) {
+/*
+void elimination(const int size, const int iter) {
 
 	//i = diagonal principal
 	//j = linha abaixo de i
 	//k = colunas de j
 
-	int i, j, k;
-	for (i = 0; i < size - 1; ++i) {
-    	#pragma omp parallel shared(matrix, target, i) private(j, k)
-    	{
-    		#pragma omp for schedule(static, size/ n_threads)
-	    	for (j = i + 1; j < size; ++j) {
-	      		
-	      		//Elemento que zera o valor abaixo da diag prin
-	      		double mult = matrix[j*size + i]/ matrix[i*size + i];
+	int j, k;
+    	cilk_for (j = iter + 1; j < size; ++j) {   		
+      		//Elemento que zera o valor abaixo da diag prin
+      		double mult = matrix[j*size + iter]/ matrix[iter*size + iter];
 
-	      		//Atualiza linha
-	      		for (k = i; k < size; k++) {
-					matrix[j*size + k] -= matrix[i*size + k] * mult;
-	      		}
-	      		// Atualiza vetor
-	      		target[j] -= target[i] * mult;
-	    	}
-    	}
+      		//Atualiza linha
+      		for (k = iter; k < size; ++k) {
+				matrix[j*size + k] -= matrix[iter*size + k] * mult;
+      		}
+      		// Atualiza vetor
+      		target[j] -= target[iter] * mult;
+      		//pthread_mutex_unlock(&m);
   	}
-  	/*
+
   	// Testar eliminação
 	for (i = 0; i < size; i++) {
 		for (j = 0; j < size; j++) {
-			printf("%.0f\t", matrix[i*size + j]);
+			printf("%.1f\t", matrix[i*size + j]);
 		}
 		printf("\n");
 	}
-	printf("\n");
-	*/		
+
+*/
+
+void elimination (const int begin, const int end, const int size, const int iter) {
+
+	if (begin + 1 == end) {
+
+		double mult = matrix[begin*size + iter]/ matrix[iter*size + iter];
+
+      	//Atualiza linha
+      	int k;
+      	for (k = iter; k < size; ++k) {
+			matrix[begin*size + k] -= matrix[iter*size + k] * mult;
+      	}
+      	
+      	// Atualiza vetor
+      	target[begin] -= target[iter] * mult;
+
+      	return;
+
+	} else {
+
+		int middle = begin + (end - begin)/ 2;
+		cilk_spawn elimination(begin, middle, size, iter);
+		cilk_spawn elimination(middle, end, size, iter);
+		cilk_sync;
+	
+	}
 }
 
 void fill_solution (const int size) {
 
 	// i = linha
 	// j = coluna
+
 	int i, j;
-	for (i = size - 1; i >= 0; i--) {
+	for (i = size - 1; i >= 0; --i) {
     	solution[i] = target[i];
-    	for (j = size - 1; j > i; j--) {
+    	for (j = size - 1; j > i; --j) {
       		solution[i] -= matrix[i*size + j] * solution[j];
     	}
     	solution[i] /= matrix[i*size + i];
@@ -63,14 +84,22 @@ void fill_solution (const int size) {
 
 void gauss(const int size) {
 
-    elimination(size);
+	int i;
+	for (i = 0; i < size - 1; ++i) {
+		cilk_spawn elimination(i + 1, size, size, i);
+		cilk_sync;
+	}
+    
     fill_solution(size);
-
+    
 }
 
 void set_threads_number(const int n_threads) {
 
-	omp_set_num_threads(n_threads);
+	char threads[2];
+	sprintf(threads,"%d", n_threads);
+	__cilkrts_end_cilk();  
+	__cilkrts_set_param("nworkers", threads);
 
 }
 
@@ -80,7 +109,7 @@ void set_target_values(const int size) {
 	for (i = 0; i < size; ++i) {
 		target[i] = (double)(rand() % 1000);
 	}
-	
+
 	/*
 	target[0] = 2;
 	target[1] = 4;
@@ -90,6 +119,7 @@ void set_target_values(const int size) {
 
 void set_matrix_values (const int size) {
 	int  i, j;
+	
 	for (i = 0; i < size; ++i) {
 		for (j = 0; j < size; ++j) {
 			if (i == j) {
@@ -99,7 +129,7 @@ void set_matrix_values (const int size) {
 			}
 		}
 	}
-
+	
 	/*
 	matrix[0] = 1;
 	matrix[1] = 1;
@@ -111,8 +141,9 @@ void set_matrix_values (const int size) {
 
 	matrix[6] = -1;
 	matrix[7] = 0;
-	matrix[8] = 1;
+	matrix[8] = 1;	
 	*/
+
 	/*
 	for (i = 0; i < size; i++) {
 		for (j = 0; j < size; j++) {
@@ -141,7 +172,8 @@ int main (int argc, char** argv) {
 		set_matrix_values(size);
 		set_target_values(size);
 		
-		gauss(size);
+		cilk_spawn gauss(size);
+		cilk_sync;
 
 		if (print == 1) {
 			int i;
@@ -150,10 +182,9 @@ int main (int argc, char** argv) {
 			}
 			printf("\n");
 		}
-		printf("\n");
 
+		/*
 		// Testar valores
-		
 		double* result = (double*) calloc (sizeof(double), size);
 		int i, j;
 
@@ -166,6 +197,7 @@ int main (int argc, char** argv) {
 		for (i = 0; i < size; ++i) {
         	printf("%f = %f\n", result[i], target[i]);
     	}
+		*/
 
 		free(matrix);
 		free(target);

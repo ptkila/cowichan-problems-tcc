@@ -1,12 +1,10 @@
-#include <cilk/cilk.h>
-#include <cilk/cilk_api.h>
-#include <pthread.h>
 #include <limits.h>
 #include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
+#include "omp.h"
 
 static double* matrix;
 static double* target;
@@ -20,41 +18,43 @@ void elimination(const int size) {
 
 	int i, j, k;
 	for (i = 0; i < size - 1; ++i) {
-    	cilk_for (j = i + 1; j < size; ++j) {   		
-      		//pthread_mutex_lock(&m);
-      		//Elemento que zera o valor abaixo da diag prin
-      		double mult = matrix[j*size + i]/ matrix[i*size + i];
+    	#pragma omp parallel shared(matrix, target, i) private(k)
+    	{
+    		#pragma omp for schedule(static)
+	    	for (j = i + 1; j < size; ++j) {
+	      		
+	      		//Elemento que zera o valor abaixo da diag prin
+	      		double mult = matrix[j*size + i]/ matrix[i*size + i];
 
-      		//Atualiza linha
-      		for (k = i; k < size; ++k) {
-				matrix[j*size + k] -= matrix[i*size + k] * mult;
-      		}
-      		// Atualiza vetor
-      		target[j] -= target[i] * mult;
-      		//pthread_mutex_unlock(&m);
+	      		//Atualiza linha
+	      		for (k = i; k < size; k++) {
+					matrix[j*size + k] -= matrix[i*size + k] * mult;
+	      		}
+	      		// Atualiza vetor
+	      		target[j] -= target[i] * mult;
+	    	}
     	}
   	}
-
+  	/*
   	// Testar eliminação
- 	/*
 	for (i = 0; i < size; i++) {
 		for (j = 0; j < size; j++) {
-			printf("%.1f\t", matrix[i*size + j]);
+			printf("%.0f\t", matrix[i*size + j]);
 		}
 		printf("\n");
 	}
-	*/
+	printf("\n");
+	*/		
 }
 
 void fill_solution (const int size) {
 
 	// i = linha
 	// j = coluna
-
 	int i, j;
-	for (i = size - 1; i >= 0; --i) {
+	for (i = size - 1; i >= 0; i--) {
     	solution[i] = target[i];
-    	for (j = size - 1; j > i; --j) {
+    	for (j = size - 1; j > i; j--) {
       		solution[i] -= matrix[i*size + j] * solution[j];
     	}
     	solution[i] /= matrix[i*size + i];
@@ -70,10 +70,7 @@ void gauss(const int size) {
 
 void set_threads_number(const int n_threads) {
 
-	char threads[2];
-	sprintf(threads,"%d", n_threads);
-	__cilkrts_end_cilk();  
-	__cilkrts_set_param("nworkers", threads);
+	omp_set_num_threads(n_threads);
 
 }
 
@@ -83,7 +80,6 @@ void set_target_values(const int size) {
 	for (i = 0; i < size; ++i) {
 		target[i] = (double)(rand() % 1000);
 	}
-	
 	/*
 	target[0] = 2;
 	target[1] = 4;
@@ -93,7 +89,6 @@ void set_target_values(const int size) {
 
 void set_matrix_values (const int size) {
 	int  i, j;
-	
 	for (i = 0; i < size; ++i) {
 		for (j = 0; j < size; ++j) {
 			if (i == j) {
@@ -103,7 +98,7 @@ void set_matrix_values (const int size) {
 			}
 		}
 	}
-	
+
 	/*
 	matrix[0] = 1;
 	matrix[1] = 1;
@@ -115,8 +110,9 @@ void set_matrix_values (const int size) {
 
 	matrix[6] = -1;
 	matrix[7] = 0;
-	matrix[8] = 1;	
+	matrix[8] = 1;
 	*/
+
 	/*
 	for (i = 0; i < size; i++) {
 		for (j = 0; j < size; j++) {
@@ -144,6 +140,7 @@ int main (int argc, char** argv) {
 		set_threads_number(n_threads);
 		set_matrix_values(size);
 		set_target_values(size);
+		
 		gauss(size);
 
 		if (print == 1) {
@@ -153,9 +150,10 @@ int main (int argc, char** argv) {
 			}
 			printf("\n");
 		}
+		printf("\n");
 
-		
 		// Testar valores
+		/*
 		double* result = (double*) calloc (sizeof(double), size);
 		int i, j;
 
@@ -168,6 +166,7 @@ int main (int argc, char** argv) {
 		for (i = 0; i < size; ++i) {
         	printf("%f = %f\n", result[i], target[i]);
     	}
+		*/
 
 		free(matrix);
 		free(target);

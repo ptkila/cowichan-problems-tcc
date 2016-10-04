@@ -1,5 +1,4 @@
 #include <stdio.h>
-#include <math.h>
 #include <time.h> 
 #include <stdlib.h>
 #include "omp.h"
@@ -10,13 +9,12 @@ static int* histogram;
 
 int find_max (const int size) {
 
-  const int n_threads = omp_get_num_threads();
   int i, j;
   int max_val = 0;
 
-  #pragma omp parallel shared (matrix, size, n_threads) private (i, j)
+  #pragma omp parallel shared (matrix, size) private (j)
   {
-    #pragma omp for schedule(static, size/n_threads) reduction(max:max_val)
+    #pragma omp for schedule(static) reduction(max:max_val)
     for (i = 0; i < size; ++i) {
       for (j = 0; j < size; ++j) {
         if (max_val < matrix[i * size + j]) {
@@ -33,9 +31,9 @@ void fill_histogram(const int size) {
 
   int i, j;
 
-  #pragma omp parallel shared(matrix, histogram) private(i, j)
+  #pragma omp parallel shared(matrix, histogram) private(j)
   {
-    #pragma omp for schedule (static, size/ n_threads)
+    #pragma omp for schedule (static)
     for (i = 0; i < size; ++i) {
       for (j = 0; j < size; ++j) {
         ++histogram[matrix[i* size + j]];
@@ -48,11 +46,11 @@ void fill_mask(const int size, const int threshold) {
 
   int i, j;
   
-  #pragma omp parallel shared(mask, matrix, threshold) private (i, j)
+  #pragma omp parallel shared(mask, matrix, threshold) private (j)
   {
-    #pragma omp for schedule (static, size/ n_threads)
-    for (i = 0; i < size; i++) {
-      for (j = 0; j < size; j++) {
+    #pragma omp for schedule (static)
+    for (i = 0; i < size; ++i) {
+      for (j = 0; j < size; ++j) {
         mask[i* size + j] = (matrix[i* size + j] >= threshold);
       }
     }

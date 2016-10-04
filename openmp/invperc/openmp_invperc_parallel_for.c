@@ -7,11 +7,14 @@
 #include "omp.h"
 
 struct found_point {
+
 	int row, col, value;
+
 };
 
 static int* matrix;
 static int* mask;
+static struct found_point* points;
 
 static const int N_SIDES = 4;
 static const int X_STEPS[4] = {1, 0, -1, 0};
@@ -25,10 +28,13 @@ void set_mask_middle_point (const int size) {
 	}
 }
 
-void set_initial_values(struct found_point& point) {
-	point.row = -1;
-	point.col = -1;
-	point.value = INT_MAX;
+void reset_initial_values(const int n_threads) {
+	int i;
+	for (i = 0; i < n_threads; ++i) {
+		points[i].row = -1;
+		points[i].col = -1;
+		points[i].value = INT_MAX;
+	}
 }
 
 int set_new_point(const int size, const struct found_point& point) {
@@ -40,30 +46,36 @@ int set_new_point(const int size, const struct found_point& point) {
 	}
 }
 
+int evaluate_neighbors (const int row, const int col, const int size) {
+	return !((row < 0 || row >= size) || (col < 0 || col >= size)) ? 1 : 0; 
+}
+
 struct found_point percolate (const int size) {
 
-	const int n_threads = omp_get_num_threads();
-	int i, j, sides, row, col;
-	struct found_point points[n_threads];
-	struct found_point point;
-	set_initial_values(point);
+	int n_threads, i, j, sides;
 
-	#pragma omp parallel shared(mask, matrix, n_threads, points) private(i, j, row, col, sides, point)
+	#pragma omp parallel shared(mask, matrix, points, n_threads, size) \
+		private(j, sides)
 	{	
+		#pragma omp single
+		{
+			n_threads = omp_get_num_threads();
+			reset_initial_values(n_threads);
+		}
 		int thread_num = omp_get_thread_num();
-		#pragma omp for schedule(static, size/ n_threads)
-		for (i = 1; i < size - 1 ; i++) {
-			for (j = 1; j < size - 1; j++) {
-				if (mask[i*size + j]) {
+		#pragma omp for schedule(static)
+		for (i = 1; i < size - 1 ; ++i) {
+			for (j = 1; j < size - 1; ++j) {
+				if (mask[i*size + j] == 1) {
 					for (sides = 0; sides < N_SIDES; ++sides) {
-						row = i + X_STEPS[sides];
-						col = j + Y_STEPS[sides];
+						int row = i + X_STEPS[sides];
+						int col = j + Y_STEPS[sides];
 						int pos = row*size + col;
-						if (mask[pos] == 0 && matrix[pos] < point.value) {
-							point.row = row;
-							point.col = col;
-							point.value = matrix[pos];
-							points[thread_num] = point;
+						if (mask[pos] == 0 && matrix[pos] < 
+								points[thread_num].value) {
+							points[thread_num].row = row;
+							points[thread_num].col = col;
+							points[thread_num].value = matrix[pos];
 						}
 					}
 				}
@@ -71,7 +83,7 @@ struct found_point percolate (const int size) {
 		}
 	}
 
-	point = points[0];
+	struct found_point point = points[0];
 	for (i = 1; i < n_threads; ++i) {
 		if (point.value > points[i].value) {
 			point = points[i];
@@ -135,6 +147,8 @@ int main (int argc, char** argv) {
 
 		matrix = (int*) malloc (sizeof(int) * size * size);
 		mask = (int*) calloc (size * size, sizeof(int));
+		points = (struct found_point*) malloc (sizeof(struct found_point)
+			* n_threads);
 		int nfill = 5;
 
 		set_threads_number(n_threads);
@@ -154,6 +168,7 @@ int main (int argc, char** argv) {
 
 		free(matrix);
 		free(mask);
+		free(points);
 
 	} else {
 

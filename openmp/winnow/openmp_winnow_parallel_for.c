@@ -1,8 +1,6 @@
 #include <stdio.h>
-#include <math.h>
 #include <time.h> 
 #include <stdlib.h>
-#include <limits.h>
 #include "omp.h"
 
 struct point_w {
@@ -18,26 +16,30 @@ static struct point_w* ev_values;
 static struct point_w* points;
 
 int count_points (const int size) {
-  
-  const int n_threads = omp_get_num_threads();
-  int i, j;
-  int counter = 0;
-  int sum = 0;
 
-  #pragma omp parallel shared(mask, n_threads) private(i, j, sum)
+  int i, j;
+  int sum = 0;
+  int n_threads = 0;
+
+  #pragma omp parallel shared(mask, size, n_threads) \
+    private(j) firstprivate(sum)
   {
+    #pragma omp single
+    {
+      n_threads = omp_get_num_threads();
+    }
     int thread_num = omp_get_thread_num();
-    #pragma omp for schedule(static, size/ n_threads) //collapse (2)
+    #pragma omp for schedule(static)
     for (i = 0; i < size; ++i) {
       for (j = 0; j < size; ++j) {
-        if (mask[i*size + j]) {
+        if (mask[i*size + j] == 1) {
           sum++;
         }
       }
     }
     offsets[thread_num] = sum;
   }
-  
+
   int len = 0;
   for (i = 0; i < n_threads; ++i) {
     int tmp = offsets[i];
@@ -46,22 +48,23 @@ int count_points (const int size) {
   }
 
   return len;
-
 }
+
 
 void fill_values(const int size) {
 
   int i, j;
   int off = 0;
 
-  #pragma omp parallel shared(mask, matrix) private(i, j, off)
+  #pragma omp parallel shared(mask, matrix, size, ev_values) \
+    private(j) firstprivate(off)
   {
     int thread_num = omp_get_thread_num();
     off = offsets[thread_num];
-    #pragma omp for schedule(static, size/ n_threads)
+    #pragma omp for schedule(static)
     for (i = 0; i < size; ++i) {
       for (j = 0; j < size; ++j) {
-        if (mask[i*size + j]) {
+        if (mask[i*size + j] == 1) {
           ev_values[off].weight = matrix[i*size + j];
           ev_values[off].i = i;
           ev_values[off].j = j;
@@ -73,11 +76,11 @@ void fill_values(const int size) {
 }
 
 void fill_ev_points(const int len, const int nelts) {
-  int i;
   const int chunk = len/ nelts;
-  #pragma omp parallel shared(points, ev_values) private(i)
+  int i;
+  #pragma omp parallel shared(points, ev_values, nelts, chunk) 
   {
-    #pragma omp for schedule(static, nelts/ n_threads)
+    #pragma omp for schedule(static)
     for(i = 0; i < nelts; ++i) {
       points[i] = ev_values[i*chunk];
     }
@@ -88,7 +91,7 @@ int compare (const void * a, const void * b) {
 
   const struct point_w* point0 = (struct point_w*) a;
   const struct point_w* point1 = (struct point_w*) b;
-  return (point1->weight - point0->weight);
+  return (point0->weight - point1->weight);
 
 }
 
@@ -113,6 +116,15 @@ void set_values_matrix(const int size) {
       matrix[i*size + j] = rand();
     }
   }
+  /*
+  for (i =  0; i < size; ++i) {
+    for (j = 0; j < size; ++j) {
+      printf("%d ", matrix[i*size + j]);
+    }
+    printf("\n");
+  }
+  printf("\n");
+  */
 }
 
 void set_values_mask(const int size) {
@@ -122,6 +134,15 @@ void set_values_mask(const int size) {
       mask[i*size + j] = rand() % 2;
     }
   }
+  /*
+  for (i =  0; i < size; ++i) {
+    for (j = 0; j < size; ++j) {
+      printf("%d ", mask[i*size + j]);
+    }
+    printf("\n");
+  }
+  printf("\n");
+  */
 }
 
 void set_threads_number(const int n_threads) {
@@ -153,7 +174,8 @@ int main(int argc, char** argv) {
     if (print == 1) {
       int i;
       for (i = 0; i < nelts; ++i) {
-        printf("%d\t %d\t %d", ev_values[i].i, ev_values[i].j, ev_values[i].weight);
+        printf("%d %d %d", ev_values[i].i, 
+          ev_values[i].j, ev_values[i].weight);
         printf("\n");
       }
     }

@@ -52,7 +52,9 @@ public:
 };
 
 void fillValues(const int size) {
-  tbb::parallel_for(range(0, size), [&](const range& r) {
+  tbb::parallel_for(
+    range(0, size), 
+    [&](const range& r) -> void {
       std::size_t end = r.end();
       for (std::size_t i = r.begin(); i != end; ++i) {
         int count = totalCount[i];

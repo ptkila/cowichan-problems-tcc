@@ -10,13 +10,13 @@ static double* vector;
 
 void product (const int size) {
 
-  const int n_threads = omp_get_num_threads();
   int i, j;
   double sum = 0.0;
   
-  #pragma omp parallel shared(result, matrix, vector, n_threads) private (i, j) reduction(+:sum)
+  #pragma omp parallel shared(result, matrix, vector, size) \
+    private (j) reduction(+:sum)
   {
-    #pragma omp for schedule (static, size/ n_threads)
+    #pragma omp for schedule (static)
     for (i = 0; i < size; ++i) {
       for (j = 0; j < size; ++j) {
         sum += matrix[i * size + j] * vector[j];

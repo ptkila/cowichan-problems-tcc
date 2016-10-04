@@ -1,8 +1,6 @@
 #include <stdio.h>
-#include <math.h>
 #include <time.h> 
 #include <stdlib.h>
-#include <float.h>
 #include "omp.h"
 
 static int* matrix;
@@ -35,12 +33,11 @@ int get_neighbor_count(const int size, const int row, const int col) {
 
 void update_matrix(const int size) {
 
-	const int n_threads = omp_get_num_threads();
 	int i, j;
 	
-	#pragma omp parallel shared(size, matrix, tmpMatrix, n_threads) private(i, j)
+	#pragma omp parallel shared(matrix, tmpMatrix, size) private(j)
 	{
-		#pragma omp for schedule(static, size/ n_threads)
+		#pragma omp for schedule(static)
 		for (i = 0; i < size; ++i) {
 			for (j = 0; j < size; ++j) {
 				matrix[i* size + j] = tmpMatrix[i*size + j];
@@ -51,12 +48,11 @@ void update_matrix(const int size) {
 
 void evaluate_matrix (const int size) {
 
-	const int n_threads = omp_get_num_threads();
 	int i, j;
 
-	#pragma omp parallel shared(size, matrix, tmpMatrix, n_threads) private(i, j)
+	#pragma omp parallel shared(matrix, tmpMatrix, size) private(j)
 	{
-		#pragma omp for schedule(static, size/ n_threads)
+		#pragma omp for schedule(static)
 		for (i = 0; i < size; ++i) {
 			for (j = 0; j < size; ++j) {
 				int count = get_neighbor_count(size, i, j);

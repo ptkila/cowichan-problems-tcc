@@ -148,12 +148,14 @@ auto ThreadPool::parallel_reducer(F&& f, const int size, const std::string opera
             int firstIndex = numOpThreadM * i;
             int lastIndex = numOpThreadM * (i + 1);
 
-            if ((i + 1 == this->n_threads && numOpThreadR > 0) || numOpThreadM == 0) {
+            if ((i + 1 == this->n_threads && numOpThreadR > 0) 
+                || numOpThreadM == 0) {
                 lastIndex += numOpThreadR;
                 end = true;
             }
 
-            values.emplace_back(enqueue_return(f, firstIndex, lastIndex, size));
+            values.emplace_back(enqueue_return(f, firstIndex,
+                lastIndex, size));
 
             if (end) break;
         }

@@ -21,7 +21,7 @@ int compare (const void * a, const void * b) {
 
   const struct point_w* point0 = (struct point_w*) a;
   const struct point_w* point1 = (struct point_w*) b;
-  return (point1->weight - point0->weight);
+  return (point0->weight - point1->weight);
 
 }
 

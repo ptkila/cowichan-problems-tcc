@@ -37,7 +37,7 @@ void fillValues(const int startIndex, const int lastIndex, const int size,
   }
 }
 
-int calc(const int startIndex, const int lastIndex, const int size) {
+int calcPoints(const int startIndex, const int lastIndex, const int size) {
   int count = 0;
   for (int i = startIndex; i < lastIndex; ++i) {
     for (int j = 0; j < size; ++j) {
@@ -67,7 +67,7 @@ int countPoints (ThreadPool& pool, const int size) {
       end = true;
     }
 
-    count_per_lines.emplace_back(pool.enqueue_return(calc, startIndex, 
+    count_per_lines.emplace_back(pool.enqueue_return(calcPoints, startIndex, 
       lastIndex, size));        
   
     if (end) break;
@@ -89,12 +89,12 @@ int countPoints (ThreadPool& pool, const int size) {
   return len;
 }
 
-void fillPoints(const int startIndex, const int lastIndex, const int len,
-  const int nelts) {
+void fillPoints(const int startIndex, const int lastIndex, const int nelts,
+  const int len) {
   const int chunk = len/ nelts;
-    for (int i = startIndex; i < lastIndex; ++i) {
-      points[i] = evValues[i * chunk];
-    }
+  for (int i = startIndex; i < lastIndex; ++i) {
+    points[i] = evValues[i * chunk];
+  }
 }
 
 void winnow(const int size, const int nelts, const int numThreads) {
@@ -113,10 +113,8 @@ void winnow(const int size, const int nelts, const int numThreads) {
     }
   );
 
-  std::cout << len << " " << nelts << std::endl;
-
   points = new PointW[nelts];
-  pool.parallel_for(fillPoints, len, nelts);
+  pool.parallel_for(fillPoints, nelts, len);
   pool.waitAll();
 
 }
