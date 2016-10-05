@@ -21,7 +21,7 @@ int count_points (const int size) {
   int sum = 0;
   int n_threads = 0;
 
-  #pragma omp parallel shared(mask, size, n_threads) \
+  #pragma omp parallel shared(mask, size, n_threads, offsets) \
     private(j) firstprivate(sum)
   {
     #pragma omp single
@@ -54,13 +54,12 @@ int count_points (const int size) {
 void fill_values(const int size) {
 
   int i, j;
-  int off = 0;
 
   #pragma omp parallel shared(mask, matrix, size, ev_values) \
-    private(j) firstprivate(off)
+    private(j)
   {
     int thread_num = omp_get_thread_num();
-    off = offsets[thread_num];
+    int off = offsets[thread_num];
     #pragma omp for schedule(static)
     for (i = 0; i < size; ++i) {
       for (j = 0; j < size; ++j) {
@@ -68,7 +67,7 @@ void fill_values(const int size) {
           ev_values[off].weight = matrix[i*size + j];
           ev_values[off].i = i;
           ev_values[off].j = j;
-          off++;
+          ++off;
         }
       }
     }
@@ -78,7 +77,7 @@ void fill_values(const int size) {
 void fill_ev_points(const int len, const int nelts) {
   const int chunk = len/ nelts;
   int i;
-  #pragma omp parallel shared(points, ev_values, nelts, chunk) 
+  #pragma omp parallel shared(points, ev_values, nelts, chunk)
   {
     #pragma omp for schedule(static)
     for(i = 0; i < nelts; ++i) {
@@ -91,7 +90,7 @@ int compare (const void * a, const void * b) {
 
   const struct point_w* point0 = (struct point_w*) a;
   const struct point_w* point1 = (struct point_w*) b;
-  return (point0->weight - point1->weight);
+  return (point1->weight - point0->weight);
 
 }
 
@@ -174,8 +173,8 @@ int main(int argc, char** argv) {
     if (print == 1) {
       int i;
       for (i = 0; i < nelts; ++i) {
-        printf("%d %d %d", ev_values[i].i, 
-          ev_values[i].j, ev_values[i].weight);
+        printf("%d %d %d", points[i].i, 
+          points[i].j, points[i].weight);
         printf("\n");
       }
     }

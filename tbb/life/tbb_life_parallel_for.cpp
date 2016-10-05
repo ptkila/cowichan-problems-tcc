@@ -31,30 +31,36 @@ int getNeighborCount(const int size, const int row, const int col) {
 }
 
 void updateMatrix(const int size) {
-	tbb::parallel_for(range(0, size), [&](const range& r) -> void {
-		size_t r_end = r.end();
-		for (size_t i = r.begin(); i != r_end; ++i) {
-			for (int j = 0; j < size; ++j) {
-				matrix[i*size + j] = tmpMatrix[i*size + j];
-			}
-		}
-	});
-}
-
-void evaluateMatrix (const int size) {
-	tbb::parallel_for(range(0, size), [&](const range& r) -> void {
-		size_t r_end = r.end();
-		for (size_t i = r.begin(); i != r_end; ++i) {
-			for (int j = 0; j < size; ++j) {
-				int count = getNeighborCount(size, i, j);
-				if (matrix[i*size + j] == 1) {
-					tmpMatrix[i*size + j] = (count == 2 || count == 3) ? 1 : 0;
-				} else {
-					tmpMatrix[i*size + j] = (count == 3) ? 1 : 0;
+	tbb::parallel_for(
+		range(0, size), 
+		[&](const range& r) -> void {
+			size_t end = r.end();
+			for (size_t i = r.begin(); i != end; ++i) {
+				for (int j = 0; j < size; ++j) {
+					matrix[i*size + j] = tmpMatrix[i*size + j];
 				}
 			}
 		}
-	});
+	);
+}
+
+void evaluateMatrix (const int size) {
+	tbb::parallel_for(
+		range(0, size), 
+		[&](const range& r) -> void {
+			size_t end = r.end();
+			for (size_t i = r.begin(); i != end; ++i) {
+				for (int j = 0; j < size; ++j) {
+					int count = getNeighborCount(size, i, j);
+					if (matrix[i*size + j] == 1) {
+						tmpMatrix[i*size + j] = (count == 2 || count == 3) ? 1 : 0;
+					} else {
+						tmpMatrix[i*size + j] = (count == 3) ? 1 : 0;
+					}
+				}
+			}
+		}
+	);
 }
 
 void play(const int size) {
@@ -115,7 +121,7 @@ int main(int argc, char** argv) {
 
 		matrix = new int[size * size];
 		tmpMatrix = new int[size * size];
-		int numgen = 5;
+		int numgen = 10000;
 
 		setThreadsNumber(numThreads);
 		setMatrixValues(size);

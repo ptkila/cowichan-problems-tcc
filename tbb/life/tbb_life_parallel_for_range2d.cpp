@@ -117,7 +117,7 @@ int main(int argc, char** argv) {
 
 		matrix = new int[size * size];
 		tmpMatrix = new int[size * size];
-		int numgen = 5;
+		int numgen = 10000;
 
 		setThreadsNumber(numThreads);
 		setMatrixValues(size);

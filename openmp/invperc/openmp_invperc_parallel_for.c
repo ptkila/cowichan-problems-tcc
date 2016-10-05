@@ -119,7 +119,7 @@ void set_matrix_values (const int size) {
 			matrix[i*size + j] = rand() % 1000;
 		}
 	}
-	
+	/*
 	for (i = 0; i < size; ++i) {
 		for (j = 0; j < size; ++j) {
 			printf("%d ", matrix[i*size + j]);
@@ -127,7 +127,7 @@ void set_matrix_values (const int size) {
 		printf("\n");
 	}
 	printf("\n");
-
+	*/
 }
 
 void set_threads_number(const int n_threads) {
@@ -149,7 +149,7 @@ int main (int argc, char** argv) {
 		mask = (int*) calloc (size * size, sizeof(int));
 		points = (struct found_point*) malloc (sizeof(struct found_point)
 			* n_threads);
-		int nfill = 5;
+		int nfill = 100000;
 
 		set_threads_number(n_threads);
 		set_matrix_values(size);

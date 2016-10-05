@@ -125,7 +125,7 @@ int main(int argc, char** argv) {
 
 		matrix = (int*) malloc (sizeof(int) * size * size);
 		tmpMatrix = (int*) malloc (sizeof(int) * size * size);
-		int numgen = 5;
+		int numgen = 10000;
 
 		set_threads_number(n_threads);
 		set_matrix_values(size);

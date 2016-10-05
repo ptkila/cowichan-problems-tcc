@@ -108,7 +108,7 @@ void setMatrixValues (const int size) {
 			matrix[i*size + j] = rand() % 1000;
 		}
 	}
-	
+	/*
 	for (int i = 0; i < size; i++) {
 		for (int j = 0; j < size; j++) {
 			std::cout << matrix[i*size + j] << " ";
@@ -116,7 +116,7 @@ void setMatrixValues (const int size) {
 		std::cout << std::endl;
 	}
 	std::cout << std::endl;
-	
+	*/
 }
 
 void setThreadsNumber(const int numThreads) {
@@ -140,7 +140,7 @@ int main (int argc, char** argv) {
 		setThreadsNumber(numThreads);
 		setMatrixValues(size);
 		setMaskMiddlePoint(size);
-		int nfill = 5;
+		int nfill = 100000;
 
 		invperc(size, nfill);
 

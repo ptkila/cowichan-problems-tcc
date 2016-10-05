@@ -85,7 +85,7 @@ int main(int argc, char** argv) {
     if (print == 1) {
       int i;
       for (i = 0; i < size; ++i) {
-        printf("%1.f ", result[i]);
+        printf("%.0f ", result[i]);
       }
       printf("\n");
     }

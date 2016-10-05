@@ -59,14 +59,15 @@ void fillValues(const int size) {
       for (std::size_t i = r.begin(); i != end; ++i) {
         int count = totalCount[i];
         for (int j = 0; j < size; ++j) {
-          if (mask[i*size + j]) {
+          if (mask[i*size + j] == 1) {
             int v = matrix[i*size + j];
             evValues[count] = PointW(i, j, v);
-            count++;
+            ++count;
           }
         }
       }
-  });
+    }
+  );
 }
 
 int countPoints(const int size) {
@@ -88,17 +89,22 @@ int countPoints(const int size) {
     },
     [](int x, int y) -> int {
       return x + y;
-    });
+    }
+  );
 }
 
 void fillPoints(const int len, const int nelts) {
   const int chunk = len/ nelts;
-  tbb::parallel_for(range(0, nelts), [&](const range& r) -> void {
-    std::size_t end = r.end();
-    for (std::size_t i = r.begin(); i != end; ++i) {
-      points[i] = evValues[i*chunk];
+  //std::cout << len << " " << nelts << " " << chunk << std::endl;
+  tbb::parallel_for(
+    range(0, nelts),
+    [&](const range& r) -> void {
+      std::size_t end = r.end();
+      for (std::size_t i = r.begin(); i != end; ++i) {
+        points[i] = evValues[i*chunk];
+      }
     }
-  });
+  );
 }
 
 void winnow(const int size, const int nelts) {
@@ -106,17 +112,49 @@ void winnow(const int size, const int nelts) {
   int len = countPoints(size);
   evValues = new PointW[len];
 
+  /*
+  std::cout <<  len << std::endl;
+
+  for (int i = 0; i <= size; ++i)
+  {
+    std::cout << countPerLine[i] << " "; 
+  }
+  std::cout << std::endl;
+  */
+
   PrefixSum prefixSum;
   tbb::parallel_scan(range(0, size + 1), prefixSum, tbb::auto_partitioner());
 
-  fillValues(size);
+  /*
+  for (int i = 0; i <= size; ++i)
+  {
+    std::cout << totalCount[i] << " "; 
+  }
+  std::cout << std::endl;
+  */
 
+  fillValues(size);
+  /*
+  for (int i = 0; i < len; ++i)
+  {
+    std::cout << evValues[i].weight << std::endl; 
+  }
+  std::cout << std::endl;
+  */
   std::sort(evValues, evValues + len, 
     [&](const PointW& a, const PointW& b) -> bool { 
       return a.weight < b.weight; 
     }
   );
 
+  /*
+  for (int i = 0; i < len; ++i)
+  {
+    std::cout << evValues[i].weight << std::endl; 
+  }
+  std::cout << std::endl;
+  */
+  
   points = new PointW[nelts];
 
   fillPoints(len, nelts);
@@ -137,6 +175,15 @@ void setValuesMask(const int size) {
       mask[i*size + j] = std::rand()%2;
     }
   }
+  /*
+  for (int i = 0; i < size; ++i) {
+    for (int j = 0; j < size; ++j) {
+      std::cout << mask[i*size + j] << " ";
+    }
+    std::cout << std::endl;
+  }
+  std::cout << std::endl;
+  */
 }
 
 void setThreadsNumber(const int numThreads) {
@@ -156,8 +203,8 @@ int main(int argc, char** argv) {
 
     matrix = new int[size * size];
     mask = new int[size * size];
-    countPerLine = new int[size + 1];
-    totalCount = new int[size + 1];
+    countPerLine = new int[size + 1]();
+    totalCount = new int[size + 1]();
     int nelts = 5;
 
     setThreadsNumber(numThreads);

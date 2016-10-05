@@ -1,8 +1,4 @@
 #include <iostream>
-#include <cstdlib>
-#include <ctime>
-#include <thread>
-#include <vector>
 #include "../ThreadPool.h"
 
 static double* matrix;
@@ -23,6 +19,7 @@ void product(const int size, const int numThreads) {
 
 	ThreadPool pool(numThreads);
 	pool.parallel_for(fillValues, size);
+	pool.waitAll();
 
 }
 
@@ -47,12 +44,12 @@ void setValuesVector(const int size) {
 	for (int i = 0; i < size; ++i) {
 		vector[i] = rand() % 10;
 	}
-	
+	/*
 	for (int i = 0; i < size; ++i) {
 		std::cout << vector[i] << " ";
 	}
 	std::cout << std::endl;
-	
+	*/
 }
 
 int main(int argc, char** argv) {
@@ -76,6 +73,7 @@ int main(int argc, char** argv) {
 			for (int i = 0; i < size; ++i) {
 				std::cout << result[i] << " ";
 			}
+			std::cout << std::endl;
 		}
 
 		delete[] matrix;

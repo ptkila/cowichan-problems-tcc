@@ -1,9 +1,5 @@
 #include <iostream>
-#include <cstdlib>
 #include <climits>
-#include <ctime>
-#include <cmath>
-#include <thread>
 #include "../ThreadPool.h"
 
 class FoundPoint {
@@ -45,29 +41,20 @@ bool setNewPoint(const int size, const FoundPoint point) {
 	}
 }
 
-bool evaluateNeighbors (const int row, const int col, const int size) {
-
-	return !((row < 0 || row >= size) || (col < 0 || col >= size)) ? true : false; 
-
-}
-
 FoundPoint calc (const int startIndex, const int lastIndex, const int size) {
 
 	FoundPoint found = FoundPoint();
-	int row, col;
 	for (int i = startIndex; i < lastIndex; ++i) {
 		for (int j = 1; j < size - 1; ++j) {
-			if (mask[i*size + j]) {
+			if (mask[i*size + j] == 1 && (i > 0 && i < size - 1)) {
 				for (int sides = 0; sides < N_SIDES; ++sides) {
-					row = i + X_STEPS[sides];
-					col = j + Y_STEPS[sides];
-					if (evaluateNeighbors(row, col, size)) {
-						int pos = row*size + col;
-						if (mask[pos] == 0 && matrix[pos] < found.value) {
-							found.row = row;
-							found.col = col;
-							found.value = matrix[pos]; 
-						}
+					int row = i + X_STEPS[sides];
+					int col = j + Y_STEPS[sides];
+					int pos = row*size + col;
+					if (mask[pos] == 0 && matrix[pos] < found.value) {
+						found.row = row;
+						found.col = col;
+						found.value = matrix[pos]; 
 					}
 				}
 			}
@@ -92,12 +79,14 @@ FoundPoint percolate (const int size, ThreadPool& pool) {
             int startIndex = numOpThreadM * i;
             int lastIndex = numOpThreadM * (i + 1);
 
-            if ((i + 1 == numThreads && numOpThreadR > 0) || numOpThreadM == 0) {
-                lastIndex += numOpThreadR;
+            if ((i + 1 == numThreads && numOpThreadR > 0) 
+            	|| numOpThreadM == 0) {
+             	lastIndex += numOpThreadR;
                 end = true;
             }    
 
-            points.emplace_back(pool.enqueue(calc, startIndex, lastIndex, size));
+            points.emplace_back(pool.enqueue_return(calc, startIndex, 
+            	lastIndex, size));
             
             if (end) break;
     }
@@ -163,7 +152,7 @@ int main (int argc, char** argv) {
 
 		matrix = new int[size*size];
 		mask = new int[size*size]();
-		int nfill = 5;
+		int nfill = 100000;
 
 		setMatrixValues(size);
 		setMaskMiddlePoint(size);

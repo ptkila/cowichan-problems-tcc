@@ -1,14 +1,14 @@
 #include <cilk/cilk.h>
 #include <cilk/cilk_api.h>
 #include <limits.h>
-#include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <string.h>
 #include <time.h>
 
 struct found_point {
+
 	int row, col, value;
+
 };
 
 static int* matrix;
@@ -37,12 +37,12 @@ struct found_point percolate (const int begin, const int end, const int size) {
 	if (begin + 1 == end) {
 		struct found_point point;
 		set_initial_values(point);
-		int i, sides, row, col;
+		int i, sides;
 		for (i = 1; i < size - 1 ; ++i) {
-			if (mask[begin*size + i]) {
+			if (mask[begin*size + i] == 1) {
 				for (sides = 0; sides < N_SIDES; ++sides) {
-					row = begin + X_STEPS[sides];
-					col = i + Y_STEPS[sides];
+					int row = begin + X_STEPS[sides];
+					int col = i + Y_STEPS[sides];
 					int pos = row*size + col;
 					if (mask[pos] == 0 && matrix[pos] < point.value) {
 						point.row = row;
@@ -114,7 +114,7 @@ void set_matrix_values (const int size) {
 			matrix[i*size + j] = rand() % 100;
 		}
 	}
-	
+	/*
 	for (i = 0; i < size; ++i) {
 		for (j = 0; j < size; ++j) {
 			printf("%d ", matrix[i*size + j]);
@@ -122,6 +122,7 @@ void set_matrix_values (const int size) {
 		printf("\n");
 	}
 	printf("\n");
+	*/
 }
 
 int main (int argc, char** argv) {
@@ -135,7 +136,7 @@ int main (int argc, char** argv) {
 
 		matrix = (int*) malloc (sizeof(int) * size * size);
 		mask = (int*) calloc(size * size, sizeof(int));
-		int nfill = 5;
+		int nfill = 100000;
 
 		set_threads_number(n_threads);
 		set_matrix_values(size);

@@ -1,9 +1,7 @@
 #include <cilk/cilk.h>
 #include <cilk/cilk_api.h>
-#include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <string.h>
 #include <time.h>
 
 static int* matrix;
@@ -67,13 +65,13 @@ void play(const int size) {
 	/*
 	int i, j;
 	for (i = 0; i < size; i++) {
-			for (j = 0; j < size; j++) {
-				printf("%d ", matrix[i*size + j]);
-			}
-			printf("\n");
+		for (j = 0; j < size; j++) {
+			printf("%d ", matrix[i*size + j]);
+		}
+		printf("\n");
 	}
 	printf("\n");
-	*/	
+	*/
 }
 
 void life (const int size, const int numgen) {
@@ -122,7 +120,7 @@ int main(int argc, char** argv) {
 
 		matrix = (int*) malloc (sizeof(int) * size * size);
 		tmpMatrix = (int*) malloc (sizeof(int) * size * size);
-		int numgen = rand() % 100;
+		int numgen = 10000;
 
 		set_threads_number(n_threads);
 		set_matrix_values(size);

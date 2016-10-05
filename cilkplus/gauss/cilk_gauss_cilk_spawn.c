@@ -1,6 +1,5 @@
 #include <cilk/cilk.h>
 #include <cilk/cilk_api.h>
-#include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <time.h>
@@ -8,37 +7,6 @@
 static double* matrix;
 static double* target;
 static double* solution;
-
-/*
-void elimination(const int size, const int iter) {
-
-	//i = diagonal principal
-	//j = linha abaixo de i
-	//k = colunas de j
-
-	int j, k;
-    	cilk_for (j = iter + 1; j < size; ++j) {   		
-      		//Elemento que zera o valor abaixo da diag prin
-      		double mult = matrix[j*size + iter]/ matrix[iter*size + iter];
-
-      		//Atualiza linha
-      		for (k = iter; k < size; ++k) {
-				matrix[j*size + k] -= matrix[iter*size + k] * mult;
-      		}
-      		// Atualiza vetor
-      		target[j] -= target[iter] * mult;
-      		//pthread_mutex_unlock(&m);
-  	}
-
-  	// Testar eliminação
-	for (i = 0; i < size; i++) {
-		for (j = 0; j < size; j++) {
-			printf("%.1f\t", matrix[i*size + j]);
-		}
-		printf("\n");
-	}
-
-*/
 
 void elimination (const int begin, const int end, const int size, const int iter) {
 

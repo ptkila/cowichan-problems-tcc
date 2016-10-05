@@ -1,9 +1,4 @@
 #include <iostream>
-#include <cstdlib>
-#include <ctime>
-#include <thread>
-#include <vector>
-#include <future>
 #include "../ThreadPool.h"
 
 static int* matrix;
@@ -76,14 +71,14 @@ void setValuesMatrix(const int size) {
       matrix[i*size + j] = rand() % 256;    
     }
   }
-  
+  /*
   for (int i = 0; i < size; ++i) {
     for (int j = 0; j < size; ++j) {
       std::cout << matrix[i*size + j] << " ";    
     }
     std::cout << "\n";
   }
-
+  */
 }
 
 int main(int argc, char** argv) {

@@ -3,7 +3,6 @@
 #include <cilk/reducer_opadd.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <string.h>
 #include <time.h>
 
 static double* matrix;
@@ -25,19 +24,19 @@ void product (const int size) {
 }
 
 void set_values_matrix(const int size) {
-	int i, j;
-	for (i = 0; i < size; ++i) {
-		for (j = 0; j < size; ++j) {
-			matrix[i*size + j] = (float) rand();
-		}
-	}
+  int i, j;
+  for (i = 0; i < size; ++i) {
+    for (j = 0; j < size; ++j) {
+      matrix[i*size + j] = rand() % 10;
+    }
+  }
 }
 
 void set_values_vector(const int size) {
-	int i;
-	for (i = 0; i < size; ++i) {
-		vector[i] = (float) rand();
-	}
+  int i;
+  for (i = 0; i < size; ++i) {
+    vector[i] = rand() % 10;
+  }
 }
 
 void set_threads_number(const int n_threads) {

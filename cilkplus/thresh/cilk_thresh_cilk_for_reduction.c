@@ -2,10 +2,8 @@
 #include <cilk/reducer.h>
 #include <cilk/reducer_max.h>
 #include <cilk/cilk_api.h>
-#include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <string.h>
 #include <time.h>
 
 static int *matrix;
@@ -14,9 +12,9 @@ static int *histogram;
 
 int find_max (const int size) {
   int i, j;
+
   CILK_C_REDUCER_MAX(r, int, 0);
   CILK_C_REGISTER_REDUCER(r);
-
   cilk_for (i = 0; i < size; ++i) {
     for (j = 0; j < size; ++j) {
       CILK_C_REDUCER_MAX_CALC(r, matrix[i*size + j]);
@@ -35,13 +33,20 @@ void fill_histogram(const int size) {
       ++histogram[matrix[i*size + j]];
     }
   }
+  /*
+  printf("\n");
+  for (int i = 0; i < 256; ++i) {
+    printf("%d ", histogram[i]);
+  }
+  printf("\n");
+  */
 }
 
 void fill_mask (const int size, const int threshold) {
   int i, j;
   cilk_for (i = 0; i < size; ++i) {
     for (j = 0; j < size; ++j) {
-      mask[i*size + j] = matrix [i*size + j] >= threshold;
+      mask[i*size + j] = (matrix[i*size + j] >= threshold);
     }
   }
 }
@@ -63,6 +68,8 @@ int calc_threshold (const int percent, const int nmax, const int size) {
 void thresh(const int size, const int percent) {
   
   int nmax = find_max(size);
+
+  //printf("%d\n", nmax);
   
   fill_histogram(size);
   
@@ -79,6 +86,15 @@ void set_values_matrix(const int size) {
       matrix[i*size + j] = rand() % 255;
     }
   }
+/*
+  for (i = 0; i < size; ++i) {
+    for (j = 0; j < size; ++j) {
+      printf("%d ", matrix[i*size + j]);
+    }
+    printf("\n");
+  }
+  printf("\n");
+  */
 }
 
 void set_threads_number (const int n_threads) {
@@ -114,7 +130,7 @@ int main(int argc, char *argv[]) {
       int i, j;
       for (i = 0; i < size; ++i) {
         for (j = 0; j < size; ++j) {
-          printf("%hhu ", mask[i*size + j]);
+          printf("%d ", mask[i*size + j]);
         }
         printf("\n");
       }

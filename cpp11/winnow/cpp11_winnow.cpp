@@ -24,14 +24,14 @@ static PointW* points;
 
 void fillValues(const int startIndex, const int lastIndex, const int size,
   const int n_threads) {
-  int index = startIndex * (n_threads/ size);
+  int index = startIndex/ (size/ n_threads);
   int count = offsets[index];
   for (int i = startIndex; i < lastIndex; ++i) {
     for (int j = 0; j < size; ++j) {
       if (mask[i*size + j] == 1) {
         int v = matrix[i*size + j];
         evValues[count] = PointW(i, j, v);
-        count++;
+        ++count;
       }
     }
   }
@@ -41,7 +41,7 @@ int calcPoints(const int startIndex, const int lastIndex, const int size) {
   int count = 0;
   for (int i = startIndex; i < lastIndex; ++i) {
     for (int j = 0; j < size; ++j) {
-       if (mask[i*size + j]) {
+       if (mask[i*size + j] == 1) {
          count++;
        }
     }
@@ -79,19 +79,38 @@ int countPoints (ThreadPool& pool, const int size) {
     values.emplace_back(v.get());
   }
 
+  for (int i = 0; i < values.size(); ++i) {
+    offsets[i] = values[i];
+  }
+  /*
+  for (int i = 0; i <= numThreads; ++i)
+  {
+    std::cout << offsets[i] << " ";
+  }
+  std::cout << std::endl;
+  */
   int len = 0;
-  for (int i = 0; i < numThreads; ++i) {
-    int tmp = values[i];
+  for (int i = 0; i <= values.size(); ++i) {
+    int tmp = offsets[i];
     offsets[i] = len;
     len += tmp;
   }
-  
+  /*
+  for (int i = 0; i <= numThreads; ++i)
+  {
+    std::cout << offsets[i] << " ";
+  }
+  std::cout << std::endl;
+  */
   return len;
 }
 
 void fillPoints(const int startIndex, const int lastIndex, const int nelts,
   const int len) {
   const int chunk = len/ nelts;
+
+  //std::cout << len << " " << nelts << " " << chunk << std::endl;
+
   for (int i = startIndex; i < lastIndex; ++i) {
     points[i] = evValues[i * chunk];
   }
@@ -104,8 +123,19 @@ void winnow(const int size, const int nelts, const int numThreads) {
   int len = countPoints(pool, size);
   evValues = new PointW[len];
 
+  //std::cout << len << std::endl;
+
   pool.parallel_for(fillValues, size, numThreads);
   pool.waitAll();
+
+  /*
+  for (int i = 0; i < len; ++i)
+  {
+    std::cout << evValues[i].i << " " << 
+      evValues[i].j << " " << evValues[i].weight << std::endl;
+  }
+  std::cout << std::endl;
+  */
 
   std::sort(evValues, evValues + len, 
     [&](const PointW& a, const PointW& b) -> bool { 
@@ -113,6 +143,15 @@ void winnow(const int size, const int nelts, const int numThreads) {
     }
   );
 
+  /*
+  for (int i = 0; i < len; ++i)
+  {
+    std::cout << evValues[i].i << " " << 
+      evValues[i].j << " " << evValues[i].weight << std::endl;
+  }
+  std::cout << std::endl;
+  */
+  
   points = new PointW[nelts];
   pool.parallel_for(fillPoints, nelts, len);
   pool.waitAll();
@@ -155,7 +194,7 @@ int main(int argc, char** argv) {
 
     matrix = new int[size * size];
     mask = new int[size * size];
-    offsets = new int[numThreads];
+    offsets = new int[numThreads + 1];
     int nelts = 5; 
 
     setValuesMatrix(size);

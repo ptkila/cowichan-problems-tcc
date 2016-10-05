@@ -7,16 +7,19 @@ static double* vector;
 static double* result;
 
 void product(const int size) {
-  tbb::parallel_for(range(0, size),[&](const range& r) -> void {
+  tbb::parallel_for(
+    range(0, size),
+    [&](const range& r) -> void {
     size_t r_end = r.end();
-    for (size_t i = r.begin(); i != r_end; ++i) {
-      double sum = 0.0;
-      for (int j = 0; j < size; ++j) {
-        sum += matrix [i*size + j] * vector [j];
+      for (size_t i = r.begin(); i != r_end; ++i) {
+        double sum = 0.0;
+        for (int j = 0; j < size; ++j) {
+          sum += matrix [i*size + j] * vector [j];
+        }
+        result[i] = sum;
       }
-      result[i] = sum;
     }
-  });
+  );
 }
 
 void setMatrixValues(const int size) {
