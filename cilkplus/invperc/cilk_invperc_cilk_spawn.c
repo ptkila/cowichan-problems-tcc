@@ -32,13 +32,14 @@ void set_initial_values(struct found_point& point) {
 	point.value = INT_MAX;
 }
 
+
 struct found_point percolate (const int begin, const int end, const int size) {
 	
 	if (begin + 1 == end) {
 		struct found_point point;
 		set_initial_values(point);
 		int i, sides;
-		for (i = 1; i < size - 1 ; ++i) {
+		cilk_for (i = 1; i < size - 1 ; ++i) {
 			if (mask[begin*size + i] == 1) {
 				for (sides = 0; sides < N_SIDES; ++sides) {
 					int row = begin + X_STEPS[sides];
@@ -66,6 +67,31 @@ struct found_point percolate (const int begin, const int end, const int size) {
 	}
 }
 
+/*
+struct found_point percolate (const int size) {
+	int i, j, sides;
+	struct found_point point;
+	set_initial_values(point);
+	cilk_for(i = 1; i < size - 1; ++i) { 
+		for (j = 1; j < size - 1; ++j) {
+			if (mask[i*size + j] == 1) {
+				for (sides = 0; sides < N_SIDES; ++sides) {
+					int row = i + X_STEPS[sides];
+					int col = j + Y_STEPS[sides];
+					int pos = row*size + col;
+					if (mask[pos] == 0 && matrix[pos] < point.value) {
+						point.row = row;
+						point.col = col;
+						point.value = matrix[pos]; 
+					}
+				}
+			}
+		}
+	}
+	return point;
+}
+*/
+
 int set_new_point(const int size, const struct found_point point) {
 	if (point.row >= 0 && point.col >= 0) {	
 		mask[point.row*size + point.col] = 1;
@@ -79,7 +105,6 @@ void invperc (const int size, const int nfill) {
 	
 	int i;
 	for (i = 0; i < nfill; ++i){
-
 		/*
 		int j, k;
 		for (k = 0; k < size; ++k) {
@@ -90,10 +115,10 @@ void invperc (const int size, const int nfill) {
 		}
 		printf("\n");
 		*/
-
 		struct found_point point = cilk_spawn percolate(1, size - 1, size);
 		cilk_sync;
 
+		//struct found_point point = percolate(size);
 		if (set_new_point(size, point)) { break; }
 	}
 }

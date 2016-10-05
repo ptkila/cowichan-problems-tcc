@@ -100,10 +100,10 @@ void set_matrix_values (const int size) {
 	}
 	/*
 	for (i = 0; i < size; i++) {
-			for (j = 0; j < size; j++) {
-				printf("%d ", matrix[i*size + j]);
-			}
-			printf("\n");
+		for (j = 0; j < size; j++) {
+			printf("%d ", matrix[i*size + j]);
+		}
+		printf("\n");
 	}
 	printf("\n");
 	*/
@@ -120,7 +120,7 @@ int main(int argc, char** argv) {
 
 		matrix = (int*) malloc (sizeof(int) * size * size);
 		tmpMatrix = (int*) malloc (sizeof(int) * size * size);
-		int numgen = 10000;
+		int numgen = 5;
 
 		set_threads_number(n_threads);
 		set_matrix_values(size);
