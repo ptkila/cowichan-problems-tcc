@@ -65,8 +65,6 @@ void thresh(const int size, const int percent) {
   
   int nmax = findMax(size);
   
-  //std::cout << nmax << std::endl;
-
   fillHistogram(size);
   
   int threshold = calcThreshold(percent, nmax, size);
@@ -81,15 +79,6 @@ void setValuesMatrix (int size) {
       matrix[i*size + j] = std::rand() % 255;
     }
   }
-  /*
-  for (int i = 0; i < size; i++) {
-    for (int j = 0; j < size; j++) {
-      std::cout << matrix[i*size + j] << " ";
-    }
-    std::cout << std::endl;
-  }
-  std::cout << std::endl;
-  */
 }
 
 void setThreadsNumber(const int numThreads) {

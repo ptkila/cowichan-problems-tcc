@@ -95,8 +95,7 @@ int countPoints(const int size) {
 
 void fillPoints(const int len, const int nelts) {
   const int chunk = len/ nelts;
-  //std::cout << len << " " << nelts << " " << chunk << std::endl;
-  tbb::parallel_for(
+  tbb::A(
     range(0, nelts),
     [&](const range& r) -> void {
       std::size_t end = r.end();
@@ -112,48 +111,16 @@ void winnow(const int size, const int nelts) {
   int len = countPoints(size);
   evValues = new PointW[len];
 
-  /*
-  std::cout <<  len << std::endl;
-
-  for (int i = 0; i <= size; ++i)
-  {
-    std::cout << countPerLine[i] << " "; 
-  }
-  std::cout << std::endl;
-  */
-
   PrefixSum prefixSum;
   tbb::parallel_scan(range(0, size + 1), prefixSum, tbb::auto_partitioner());
 
-  /*
-  for (int i = 0; i <= size; ++i)
-  {
-    std::cout << totalCount[i] << " "; 
-  }
-  std::cout << std::endl;
-  */
-
   fillValues(size);
-  /*
-  for (int i = 0; i < len; ++i)
-  {
-    std::cout << evValues[i].weight << std::endl; 
-  }
-  std::cout << std::endl;
-  */
+
   std::sort(evValues, evValues + len, 
     [&](const PointW& a, const PointW& b) -> bool { 
       return a.weight < b.weight; 
     }
   );
-
-  /*
-  for (int i = 0; i < len; ++i)
-  {
-    std::cout << evValues[i].weight << std::endl; 
-  }
-  std::cout << std::endl;
-  */
   
   points = new PointW[nelts];
 
@@ -175,15 +142,6 @@ void setValuesMask(const int size) {
       mask[i*size + j] = std::rand()%2;
     }
   }
-  /*
-  for (int i = 0; i < size; ++i) {
-    for (int j = 0; j < size; ++j) {
-      std::cout << mask[i*size + j] << " ";
-    }
-    std::cout << std::endl;
-  }
-  std::cout << std::endl;
-  */
 }
 
 void setThreadsNumber(const int numThreads) {

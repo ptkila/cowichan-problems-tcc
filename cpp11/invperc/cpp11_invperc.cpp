@@ -110,16 +110,7 @@ void invperc (const int size, const int nfill, const int numThreads) {
 		
 		FoundPoint point = percolate(size, pool);
 		if(setNewPoint(size, point)) { break; }
-		/*
-		int j, k;
-		for (k = 0; k < size; k++) {
-			for (j = 0; j < size; ++j) {
-				printf("%d ", mask[k*size + j]);
-			}
-			printf("\n");
-		}
-		printf("\n");
-		*/
+	
 	}
 }
 
@@ -130,15 +121,6 @@ void setMatrixValues (const int size) {
 			matrix[i*size + j] = rand() % 1000;
 		}
 	}
-	/*
-	for (int i = 0; i < size; ++i) {
-		for (int j = 0; j < size; ++j) {
-			std::cout << matrix[i*size + j] << " ";
-		}
-		std::cout << std::endl;
-	}
-	std::cout << std::endl;
-	*/
 }
 
 int main (int argc, char** argv) {

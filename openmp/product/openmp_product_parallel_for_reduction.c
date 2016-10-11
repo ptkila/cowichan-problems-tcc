@@ -33,16 +33,7 @@ void set_values_matrix(const int size) {
     for (j = 0; j < size; ++j) {
       matrix[i * size + j] = rand() % 10;    
     }
-  }
-  /*
-  for (i = 0; i < size; ++i) {
-    for (j = 0; j < size; ++j) {
-      printf("%1.f ", matrix[i * size + j]);    
-    }
-    printf("\n");
-  }
-  printf("\n");
- */ 
+  } 
 }
 
 void set_values_vector (const int size) {
@@ -50,12 +41,6 @@ void set_values_vector (const int size) {
   for (i = 0; i < size; ++i) {
     vector[i] = rand() % 10;
   }
-  /*
-  for (i = 0; i < size; ++i) {
-    printf("%1.f ", vector[i]);
-  }
-  printf("\n");
-  */
 }
 
 void set_threads_number(const int n_threads) {

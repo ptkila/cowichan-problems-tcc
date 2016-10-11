@@ -115,15 +115,6 @@ void set_values_matrix(const int size) {
       matrix[i*size + j] = rand();
     }
   }
-  /*
-  for (i =  0; i < size; ++i) {
-    for (j = 0; j < size; ++j) {
-      printf("%d ", matrix[i*size + j]);
-    }
-    printf("\n");
-  }
-  printf("\n");
-  */
 }
 
 void set_values_mask(const int size) {
@@ -133,15 +124,6 @@ void set_values_mask(const int size) {
       mask[i*size + j] = rand() % 2;
     }
   }
-  /*
-  for (i =  0; i < size; ++i) {
-    for (j = 0; j < size; ++j) {
-      printf("%d ", mask[i*size + j]);
-    }
-    printf("\n");
-  }
-  printf("\n");
-  */
 }
 
 void set_threads_number(const int n_threads) {

@@ -70,16 +70,7 @@ void play(const int size) {
 
 	evaluate_matrix(size);
 	update_matrix(size);
-	/*
-	int i, j;
-	for (i = 0; i < size; i++) {
-			for (j = 0; j < size; j++) {
-				printf("%d ", matrix[i*size + j]);
-			}
-			printf("\n");
-	}
-	printf("\n");
-	*/
+
 }
 
 void life (const int size, const int numgen) {
@@ -102,16 +93,7 @@ void set_matrix_values (const int size) {
 		for (j = 0; j < size; ++j) {
 			matrix[i*size + j] = rand() % 2;
 		}
-	}
-	/*
-	for (i = 0; i < size; i++) {
-			for (j = 0; j < size; j++) {
-				printf("%d ", matrix[i*size + j]);
-			}
-			printf("\n");
-	}
-	printf("\n");
-	*/	
+	}	
 }
 
 int main(int argc, char** argv) {

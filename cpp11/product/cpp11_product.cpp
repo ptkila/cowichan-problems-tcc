@@ -29,27 +29,12 @@ void setValuesMatrix(const int size) {
 			matrix[i*size + j] = rand() % 10;    
 		}
 	}
-	/*
-	for (int i = 0; i < size; ++i) {
-		for (int j = 0; j < size; ++j) {
-			std::cout << matrix[i*size + j] << " ";    
-		}
-		std::cout << std::endl;
-	}
-	std::cout << std::endl;
-	*/
 }
 
 void setValuesVector(const int size) {
 	for (int i = 0; i < size; ++i) {
 		vector[i] = rand() % 10;
 	}
-	/*
-	for (int i = 0; i < size; ++i) {
-		std::cout << vector[i] << " ";
-	}
-	std::cout << std::endl;
-	*/
 }
 
 int main(int argc, char** argv) {

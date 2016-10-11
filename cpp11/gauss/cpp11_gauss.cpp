@@ -7,19 +7,15 @@ static double* solution;
 
 void elimination(const int startIndex, const int lastIndex, const int size,
 	const int iter) {
-
-    //i = diagonal principal
-    //j = linha abaixo de i
-    //k = colunas de j
     
 	for (int j = startIndex + iter + 1; j < lastIndex; ++j) {
 		double mult = matrix[j*size + iter]/ matrix[iter*size + iter];		
-		//Atualiza linha
-		for (int k = iter; k < size; ++k) {
+		
+        for (int k = iter; k < size; ++k) {
     		matrix[j*size + k] -= matrix[iter*size + k] * mult;
 		}
-		// Atualiza vetor
-		target[j] -= target[iter] * mult;
+		
+        target[j] -= target[iter] * mult;
     }
 }
 
@@ -51,11 +47,6 @@ void setTargetValues(const int size) {
     for (int i = 0; i < size; ++i) {
         target[i] = (double)(rand() % 1000);
     }
-    /*
-    target[0] = 2;
-    target[1] = 4;
-    target[2] = 0;
-    */
 }   
 
 void setMatrixValues (const int size) {
@@ -69,29 +60,6 @@ void setMatrixValues (const int size) {
             }
         }
     }
-
-    /*
-    matrix[0] = 1;
-    matrix[1] = 1;
-    matrix[2] = 0;
-
-    matrix[3] = 2;
-    matrix[4] = -1;
-    matrix[5] = 3;
-
-    matrix[6] = -1;
-    matrix[7] = 0;
-    matrix[8] = 1;
-	*/
- 	/*
-    for (int i = 0; i < size; i++) {
-        for (int j = 0; j < size; j++) {
-            printf("%f ", matrix[i*size + j]);
-        }
-        printf("\n");
-    }
-    printf("\n");
-  	*/
 }
 
 int main (int argc, char** argv) {
@@ -117,20 +85,6 @@ int main (int argc, char** argv) {
 			}
 			std::cout << std::endl;
 		}
-
-		/*
-		// Testar valores
-		double* result = new double[size]();
-		for (int i = 0; i < size; ++i) {
-     		for (int j = 0; j < size; ++j) {
-        		result[i] += matrix[i*size + j] * solution[j];
-      		}
-    	}
-
-		for (int i = 0; i < size; ++i) {
-        	std::cout << result[i] << " = " << target[i] << std::endl;
-    	}
-		*/
 
 		delete[] matrix;
 		delete[] target;

@@ -37,18 +37,9 @@ bool setNewPoint(const int size, const FoundPoint& point) {
 	if (point.row >= 0 && point.col >= 0) {	
 		mask[point.row*size + point.col] = 1;
 		return false;
-	
 	} else {
-	
 		return true;
-	
 	}
-}
-
-bool evaluateNeighbors (const int row, const int col, const int size) {
-
-	return !((row < 0 || row >= size) || (col < 0 || col >= size)) ? true : false; 
-
 }
 
 FoundPoint percolate (const int size) {
@@ -73,14 +64,14 @@ FoundPoint percolate (const int size) {
 						}
 					}
 				}
-             }
-             return point;
-         },
-         [](FoundPoint a, FoundPoint b) -> FoundPoint {
+            }
+            return point;
+        },
+        [](FoundPoint a, FoundPoint b) -> FoundPoint {
 
          	return a.value < b.value ? a : b;
          
-         }
+        }
      );
 }
 
@@ -88,16 +79,6 @@ void invperc (const int size, const int nfill) {
 	
 	int i;
 	for (i = 0; i < nfill; ++i){
-		/*
-		int j, k;
-		for (k = 0; k < size; k++) {
-			for (j = 0; j < size; j++) {
-				printf("%d ", mask[k*size + j]);
-			}
-			printf("\n");
-		}
-		printf("\n");
-		*/
 		FoundPoint point = percolate(size);
 		if(setNewPoint(size, point)) { break; }
 	}
@@ -110,15 +91,6 @@ void setMatrixValues (const int size) {
 			matrix[i*size + j] = rand() % 1000;
 		}
 	}
-	/*
-	for (int i = 0; i < size; i++) {
-		for (int j = 0; j < size; j++) {
-			std::cout << matrix[i*size + j] << " ";
-		}
-		std::cout << std::endl;
-	}
-	std::cout << std::endl;
-	*/
 }
 
 void setThreadsNumber(const int numThreads) {

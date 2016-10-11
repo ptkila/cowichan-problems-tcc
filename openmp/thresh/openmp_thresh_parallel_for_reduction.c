@@ -23,7 +23,6 @@ int find_max (const int size) {
       }
     }
   }
-  //printf("%d\n", max_val);
   return max_val;
 }
 
@@ -92,15 +91,6 @@ void set_values_matrix(const int size) {
       matrix[i*size + j] = rand() % 255;    
     }
   }
-  /*
-  for (i = 0; i < size; ++i) {
-    for (j = 0; j < size; ++j) {
-      printf("%d ", matrix[i*size + j]);    
-    }
-    printf("\n");
-  }
-  printf("\n");
-  */
 }
 
 void set_threads_number(const int n_threads) {
@@ -131,7 +121,7 @@ int main(int argc, char** argv) {
       int i, j;
       for (i = 0; i < size; i++) {
         for (j = 0; j < size; j++) {
-          printf("%hhu ", mask[i*size + j]);
+          printf("%d ", mask[i*size + j]);
         }
         printf("\n");
       }

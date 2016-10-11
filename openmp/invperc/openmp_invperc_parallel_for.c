@@ -97,16 +97,6 @@ void invperc (const int size, const int nfill) {
 	
 	int i;
 	for (i = 0; i < nfill; ++i){
-		/*
-		int j, k;
-		for (k = 0; k < size; k++) {
-			for (j = 0; j < size; j++) {
-				printf("%d ", mask[k*size + j]);
-			}
-			printf("\n");
-		}
-		printf("\n");
-		*/
 		struct found_point point = percolate(size);
 		if(set_new_point(size, point)) { break; }
 	}
@@ -114,20 +104,11 @@ void invperc (const int size, const int nfill) {
 
 void set_matrix_values (const int size) {
 	int  i, j;
-	for (i = 0; i < size; ++i) {
+	for (i = 0; i < size; ++i) {a
 		for (j = 0; j < size; ++j) {
 			matrix[i*size + j] = rand() % 1000;
 		}
 	}
-	/*
-	for (i = 0; i < size; ++i) {
-		for (j = 0; j < size; ++j) {
-			printf("%d ", matrix[i*size + j]);
-		}
-		printf("\n");
-	}
-	printf("\n");
-	*/
 }
 
 void set_threads_number(const int n_threads) {

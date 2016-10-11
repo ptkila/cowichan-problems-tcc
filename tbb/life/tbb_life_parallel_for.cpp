@@ -64,27 +64,14 @@ void evaluateMatrix (const int size) {
 }
 
 void play(const int size) {
-
 	evaluateMatrix(size);
 	updateMatrix(size);
-	
-	/*
-	for (int i = 0; i < size; i++) {
-			for (int j = 0; j < size; j++) {
-				printf("%d ", matrix[i*size + j]);
-			}
-			printf("\n");
-	}
-	printf("\n");	
-	*/
 }
 
 void life (const int size, const int numgen) {
-
 	for (int i = 0; i < numgen; ++i) {
 		play(size);
 	}
-
 }
 
 void setMatrixValues (const int size) {
@@ -93,15 +80,6 @@ void setMatrixValues (const int size) {
 			matrix[i*size + j] = rand() % 2;
 		}
 	}
-	/*
-	for (int i = 0; i < size; i++) {
-			for (int j = 0; j < size; j++) {
-				printf("%d ", matrix[i*size + j]);
-			}
-			printf("\n");
-	}
-	printf("\n");
-	*/
 }
 
 void setThreadsNumber(const int numThreads) {

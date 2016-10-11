@@ -7,10 +7,6 @@ static double* target;
 static double* solution;
 
 void elimination(const int size) {
-
-    //i = diagonal principal
-    //j = linha abaixo de i
-    //k = colunas de j
     
     for (int i = 0; i < size - 1; ++i) {
     	tbb::parallel_for(
@@ -20,12 +16,10 @@ void elimination(const int size) {
 	        	for (size_t j = r.begin(); j != end; ++j) {
 	            	double mult = matrix[j*size + i]/ matrix[i*size + i];
             		
-            		//Atualiza linha
-           			for (int k = i; k < size; ++k) {
+                    for (int k = i; k < size; ++k) {
                 		matrix[j*size + k] -= matrix[i*size + k] * mult;
             		}
             		
-            		// Atualiza vetor
             		target[j] -= target[i] * mult;
 	        	}
     		}
@@ -55,11 +49,6 @@ void setTargetValues(const int size) {
     for (int i = 0; i < size; ++i) {
         target[i] = (double)(rand() % 1000);
     }
-    /*
-    target[0] = 2;
-    target[1] = 4;
-    target[2] = 0;
-    */
 }   
 
 void setMatrixValues (const int size) {
@@ -73,29 +62,6 @@ void setMatrixValues (const int size) {
             }
         }
     }
-
-    /*
-    matrix[0] = 1;
-    matrix[1] = 1;
-    matrix[2] = 0;
-
-    matrix[3] = 2;
-    matrix[4] = -1;
-    matrix[5] = 3;
-
-    matrix[6] = -1;
-    matrix[7] = 0;
-    matrix[8] = 1;
-	*/
- 	/*
-    for (int i = 0; i < size; i++) {
-        for (int j = 0; j < size; j++) {
-            printf("%f ", matrix[i*size + j]);
-        }
-        printf("\n");
-    }
-    printf("\n");
-  	*/
 }
 
 void setThreadsNumber(const int numThreads) {
@@ -128,20 +94,6 @@ int main (int argc, char** argv) {
 			}
 			std::cout << std::endl;
 		}
-
-		/*
-		// Testar valores
-		double* result = new double[size]();
-		for (int i = 0; i < size; ++i) {
-     		for (int j = 0; j < size; ++j) {
-        		result[i] += matrix[i*size + j] * solution[j];
-      		}
-    	}
-
-		for (int i = 0; i < size; ++i) {
-        	std::cout << result[i] << " = " << target[i] << std::endl;
-    	}
-		*/
 
 		delete[] matrix;
 		delete[] target;

@@ -51,7 +51,7 @@ int percolate (const int size) {
 
 	for (i = 1; i < size - 1; ++i) {
 		for (j = 1; j < size - 1; ++j) {
-			if (mask[i*size + j]) {
+			if (mask[i*size + j] == 1) {
 				for (sides = 0; sides < N_SIDES; ++sides) {
 					row = i + X_STEPS[sides];
 					col = j + Y_STEPS[sides];

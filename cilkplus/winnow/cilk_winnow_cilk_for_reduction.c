@@ -2,8 +2,9 @@
 #include <cilk/cilk_api.h>
 #include <cilk/reducer.h>
 #include <cilk/reducer_opadd.h>
-#include <stdlib.h>
+#include <math.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <time.h>
 
 struct point_w {
@@ -26,11 +27,11 @@ int compare (const void * a, const void * b) {
 
 }
 
-void fill_values(const int size) {
+void fill_values (const int size) {
 
   int i, j;
 
-  cilk_for(i = 0; i < size; ++i) {
+  cilk_for (i = 0; i < size; ++i) {
     int count = count_per_line[i];
     for (j = 0; j < size; ++j) {
       if (mask[i*size + j] == 1) {
@@ -43,7 +44,7 @@ void fill_values(const int size) {
   }
 }
 
-int count_points_reduce(const int size) {
+int count_points_reduce (const int size) {
 
   int i, j;
 
@@ -66,41 +67,38 @@ int count_points_reduce(const int size) {
 
 void prefix_sum_for (const int size) {
 
-    if (size == 1) { 
-        
-        return ;
-    
-    } else {
+  if (size == 1) { 
 
-      int itr;   
-      for (itr = 1; (1 << itr) <= size; ++itr){
-          int i;
-          cilk_for(i = (1 << itr); i <= size; i += (1 << itr)){
-              count_per_line[i] = count_per_line[i] + 
-                count_per_line[i - (1 << (itr - 1))];
-          }
-      }   
+    return;
+    
+  } else {
+
+    int itr, i;
+    for (itr = 1; (1 << itr) <= size; ++itr) {
+      int tmp_iter = 1 << itr;
+      cilk_for (i = tmp_iter; i <= size; i += tmp_iter) {
+        count_per_line[i] += count_per_line[i - (1 << (itr - 1))];
+      }
+    }
+    itr--;
+    while (itr >= 0) {
+      int tmp_iter = 1 << itr;
+      cilk_for (i = tmp_iter; i <= size; i += tmp_iter) {
+        if ((i >> itr) == 1){ 
+          count_per_line[i] = count_per_line[i];
+        } else if ((i >> itr) % 2 == 1) { 
+          count_per_line[i] += count_per_line[i - tmp_iter];
+        }
+      }
       itr--;
-      while (itr >= 0){ 
-          int i;
-          cilk_for(i = (1 << itr); i <= size; i += (1 << itr)){
-              if ((i >> itr) == 1){
-                  count_per_line[i] = count_per_line[i];
-              } else if ((i >> itr) % 2 == 1){ 
-                  count_per_line[i] = count_per_line[i] 
-                    + count_per_line[i - (1 << itr)];
-              }
-          }
-          itr--;
-      }   
+    }
   }
 }
 
 void fill_points(const int len, const int nelts) {
   const int chunk = len/ nelts;
-  //printf("%d %d %d\n", len, nelts, chunk);
   int i;
-  cilk_for(i = 0; i < nelts; ++i) {
+  cilk_for (i = 0; i < nelts; ++i) {
     points[i] = ev_values[i*chunk];
   }
 }
@@ -108,46 +106,13 @@ void fill_points(const int len, const int nelts) {
 void winnow (const int size, const int nelts) {
 
   int len = count_points_reduce(size);
-
-  //printf("%d\n", len);
-  
-  /*
-  for (int i = 0; i <= size; ++i) {
-    printf("%d ", count_per_line[i]);
-  }
-  printf("\n");
-  */
-
   ev_values = (struct point_w*) malloc (sizeof(struct point_w) * len);
 
   prefix_sum_for(size);
-  
-  /*
-  for (int i = 0; i <= size; ++i) {
-    printf("%d ", count_per_line[i]);
-  }
-  printf("\n");
-  */
 
   fill_values(size);
-  
-  /*
-  for (int i = 0; i < len; ++i) {
-    printf("%d %d %d\n", ev_values[i].i, 
-      ev_values[i].j, ev_values[i].weight);
-  }
-  printf("\n");
-  */
 
   qsort(ev_values, len, sizeof(*ev_values), compare);
-
-  /*
-  for (int i = 0; i < len; ++i) {
-    printf("%d %d %d\n", ev_values[i].i, 
-      ev_values[i].j, ev_values[i].weight);
-  }
-  printf("\n");
-  */
 
   points = (struct point_w*) malloc (sizeof(struct point_w) * nelts);
   fill_points(len, nelts);
@@ -170,15 +135,6 @@ void set_values_mask(const int size) {
       mask[i*size +j] = rand() % 2;
     }
   }
-  /*
-  for (i = 0; i < size; ++i) {
-    for (j = 0; j < size; ++j) {
-      printf("%d ", mask[i*size +j]);
-    }
-    printf("\n");
-  }
-  printf("\n");
-  */
 }
 
 void set_threads_number (const int n_threads) {

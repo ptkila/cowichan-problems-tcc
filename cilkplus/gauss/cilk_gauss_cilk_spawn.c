@@ -14,13 +14,11 @@ void elimination (const int begin, const int end, const int size, const int iter
 
 		double mult = matrix[begin*size + iter]/ matrix[iter*size + iter];
 
-      	//Atualiza linha
       	int k;
       	for (k = iter; k < size; ++k) {
 			matrix[begin*size + k] -= matrix[iter*size + k] * mult;
       	}
       	
-      	// Atualiza vetor
       	target[begin] -= target[iter] * mult;
 
       	return;
@@ -36,9 +34,6 @@ void elimination (const int begin, const int end, const int size, const int iter
 }
 
 void fill_solution (const int size) {
-
-	// i = linha
-	// j = coluna
 
 	int i, j;
 	for (i = size - 1; i >= 0; --i) {
@@ -77,12 +72,6 @@ void set_target_values(const int size) {
 	for (i = 0; i < size; ++i) {
 		target[i] = (double)(rand() % 1000);
 	}
-
-	/*
-	target[0] = 2;
-	target[1] = 4;
-	target[2] = 0;
-	*/
 }	
 
 void set_matrix_values (const int size) {
@@ -97,30 +86,6 @@ void set_matrix_values (const int size) {
 			}
 		}
 	}
-	
-	/*
-	matrix[0] = 1;
-	matrix[1] = 1;
-	matrix[2] = 0;
-
-	matrix[3] = 2;
-	matrix[4] = -1;
-	matrix[5] = 3;
-
-	matrix[6] = -1;
-	matrix[7] = 0;
-	matrix[8] = 1;	
-	*/
-
-	/*
-	for (i = 0; i < size; i++) {
-		for (j = 0; j < size; j++) {
-			printf("%d ", matrix[i*size + j]);
-		}
-		printf("\n");
-	}
-	printf("\n");
-	*/
 }
 
 int main (int argc, char** argv) {
@@ -150,22 +115,6 @@ int main (int argc, char** argv) {
 			}
 			printf("\n");
 		}
-
-		/*
-		// Testar valores
-		double* result = (double*) calloc (sizeof(double), size);
-		int i, j;
-
-		for (i = 0; i < size; ++i) {
-     		for (j = 0; j < size; ++j) {
-        		result[i] += matrix[i*size + j] * solution[j];
-      		}
-    	}
-
-		for (i = 0; i < size; ++i) {
-        	printf("%f = %f\n", result[i], target[i]);
-    	}
-		*/
 
 		free(matrix);
 		free(target);
